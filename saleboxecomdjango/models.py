@@ -19,7 +19,7 @@ class Attribute(models.Model):
 
 
 class AttributeItem(models.Model):
-    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+    attribute = models.ForeignKey(Attribute, blank=True, null=True, on_delete=models.CASCADE)
     value = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, blank=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -132,7 +132,8 @@ class Member(models.Model):
         ('S', 'Suspended'),
         ('T', 'Terminated'),
     )
-    group = models.ForeignKey(MemberGroup, on_delete=models.CASCADE)
+    # id = models.IntegerField(primary_key=True)
+    group = models.ForeignKey(MemberGroup, null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey('Member', null=True, blank=True, on_delete=models.CASCADE)
     guid = models.CharField(max_length=25, db_index=True)
     gender = models.CharField(max_length=1, blank=True, null=True, choices=GENDER_CHOICES)
@@ -174,7 +175,7 @@ class Member(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.display_name()
+        return self.guid
 
     class Meta:
         ordering = ['guid']

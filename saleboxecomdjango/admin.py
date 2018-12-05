@@ -39,6 +39,7 @@ class MemberGroupAdmin(admin.ModelAdmin):
 class MemberAdmin(admin.ModelAdmin):
     list_display = ('guid', 'name_first', 'name_last', 'group')
     list_filter = ('group',)
+    readonly_fields = ('parent',)
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
