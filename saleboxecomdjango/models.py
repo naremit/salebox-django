@@ -73,7 +73,7 @@ class DiscountRuleset(models.Model):
     TYPE_CHOICES = (
         ('flat_percent', 'Flat Percentage'),
     )
-    group = models.ForeignKey(DiscountGroup, on_delete=models.CASCADE)
+    group = models.ForeignKey(DiscountGroup, blank=True, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=25)
     discount_type = models.CharField(default='flat_percent', max_length=12, choices=TYPE_CHOICES)
     value = models.IntegerField(null=True, blank=True)
@@ -213,7 +213,7 @@ class Product(models.Model):
         # ('volume', 'volume'),
         ('weight', 'weight'),
     )
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProductCategory, blank=True, null=True,on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     attribute_1 = models.ManyToManyField(AttributeItem, related_name='product_attr_1')
     attribute_2 = models.ManyToManyField(AttributeItem, related_name='product_attr_2')
@@ -250,7 +250,7 @@ class ProductVariant(models.Model):
         ('kg', 'kg'),
         ('ml', 'ml'),
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, blank=True, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=150, blank=True, default='')
     bo_name = models.CharField(max_length=200, blank=True, default='')
     plu = models.CharField(max_length=25, blank=True, default='')
@@ -259,7 +259,7 @@ class ProductVariant(models.Model):
     size = models.CharField(max_length=20, blank=True, default='')
     size_order = models.FloatField(default=0)
     size_uom = models.CharField(max_length=2, choices=SIZE_UOM_CHOICES, blank=True, default='')
-    price = models.IntegerField()
+    price = models.IntegerField(null=True)
     barcode = models.CharField(max_length=50, blank=True, default='')
     available_to_order = models.BooleanField(default=True)
     available_on_pos = models.BooleanField(default=True)

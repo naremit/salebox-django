@@ -34,82 +34,81 @@ class Command(BaseCommand):
         r = requests.post(url, data=post)
 
         # handle response
-        #try:
-        response = r.json()
-        pprint(response)
-        if response['status'] == 'OK':
-            for i, value in enumerate(response['sync']):
-                print(value['code'], len(value['data']))
-                if value['code'] == 'attribute':
-                    self.sync_attribute(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+        try:
+            response = r.json()
+            # pprint(response)
+            if response['status'] == 'OK':
+                for i, value in enumerate(response['sync']):
+                    if value['code'] == 'attribute':
+                        self.sync_attribute(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'attribute_item':
-                    self.sync_attribute_item(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'attribute_item':
+                        self.sync_attribute_item(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'discount_seasonal_group':
-                    self.sync_discount_seasonal_group(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'discount_seasonal_group':
+                        self.sync_discount_seasonal_group(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'discount_seasonal_ruleset':
-                    self.sync_discount_seasonal_ruleset(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'discount_seasonal_ruleset':
+                        self.sync_discount_seasonal_ruleset(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'member':
-                    self.sync_member(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'member':
+                        self.sync_member(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'member_group':
-                    self.sync_member_group(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'member_group':
+                        self.sync_member_group(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'product':
-                    self.sync_product(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'product':
+                        self.sync_product(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'product_category':
-                    self.sync_product_category(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'product_category':
+                        self.sync_product_category(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                elif value['code'] == 'product_variant':
-                    self.sync_product_variant(
-                        value['data'],
-                        value['lu'],
-                        sync_from_dict
-                    )
+                    elif value['code'] == 'product_variant':
+                        self.sync_product_variant(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                else:
-                    print('Error: %s' % value['code'])
+                    else:
+                        print('Error: %s' % value['code'])
 
-            # return response['resync_now']
+                return response['resync_now']
+                # return False
+        except:
             return False
-        #except:
-        #    return False
 
     def get_sync_from_dict(self):
         lus = LastUpdate.objects.all()
@@ -311,23 +310,46 @@ class Command(BaseCommand):
             pass
 
     def sync_product(self, data, api_lu, sync_from_dict):
-        # for d in data
-        #
-        #
+        # TODO
+        # add attributes
 
-        # update sync_from
-        """
-        self.set_sync_from_dict(
-            'product',
-            len(data) < 100,
-            sync_from_dict,
-            api_lu
-        )
-        """
+        try:
+            for d in data:
+                # create object
+                o, created = Product.objects.get_or_create(id=d['id'])
+                o.category = ProductCategory.objects.get(id=d['category'])
+
+                # get attributes
+                #
+                #
+
+                # update
+                for a in [
+                    'active_flag',
+                    'image',
+                    'inventory_flag',
+                    'name',
+                    'season',
+                    'sold_by',
+                    'vat_applicable',
+                ]:
+                    setattr(o, a, d[a])
+
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'product',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+        except:
+            pass
 
     def sync_product_category(self, data, api_lu, sync_from_dict):
         try:
-            # pass #1:
+            # pass #1: save with parent = None to avoid mptt errors
             for d in data:
                 o, created = ProductCategory.objects.get_or_create(id=d['id'])
                 o.parent = None
@@ -343,6 +365,7 @@ class Command(BaseCommand):
                 setattr(o, o._mptt_meta.tree_id_attr, d['mptt_tree_id'])
                 o.save()
 
+            # pass #2: re-save the categories with parents (where applicable)
             for d in data:
                 parent = None
                 if d['parent'] is not None:
@@ -364,16 +387,64 @@ class Command(BaseCommand):
             pass
 
     def sync_product_variant(self, data, api_lu, sync_from_dict):
-        # for d in data
-        #
-        #
+        # TODO
+        # add attributes
 
-        # update sync_from
-        """
-        self.set_sync_from_dict(
-            'product_variant',
-            len(data) < 100,
-            sync_from_dict,
-            api_lu
-        )
-        """
+        try:
+            for d in data:
+                # create object
+                o, created = ProductVariant.objects.get_or_create(id=d['id'])
+                o.product = Product.objects.get(id=d['product'])
+
+                # get attributes
+                #
+                #
+
+                # update
+                for a in [
+                    'active_flag',
+                    'available_to_order',
+                    'available_on_pos',
+                    'available_on_ecom',
+                    'barcode',
+                    'bo_name',
+                    'color',
+                    'date_1',
+                    'date_2',
+                    'image',
+                    'int_1',
+                    'int_2',
+                    'int_3',
+                    'int_4',
+                    'loyalty_points',
+                    'member_discount_applicable',
+                    'name',
+                    'plu',
+                    'price',
+                    'shelf_expiry_type',
+                    'shelf_life_days',
+                    'shipping_weight',
+                    'size',
+                    'size_order',
+                    'size_uom',
+                    'sku',
+                    'string_1',
+                    'string_2',
+                    'string_3',
+                    'string_4',
+                    'warehouse_location',
+                ]:
+                    setattr(o, a, d[a])
+
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'product_variant',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+        except:
+            pass
+

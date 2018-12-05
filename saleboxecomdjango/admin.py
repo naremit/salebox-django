@@ -8,11 +8,6 @@ class DiscountRulesetInline(admin.TabularInline):
     extra = 0
 
 
-class ProductVariantInline(admin.StackedInline):
-    model = ProductVariant
-    extra = 0
-
-
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('code',)
 
@@ -53,6 +48,11 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class ProductVariantAdmin(admin.ModelAdmin):
+    list_display = ('product', 'name', 'price')
+    list_filter = ('product__category',)
+
+
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
 admin.site.register(DiscountGroup, DiscountGroupAdmin)
@@ -61,3 +61,4 @@ admin.site.register(MemberGroup, MemberGroupAdmin)
 admin.site.register(Member, MemberAdmin)
 admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
+admin.site.register(ProductVariant, ProductVariantAdmin)
