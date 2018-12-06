@@ -17,6 +17,14 @@ class AttributeItemAdmin(admin.ModelAdmin):
     list_filter = ('attribute',)
 
 
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ('code_2', 'code_3', 'name')
+
+
+class CountryStateAdmin(admin.ModelAdmin):
+    list_display = ('country', 'code_2', 'name')
+
+
 class DiscountGroupAdmin(admin.ModelAdmin):
     inlines = [DiscountRulesetInline]
     list_display = ('name', 'group_type')
@@ -55,6 +63,8 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
+admin.site.register(Country, CountryAdmin)
+admin.site.register(CountryState, CountryStateAdmin)
 admin.site.register(DiscountGroup, DiscountGroupAdmin)
 admin.site.register(LastUpdate, LastUpdateAdmin)
 admin.site.register(MemberGroup, MemberGroupAdmin)

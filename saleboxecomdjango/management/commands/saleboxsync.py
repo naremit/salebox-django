@@ -53,6 +53,20 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
+                    elif value['code'] == 'country':
+                        self.sync_country(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
+
+                    elif value['code'] == 'country_state':
+                        self.sync_country_state(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
+
                     elif value['code'] == 'discount_seasonal_group':
                         self.sync_discount_seasonal_group(
                             value['data'],
@@ -122,6 +136,8 @@ class Command(BaseCommand):
         for code in [
             'attribute',
             'attribute_item',
+            'country',
+            'country_state',
             'discount_seasonal_group',
             'discount_seasonal_ruleset',
             'member',
@@ -186,6 +202,45 @@ class Command(BaseCommand):
         except:
             pass
 
+    def sync_country(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                o, created = Country.objects.get_or_create(id=d['id'])
+                o.code_2 = d['code_2']
+                o.code_3 = d['code_3']
+                o.default = d['default']
+                o.name = d['name']
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'country',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+        except:
+            pass
+
+    def sync_country_state(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                o, created = CountryState.objects.get_or_create(id=d['id'])
+                o.country = Country.objects.get(id=d['country'])
+                o.code_2 = d['code_2']
+                o.name = d['name']
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'country_state',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+        except:
+            pass
+
     def sync_discount_seasonal_group(self, data, api_lu, sync_from_dict):
         # for d in data
         #
@@ -232,11 +287,21 @@ class Command(BaseCommand):
                 if d['parent'] is not None:
                     parent, created = Member.objects.get_or_create(id=d['parent'])
 
+                # country / states
+                country = None
+                country_state = None
+                if d['country'] is not None:
+                    country = Country.objects.get(id=d['country'])
+                if d['country_state'] is not None:
+                    country_state = CountryState.objects.get(id=d['country_state'])
+
                 # create object
                 o, created = Member.objects.get_or_create(id=d['id'])
                 o.group = group
                 o.parent = parent
                 o.group_when_created = gwc
+                o.country = country
+                o.country_state = country_state
 
                 # update
                 for a in [

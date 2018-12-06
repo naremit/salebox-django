@@ -36,6 +36,36 @@ class AttributeItem(models.Model):
         pass
 
 
+class Country(models.Model):
+    code_2 = models.CharField(max_length=2, blank=True, null=True)
+    code_3 = models.CharField(max_length=3, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
+    default = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Countries'
+
+
+class CountryState(models.Model):
+    country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
+    code_2 = models.CharField(max_length=2, blank=True, null=True)
+    name = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 class DiscountGroup(models.Model):
     GROUP_TYPE_CHOICES = (
         ('S', 'Seasonal'),
@@ -147,8 +177,8 @@ class Member(models.Model):
     address_4 = models.CharField(max_length=255, blank=True, null=True)
     address_5 = models.CharField(max_length=255, blank=True, null=True)
     postcode = models.CharField(max_length=12, blank=True, null=True)
-    # country = models.ForeignKey(Country, blank=True, null=True)
-    # country_state = models.ForeignKey(CountryState, blank=True, null=True)
+    country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
+    country_state = models.ForeignKey(CountryState, blank=True, null=True, on_delete=models.CASCADE)
     phone_1 = models.CharField(max_length=20, blank=True, null=True)
     phone_2 = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
