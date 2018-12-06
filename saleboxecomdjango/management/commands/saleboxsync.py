@@ -159,7 +159,7 @@ class Command(BaseCommand):
                 if api_lu == 0:
                     api_lu = 1.0
                 else:
-                    api_lu += 0.000001
+                    api_lu += 0.00001
 
         if api_lu > sync_from_dict[code]:
             lu = LastUpdate.objects.get(code=code)
@@ -396,6 +396,7 @@ class Command(BaseCommand):
                     'name',
                     'season',
                     'sold_by',
+                    'slug',
                     'vat_applicable',
                 ]:
                     setattr(o, a, d[a])
@@ -422,6 +423,7 @@ class Command(BaseCommand):
                 o.image = d['image']
                 o.name = d['name']
                 o.seasonal_flag = d['seasonal_flag']
+                o.slug = d['slug']
                 o.short_name = d['short_name']
                 setattr(o, o._mptt_meta.left_attr, d['mptt_left'])
                 setattr(o, o._mptt_meta.level_attr, d['mptt_level'])
@@ -493,6 +495,7 @@ class Command(BaseCommand):
                     'size_order',
                     'size_uom',
                     'sku',
+                    'slug',
                     'string_1',
                     'string_2',
                     'string_3',

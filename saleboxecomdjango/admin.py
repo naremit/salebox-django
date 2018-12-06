@@ -46,18 +46,17 @@ class MemberAdmin(admin.ModelAdmin):
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'slug')
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'sold_by')
+    list_display = ('name', 'category', 'sold_by', 'slug')
     list_filter = ('sold_by', 'category')
-    list_editable = ('sold_by',)
     search_fields = ('name',)
 
 
 class ProductVariantAdmin(admin.ModelAdmin):
-    list_display = ('product', 'name', 'price')
+    list_display = ('product', 'name', 'price', 'slug')
     list_filter = ('product__category',)
 
 
