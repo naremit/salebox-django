@@ -1,5 +1,5 @@
 from django.contrib import admin
-from saleboxecomdjango.models import *
+from saleboxdjango.models import *
 
 
 class DiscountRulesetInline(admin.TabularInline):

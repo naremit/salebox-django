@@ -1,7 +1,7 @@
 import math
 from django.conf import settings
-from saleboxecomdjango.lib.common import fetchsinglevalue, dictfetchall
-from saleboxecomdjango.models import Product, ProductRatingCache
+from saleboxdjango.lib.common import fetchsinglevalue, dictfetchall
+from saleboxdjango.models import Product, ProductRatingCache
 
 
 class ProductList:
@@ -60,8 +60,8 @@ class ProductList:
     def get_subquery(self, action):
         sql = """
             SELECT          DISTINCT ON (pv.product_id) [FIELDS] [EXTRAS]
-            FROM            saleboxecomdjango_productvariant AS pv
-            INNER JOIN      saleboxecomdjango_product AS p ON p.id = pv.product_id
+            FROM            saleboxdjango_productvariant AS pv
+            INNER JOIN      saleboxdjango_product AS p ON p.id = pv.product_id
             [RATING_JOIN]
             [WHERE]
             ORDER BY        pv.product_id, price ASC
@@ -105,7 +105,7 @@ class ProductList:
         if action == 'list' and self.include_rating:
             sql = sql.replace(
                 '[RATING_JOIN]',
-                'LEFT JOIN saleboxecomdjango_productratingcache AS prc ON p.id = prc.product_id'
+                'LEFT JOIN saleboxdjango_productratingcache AS prc ON p.id = prc.product_id'
             )
         else:
             sql = sql.replace('[RATING_JOIN]', '')
