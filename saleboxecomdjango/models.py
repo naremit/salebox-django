@@ -269,6 +269,18 @@ class Product(models.Model):
         pass
 
 
+class ProductRatingCache(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    vote_count = models.IntegerField()
+    score = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Product Rating Cache'
+        verbose_name_plural = 'Product Rating Cache'
+
+
 class ProductVariant(models.Model):
     SHELF_EXPIRY_CHOICES = (
         ('none', 'No shelf expiry date'),

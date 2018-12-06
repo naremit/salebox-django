@@ -55,6 +55,10 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class ProductRatingCacheAdmin(admin.ModelAdmin):
+    list_display = ('product', 'vote_count', 'score')
+
+
 class ProductVariantAdmin(admin.ModelAdmin):
     list_display = ('product', 'name', 'price', 'slug')
     list_filter = ('product__category',)
@@ -70,4 +74,5 @@ admin.site.register(MemberGroup, MemberGroupAdmin)
 admin.site.register(Member, MemberAdmin)
 admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
+admin.site.register(ProductRatingCache, ProductRatingCacheAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
