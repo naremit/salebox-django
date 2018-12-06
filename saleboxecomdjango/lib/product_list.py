@@ -62,7 +62,23 @@ class ProductList:
             # fields
             fields = [
                 'p.category_id',
-                'p.id AS p_id'
+                'p.id AS p_id',
+                'p.name AS p_name',
+                'p.image AS p_image',
+                'p.slug AS p_slug',
+                'pv.id AS v_id',
+                'pv.slug AS v_slug',
+                'pv.image AS v_image',
+                'pv.shipping_weight AS v_shipping_weight',
+                'pv.string_1 AS v_string_1',
+                'pv.string_2 AS v_string_2',
+                'pv.string_3 AS v_string_3',
+                'pv.string_4 AS v_string_4',
+                'pv.int_1 AS v_int_1',
+                'pv.int_2 AS v_int_2',
+                'pv.int_3 AS v_int_3',
+                'pv.int_4 AS v_int_4',
+                'pv.price AS price',
             ]
             if self.include_rating:
                 fields.append('COALESCE(prc.score, 0) AS score')
@@ -74,7 +90,10 @@ class ProductList:
 
         # rating join
         if action == 'list' and self.include_rating:
-            sql = sql.replace('[RATING_JOIN]', 'LEFT JOIN saleboxecomdjango_productratingcache AS prc ON p.id = prc.product_id')
+            sql = sql.replace(
+                '[RATING_JOIN]',
+                'LEFT JOIN saleboxecomdjango_productratingcache AS prc ON p.id = prc.product_id'
+            )
         else:
             sql = sql.replace('[RATING_JOIN]', '')
 
@@ -84,7 +103,11 @@ class ProductList:
         return sql
 
     def get_where(self):
-        where = []
+        where = [
+            'pv.available_on_ecom = true',
+            'pv.active_flag = true',
+            'p.active_flag = true'
+        ]
 
         # min / max orig price
         if self.min_orig_price is not None:
@@ -93,10 +116,7 @@ class ProductList:
             where.append('pv.price <= %s' % self.max_orig_price)
 
         # compile sql
-        if len(where) > 0:
-            return 'WHERE %s' % ' AND '.join(where)
-        else:
-            return ''
+        return 'WHERE %s' % ' AND '.join(where)
 
     def set_orig_price_filter(self, mn=None, mx=None):
         self.min_orig_price = mn
