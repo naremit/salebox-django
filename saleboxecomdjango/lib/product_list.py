@@ -1,102 +1,102 @@
-from saleboxecomdjango.lib.common import fetchsinglevalue
+from saleboxecomdjango.lib.common import fetchsinglevalue, dictfetchall
 from saleboxecomdjango.models import Product, ProductRatingCache
 
 
 class ProductList:
-    offset = None
-    limit = None
-    min_orig_price = None
-    max_orig_price = None
-
     def __init__(self):
-        pass
+        self.include_rating = False
+        self.offset = None
+        self.limit = None
+        self.min_orig_price = None
+        self.max_orig_price = None
+        self.min_sale_price = None
+        self.max_sale_price = None
 
     def go(self):
+        self.include_rating = True
+
+        # create output dict
         output = {
-            'count': fetchsinglevalue(self.get_sql('count')),
-            'products': []
+            'count': self.get_count(),
+            'products': [],
         }
 
+        # add products if applicable
         if output['count'] > 0:
-            output['products'] = Product.objects.raw(self.get_sql('list'))
+            output['products'] = self.get_list()
 
         return output
 
-    def get_sql(self, action):
+    def get_count(self):
+        sql = self.get_subquery('count')
+        return fetchsinglevalue('SELECT COUNT(*) FROM (%s) AS q' % sql)
+
+    def get_list(self):
+        sql = self.get_subquery('list')
+
+        # set limit / offset
+        if self.limit is not None:
+            sql = '%s LIMIT %s' % (sql, self.limit)
+        if self.offset is not None:
+            sql = '%s LIMIT %s' % (sql, self.offset)
+
+        # ...
+        print(sql)
+        return dictfetchall(sql)
+
+    def get_subquery(self, action):
         sql = """
-            SELECT              [ACTION]
-            FROM                saleboxecomdjango_product AS p
+            SELECT          DISTINCT ON (pv.product_id) [FIELDS] [EXTRAS]
+            FROM            saleboxecomdjango_productvariant AS pv
+            INNER JOIN      saleboxecomdjango_product AS p ON p.id = pv.product_id
             [RATING_JOIN]
             [WHERE]
-            [ORDER_BY]
-            [LIMIT]
-            [OFFSET]
+            ORDER BY        pv.product_id, price ASC
         """
 
-        # add where clause(s)
+        if action == 'count':
+            sql = sql.replace('[FIELDS]', 'pv.product_id')
+            sql = sql.replace('[EXTRAS]', '')
+
+        if action == 'list':
+            # fields
+            fields = [
+                'p.category_id',
+                'p.id AS p_id'
+            ]
+            if self.include_rating:
+                fields.append('COALESCE(prc.score, 0) AS score')
+                fields.append('COALESCE(prc.vote_count, 0) AS vote_count')
+            sql = sql.replace('[FIELDS]', ', '.join(fields))
+
+            # extras
+            sql = sql.replace('[EXTRAS]', '')
+
+        # rating join
+        if action == 'list' and self.include_rating:
+            sql = sql.replace('[RATING_JOIN]', 'LEFT JOIN saleboxecomdjango_productratingcache AS prc ON p.id = prc.product_id')
+        else:
+            sql = sql.replace('[RATING_JOIN]', '')
+
+        # where clause(s)
         sql = sql.replace('[WHERE]', self.get_where())
 
-        # action: count
-        if action == 'count':
-            sql = sql.replace('[ACTION]', 'COUNT(*)')
-            sql = sql.replace('[RATING_JOIN]', '')
-            sql = sql.replace('[LIMIT]', '')
-            sql = sql.replace('[OFFSET]', '')
-
-        # action: list
-        if action == 'list':
-            sql = sql.replace('[ACTION]', '*, prc.vote_count, prc.score')
-            sql = sql.replace('[RATING_JOIN]', 'LEFT JOIN saleboxecomdjango_productratingcache AS prc ON p.id = prc.product_id')
-            sql = sql.replace('[LIMIT]', 'LIMIT %s' % self.limit if self.limit else '')
-            sql = sql.replace('[OFFSET]', 'OFFSET %s' % self.offset if self.offset else '')
-
-        # order by
-        sql = sql.replace('[ORDER_BY]', '')
-
-        print(sql)
         return sql
 
     def get_where(self):
         where = []
 
-        # orig price
-        if self.max_orig_price is not None:
-            where.append(
-                self.get_where_price_range(
-                    'max_orig',
-                    self.max_orig_price
-                )
-            )
+        # min / max orig price
         if self.min_orig_price is not None:
-            where.append(
-                self.get_where_price_range(
-                    'min_orig',
-                    self.min_orig_price
-                )
-            )
+            where.append('pv.price >= %s' % self.min_orig_price)
+        if self.max_orig_price is not None:
+            where.append('pv.price <= %s' % self.max_orig_price)
 
+        # compile sql
         if len(where) > 0:
             return 'WHERE %s' % ' AND '.join(where)
         else:
             return ''
-
-    def get_where_price_range(self, field, value):
-        sql = """
-            p.id IN (
-                SELECT      DISTINCT(product_id)
-                FROM        saleboxecomdjango_productvariant
-                WHERE       [FIELD] [COMPARISON] %s
-            )
-        """ % value
-
-        if field.endswith('_orig'):
-            sql = sql.replace('[FIELD]', 'price')
-        if field.startswith('min_'):
-            sql = sql.replace('[COMPARISON]', '>=')
-        else:
-            sql = sql.replace('[COMPARISON]', '<=')
-
-        return sql
 
     def set_orig_price_filter(self, mn=None, mx=None):
         self.min_orig_price = mn
