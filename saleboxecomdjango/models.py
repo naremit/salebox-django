@@ -219,7 +219,7 @@ class ProductCategory(MPTTModel):
     short_name = models.CharField(max_length=30)
     name = models.CharField(max_length=100)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True, on_delete=models.CASCADE)
-    image = models.CharField(max_length=70, default='/static/backoffice/product.png')
+    image = models.CharField(max_length=70, blank=True, null=True)
     seasonal_flag = models.BooleanField(default=False)
     slug = models.SlugField(max_length=100, blank=True, null=True)
     active_flag = models.BooleanField(default=True)

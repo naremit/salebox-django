@@ -1,3 +1,5 @@
+import math
+from django.conf import settings
 from saleboxecomdjango.lib.common import fetchsinglevalue, dictfetchall
 from saleboxecomdjango.models import Product, ProductRatingCache
 
@@ -13,8 +15,6 @@ class ProductList:
         self.max_sale_price = None
 
     def go(self):
-        self.include_rating = True
-
         # create output dict
         output = {
             'count': self.get_count(),
@@ -24,6 +24,21 @@ class ProductList:
         # add products if applicable
         if output['count'] > 0:
             output['products'] = self.get_list()
+
+            # modify content
+            for p in output['products']:
+                # price
+                p['price_float'] = p['price'] / 100
+                minor, major = math.modf(p['price_float'])
+                p['price_major'] = int(major)
+                p['price_minor'] = int(minor)
+                p['price_minor_str'] = ('00%s' % p['price_minor'])[-2:]
+
+                # images
+                if p['p_image'] is not None:
+                    p['p_image'] = '%s%s' % (settings.SALEBOX['IMG']['POSASSETS'], p['p_image'])
+                if p['v_image'] is not None:
+                    p['v_image'] = '%s%s' % (settings.SALEBOX['IMG']['POSASSETS'], p['v_image'])
 
         return output
 
@@ -40,8 +55,6 @@ class ProductList:
         if self.offset is not None:
             sql = '%s LIMIT %s' % (sql, self.offset)
 
-        # ...
-        print(sql)
         return dictfetchall(sql)
 
     def get_subquery(self, action):
@@ -125,3 +138,6 @@ class ProductList:
     def set_limit_offset(self, limit=None, offset=None):
         self.limit = limit
         self.offset = offset
+
+    def set_include_rating(self, value=True):
+        self.include_rating = value
