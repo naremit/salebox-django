@@ -7,15 +7,25 @@ from saleboxdjango.models import BasketWishlist
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        # delete baskets from expired sessions
         expired_keys = Session \
                         .objects \
-                        .filter(expire_date__gte=timezone.now()) \
+                        .filter(expire_date__lte=timezone.now()) \
                         .values_list('session_key', flat=True)
 
-        print(list(expired_keys))
+        BasketWishlist \
+            .objects \
+            .filter(user__isnull=True) \
+            .filter(session__in=list(expired_keys)) \
+            .delete()
 
-        b = BasketWishlist \
-                .objects \
-                .filter(session__in=list(expired_keys))
+        # delete baskets from deleted sessions
+        remaining_keys = Session \
+                            .objects \
+                            .values_list('session_key', flat=True)
 
-        print(b)
+        BasketWishlist \
+            .objects \
+            .filter(user__isnull=True) \
+            .exclude(session__in=list(remaining_keys)) \
+            .delete()

@@ -3,7 +3,7 @@ from django.db.models import Sum
 from saleboxdjango.models import BasketWishlist
 
 
-def add_basket_item(request, variant, qty):
+def add_basket_item(request, variant, qty=1):
     # ensure no duplicates
     clean_basket_wishlist(request)
 
@@ -75,12 +75,6 @@ def clean_basket_wishlist(request):
     BasketWishlist.objects.filter(quantity__lte=0).delete()
 
 
-def get_basket_size(request):
-    qs = BasketWishlist.objects.filter(basket_flag=True)
-    qs = basket_auth_filter(request, qs)
-    return qs.aggregate(Sum('quantity'))['quantity__sum'] or 0
-
-
 def basket_auth_filter(request, qs):
     if request.user.is_authenticated:
         return qs.filter(user=request.user) \
@@ -89,3 +83,31 @@ def basket_auth_filter(request, qs):
         return qs.filter(user__isnull=True) \
                  .filter(session=request.session.session_key)
 
+
+def set_basket_session(request):
+    data = {
+        'count': 0,
+        'basket': {},
+        'wishlist': [],
+    }
+
+    # retrieve from db
+    qs = basket_auth_filter(
+        request,
+        BasketWishlist.objects.all()
+    )
+
+    # populate data
+    for q in qs:
+        if q.basket_flag:
+            if q.variant.id not in data['basket']:
+                data['basket'][q.variant.id] = q.quantity
+            else:
+                data['basket'][q.variant.id] += q.quantity
+            data['count'] += q.quantity
+        else:
+            if q.variant.id not in data['wishlist']:
+                data['wishlist'].append(q.variant.id)
+
+    # save to session
+    request.session['basket'] = data
