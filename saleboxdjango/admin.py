@@ -17,6 +17,11 @@ class AttributeItemAdmin(admin.ModelAdmin):
     list_filter = ('attribute',)
 
 
+class BasketWishlistAdmin(admin.ModelAdmin):
+    list_display = ('variant', 'quantity', 'weight', 'basket_flag') # user
+    list_filter = ('basket_flag',)  # user
+
+
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('code_2', 'code_3', 'name')
 
@@ -66,6 +71,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
+admin.site.register(BasketWishlist, BasketWishlistAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(CountryState, CountryStateAdmin)
 admin.site.register(DiscountGroup, DiscountGroupAdmin)

@@ -1,5 +1,13 @@
 {% load humanize %}
 
+<div style="overflow: hidden">
+    <select style="float: right" onchange="setOrder(this.value)">
+        {% for o in order.options %}
+            <option value="{{ o.code }}"{% if o.code == order.current %} selected{% endif %}>{{ o.label }}</option>
+        {% endfor %}
+    </select>
+</div>
+
 <div class="product_list">
     {% for p in products.products %}
         <div class="product">

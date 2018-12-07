@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -34,6 +35,17 @@ class AttributeItem(models.Model):
 
     def delete(self):
         pass
+
+
+class BasketWishlist(models.Model):
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    session = models.CharField(max_length=32, blank=True, null=True)
+    basket_flag = models.BooleanField(default=True)
+    variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    weight = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
 
 
 class Country(models.Model):
