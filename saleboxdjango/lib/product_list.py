@@ -12,6 +12,9 @@ class ProductList:
             'items_per_page': None,
             'num_of_pages': None,
             'page_range': None,
+            'url_prefix': None,
+            'has_previous': False,
+            'has_next': False,
         }
 
         self.include_rating = False
@@ -22,6 +25,7 @@ class ProductList:
         self.min_sale_price = None
         self.max_sale_price = None
         self.order = []
+        self.where = []
 
     def go(self):
         # create output dict
@@ -48,6 +52,12 @@ class ProductList:
                 self.pagination['num_of_pages'] = math.ceil(output['count']['total'] / self.pagination['items_per_page'])
                 self.pagination['page_range'] = range(1, self.pagination['num_of_pages'] + 1)
                 output['pagination'] = self.pagination
+                self.pagination['has_previous'] = self.pagination['page_num'] > 1
+                if self.pagination['has_previous']:
+                    self.pagination['previous'] = self.pagination['page_num'] - 1
+                self.pagination['has_next'] = self.pagination['page_num'] < self.pagination['num_of_pages']
+                if self.pagination['has_next']:
+                    self.pagination['next'] = self.pagination['page_num'] + 1
 
             # modify content
             for p in output['products']:
@@ -57,6 +67,11 @@ class ProductList:
                 p['price_major'] = int(major)
                 p['price_minor'] = int(minor)
                 p['price_minor_str'] = ('00%s' % p['price_minor'])[-2:]
+
+                # score
+                if 'score' in p:
+                    p['score_10'] = math.floor(p['score'] / 10)
+                    p['score_5'] = math.floor(p['score'] / 20)
 
                 # images
                 if p['p_image'] is not None:
@@ -144,7 +159,7 @@ class ProductList:
         return sql
 
     def get_where(self):
-        where = [
+        where = self.where + [
             'pv.available_on_ecom = true',
             'pv.active_flag = true',
             'p.active_flag = true'
@@ -158,6 +173,9 @@ class ProductList:
 
         # compile sql
         return 'WHERE %s' % ' AND '.join(where)
+
+    def set_category(self, category, include_child_categories=False):
+        self.where.append('p.category_id = %s' % category.id)
 
     def set_order_preset(self, preset):
         presets = {
@@ -181,10 +199,11 @@ class ProductList:
         self.limit = limit
         self.offset = offset
 
-    def set_pagination(self, page_num, items_per_page):
+    def set_pagination(self, page_num, items_per_page, url_prefix):
         self.include_pagination = True
         self.pagination['page_num'] = page_num
         self.pagination['items_per_page'] = items_per_page
+        self.pagination['url_prefix'] = url_prefix
 
         self.limit = items_per_page
         self.offset = (page_num - 1) * items_per_page
