@@ -6,6 +6,14 @@ from saleboxdjango.models import Product, ProductRatingCache
 
 class ProductList:
     def __init__(self):
+        self.include_pagination = False
+        self.pagination = {
+            'page_num': None,
+            'items_per_page': None,
+            'num_of_pages': None,
+            'page_range': None,
+        }
+
         self.include_rating = False
         self.offset = None
         self.limit = None
@@ -13,17 +21,33 @@ class ProductList:
         self.max_orig_price = None
         self.min_sale_price = None
         self.max_sale_price = None
+        self.order = []
 
     def go(self):
         # create output dict
         output = {
-            'count': self.get_count(),
+            'count': {
+                'from': None,
+                'to': None,
+                'total': self.get_count(),
+            },
+            'pagination': None,
             'products': [],
         }
 
         # add products if applicable
-        if output['count'] > 0:
+        if output['count']['total'] > 0:
             output['products'] = self.get_list()
+
+            # set count numbers
+            output['count']['from'] = (self.offset or 0) + 1
+            output['count']['to'] = output['count']['from'] + len(output['products']) - 1
+
+            # pagination
+            if self.include_pagination:
+                self.pagination['num_of_pages'] = math.ceil(output['count']['total'] / self.pagination['items_per_page'])
+                self.pagination['page_range'] = range(1, self.pagination['num_of_pages'] + 1)
+                output['pagination'] = self.pagination
 
             # modify content
             for p in output['products']:
@@ -47,13 +71,17 @@ class ProductList:
         return fetchsinglevalue('SELECT COUNT(*) FROM (%s) AS q' % sql)
 
     def get_list(self):
-        sql = self.get_subquery('list')
+        sql = 'SELECT * FROM (%s) AS x' % self.get_subquery('list')
+
+        # add ordering
+        self.order.append('p_name ASC')
+        sql = '%s ORDER BY %s' % (sql, ', '.join(self.order))
 
         # set limit / offset
         if self.limit is not None:
             sql = '%s LIMIT %s' % (sql, self.limit)
         if self.offset is not None:
-            sql = '%s LIMIT %s' % (sql, self.offset)
+            sql = '%s OFFSET %s' % (sql, self.offset)
 
         return dictfetchall(sql)
 
@@ -131,6 +159,20 @@ class ProductList:
         # compile sql
         return 'WHERE %s' % ' AND '.join(where)
 
+    def set_order_preset(self, preset):
+        presets = {
+            'price_low_to_high': 'price ASC',
+            'price_high_to_low': 'price DESC',
+            'rating_low_to_high': 'score ASC',
+            'rating_high_to_low': 'score DESC',
+        }
+
+        # error prevention...
+        if preset.startswith('rating_'):
+            self.set_include_rating()
+
+        self.order.append(presets[preset])
+
     def set_orig_price_filter(self, mn=None, mx=None):
         self.min_orig_price = mn
         self.max_orig_price = mx
@@ -138,6 +180,14 @@ class ProductList:
     def set_limit_offset(self, limit=None, offset=None):
         self.limit = limit
         self.offset = offset
+
+    def set_pagination(self, page_num, items_per_page):
+        self.include_pagination = True
+        self.pagination['page_num'] = page_num
+        self.pagination['items_per_page'] = items_per_page
+
+        self.limit = items_per_page
+        self.offset = (page_num - 1) * items_per_page
 
     def set_include_rating(self, value=True):
         self.include_rating = value
