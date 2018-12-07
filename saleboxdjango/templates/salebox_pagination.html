@@ -1,21 +1,23 @@
-<div class="pagination">
-    {% if products.pagination.has_previous %}
-        <a href="{{ products.pagination.url_prefix }}/{{ products.pagination.previous }}">&laquo;</a>
-    {% else %}
-        <span>&laquo;</span>
-    {% endif %}
-
-    {% for i in products.pagination.page_range %}
-        {% if i == products.pagination.page_num %}
-            <span>{{ i }}</span>
+{% if products.count.total > 0 %}
+    <div class="pagination">
+        {% if products.pagination.has_previous %}
+            <a href="{{ products.pagination.url_prefix }}/{{ products.pagination.previous }}">&laquo;</a>
         {% else %}
-            <a href="{{ products.pagination.url_prefix }}/{{ i }}">{{ i }}</a>
+            <span>&laquo;</span>
         {% endif %}
-    {% endfor %}
 
-    {% if products.pagination.has_next %}
-        <a href="{{ products.pagination.url_prefix }}/{{ products.pagination.next }}">&raquo;</a>
-    {% else %}
-        <span>&raquo;</span>
-    {% endif %}
-</div>
+        {% for i in products.pagination.page_range %}
+            {% if i == products.pagination.page_num %}
+                <span>{{ i }}</span>
+            {% else %}
+                <a href="{{ products.pagination.url_prefix }}/{{ i }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.pagination.has_next %}
+            <a href="{{ products.pagination.url_prefix }}/{{ products.pagination.next }}">&raquo;</a>
+        {% else %}
+            <span>&raquo;</span>
+        {% endif %}
+    </div>
+{% endif %}

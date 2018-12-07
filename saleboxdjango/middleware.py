@@ -9,7 +9,7 @@ class SaleboxMiddleware:
         # set basket_size
         request.session.setdefault('basket_size', None)
         if request.session['basket_size'] is None:
-            request.session['basket_size'] = get_basket_size()
+            request.session['basket_size'] = get_basket_size(request)
 
         # set product_list_order
         request.session.setdefault('product_list_order', 'rating_high_to_low')

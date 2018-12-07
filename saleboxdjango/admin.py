@@ -18,8 +18,8 @@ class AttributeItemAdmin(admin.ModelAdmin):
 
 
 class BasketWishlistAdmin(admin.ModelAdmin):
-    list_display = ('variant', 'quantity', 'weight', 'basket_flag') # user
-    list_filter = ('basket_flag',)  # user
+    list_display = ('user', 'session', 'variant', 'quantity', 'weight', 'basket_flag')
+    list_filter = ('user', 'session', 'basket_flag')
 
 
 class CountryAdmin(admin.ModelAdmin):
