@@ -156,9 +156,9 @@ def update_basket_session(request):
     for q in qs:
         if q.basket_flag:
             if q.variant.id not in data['basket']:
-                data['basket'][q.variant.id] = q.quantity
+                data['basket'][str(q.variant.id)] = q.quantity
             else:
-                data['basket'][q.variant.id] += q.quantity
+                data['basket'][str(q.variant.id)] += q.quantity
             data['count'] += q.quantity
         else:
             if q.variant.id not in data['wishlist']:

@@ -28,7 +28,7 @@ class ProductList:
         self.order = []
         self.where = []
 
-    def go(self, basket):
+    def go(self, request):
         # retrieve from cache
         #
         #
@@ -87,8 +87,10 @@ class ProductList:
 
         # personalise content
         for p in output['products']:
-            p['in_basket'] = str(p['v_id']) in basket['basket']
-            p['in_wishlist'] = p['v_id'] in basket['wishlist']
+            p['in_basket'] = str(p['v_id']) in \
+                request.session['basket']['basket']
+            p['in_wishlist'] = p['v_id'] in \
+                request.session['basket']['wishlist']
 
         return output
 
