@@ -11,7 +11,7 @@ class SaleboxMiddleware:
         # set basket_refresh
         now = datetime.datetime.now().timestamp()
         request.session.setdefault('basket_refresh', now)
-        if now - request.session['basket_refresh'] > 180:  # 3 minutes
+        if now - request.session['basket_refresh'] > 300:  # 5 minutes
             request.session['basket_refresh'] = now
             set_basket_session(request)
 

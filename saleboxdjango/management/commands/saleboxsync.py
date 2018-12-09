@@ -12,7 +12,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         do_sync = True
         while do_sync:
-            do_sync = self.do_sync()
+            try:
+                do_sync = self.do_sync()
+            except:
+                do_sync = False
 
     def do_sync(self):
         post = {

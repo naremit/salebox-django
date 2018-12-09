@@ -1,6 +1,6 @@
 import math
-from django.conf import settings
-from saleboxdjango.lib.common import fetchsinglevalue, dictfetchall
+from saleboxdjango.lib.common import fetchsinglevalue, \
+    dictfetchall, image_path, price_display
 from saleboxdjango.models import Product, ProductRatingCache
 
 
@@ -62,11 +62,7 @@ class ProductList:
             # modify content
             for p in output['products']:
                 # price
-                p['price_float'] = p['price'] / 100
-                minor, major = math.modf(p['price_float'])
-                p['price_major'] = int(major)
-                p['price_minor'] = int(minor)
-                p['price_minor_str'] = ('00%s' % p['price_minor'])[-2:]
+                p['price'] = price_display(p['price'])
 
                 # score
                 if 'score' in p:
@@ -74,10 +70,8 @@ class ProductList:
                     p['score_5'] = math.floor(p['score'] / 20)
 
                 # images
-                if p['p_image'] is not None:
-                    p['p_image'] = '%s%s' % (settings.SALEBOX['IMG']['POSASSETS'], p['p_image'])
-                if p['v_image'] is not None:
-                    p['v_image'] = '%s%s' % (settings.SALEBOX['IMG']['POSASSETS'], p['v_image'])
+                p['p_image'] = image_path(p['p_image'])
+                p['v_image'] = image_path(p['v_image'])
 
         return output
 
