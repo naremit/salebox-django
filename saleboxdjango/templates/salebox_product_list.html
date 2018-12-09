@@ -34,6 +34,7 @@
                 </div>
                 <div class="price">{{ p.price.formatted_html|safe }}</div>
                 {% if p.score and p.score_10 > 0 %}<strong>{{ p.score_10 }}/10</strong>{% endif %}
+                <button onclick="setBasket({{ p.v_id }}, 1, true)">Add to basket</button>
             </div>
         {% endfor %}
     {% else %}
