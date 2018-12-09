@@ -283,14 +283,60 @@ class Product(models.Model):
 
 class ProductRatingCache(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    vote_count = models.IntegerField()
-    score = models.IntegerField()
+    vote_count = models.IntegerField(default=1)
+    score = models.IntegerField(default=50)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'Product Rating Cache'
         verbose_name_plural = 'Product Rating Cache'
+
+
+class ProductVariantRating(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Product Variant Rating'
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.update_cache()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.update_cache()
+
+    def update_cache(self):
+        # create / update product cache
+        o, created = ProductRatingCache \
+                        .objects \
+                        .get_or_create(product=self.product)
+
+        # calculate scores
+        if created:
+            o.vote_count = 1
+            o.score = self.score
+        else:
+            vote_count = 0
+            sum_score = 0
+            ratings = ProductVariantRating \
+                        .objects \
+                        .filter(product=self.product)
+
+            for r in ratings:
+                vote_count += 1
+                sum_score += r.score
+
+            o.vote_count = vote_count
+            o.score = round(sum_score / vote_count)
+
+        # save
+        o.save()
 
 
 class ProductVariant(models.Model):

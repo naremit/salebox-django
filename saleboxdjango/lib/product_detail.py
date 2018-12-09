@@ -27,6 +27,11 @@ def get_product_detail(request, variant_id, variant_slug):
                     .filter(active_flag=True) \
                     .filter(available_on_ecom=True)
 
+    # get user's rating
+    rating = None
+    if request.user.is_authenticated:
+        pass
+
     # build context
     return {
         'in_basket': str(variant.id) in request.session['basket']['basket'],

@@ -69,6 +69,11 @@ class ProductVariantAdmin(admin.ModelAdmin):
     list_filter = ('product__category',)
 
 
+class ProductVariantRatingAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'score', 'created')
+    list_filter = ('user',)
+
+
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
 admin.site.register(BasketWishlist, BasketWishlistAdmin)
@@ -82,3 +87,4 @@ admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductRatingCache, ProductRatingCacheAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
+admin.site.register(ProductVariantRating, ProductVariantRatingAdmin)
