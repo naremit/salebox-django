@@ -70,7 +70,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 
 class ProductVariantRatingAdmin(admin.ModelAdmin):
-    list_display = ('user', 'product', 'score', 'created')
+    list_display = ('user', 'variant', 'score', 'created')
     list_filter = ('user',)
 
 

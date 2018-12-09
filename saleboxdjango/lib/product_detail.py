@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 
 from saleboxdjango.lib.common import image_path, price_display
-from saleboxdjango.models import ProductVariant
+from saleboxdjango.models import ProductVariant, ProductVariantRating
 
 
 def get_product_detail(request, variant_id, variant_slug):
@@ -30,7 +30,12 @@ def get_product_detail(request, variant_id, variant_slug):
     # get user's rating
     rating = None
     if request.user.is_authenticated:
-        pass
+        pvr = ProductVariantRating \
+                .objects \
+                .filter(user=request.user) \
+                .filter(variant=variant)
+        if len(pvr) > 0:
+            rating = pvr[0].score
 
     # build context
     return {
@@ -38,6 +43,7 @@ def get_product_detail(request, variant_id, variant_slug):
         'in_wishlist': variant.id in request.session['basket']['wishlist'],
         'price': price_display(variant.price),
         'product': product,
+        'rating': rating,
         'siblings': siblings,
         'variant': variant
     }
