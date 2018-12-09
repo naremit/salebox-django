@@ -3,9 +3,17 @@ from django.db.models import Sum
 from saleboxdjango.models import BasketWishlist
 
 
-def add_basket_item(request, variant, qty=1):
+def set_basket(request, variant, qty, relative):
     # ensure no duplicates
     clean_basket_wishlist(request)
+
+    # remove corresponding wishlist item
+    w = BasketWishlist \
+            .objects \
+            .filter(variant=variant) \
+            .filter(basket_flag=False)
+    w = basket_auth_filter(request, w)
+    w.delete()
 
     # find if item already exists
     b = BasketWishlist \
@@ -16,8 +24,11 @@ def add_basket_item(request, variant, qty=1):
 
     # update existing / create new
     if len(b) > 0:
-        b[0].quantity += qty
-        b[0].save()
+        b = b[0]
+        if relative:
+            b.quantity += qty
+        else:
+            b.quantity = qty
     else:
         b = BasketWishlist(
             variant=variant,
@@ -28,10 +39,51 @@ def add_basket_item(request, variant, qty=1):
             b.user = request.user
         else:
             b.session = request.session.session_key
+
+    # save / delete
+    b.save()
+    if b.quantity < 1:
+        b.delete()
+
+    # update session
+    update_basket_session(request)
+
+
+def set_wishlist(request, variant, add):
+    # ensure no duplicates
+    clean_basket_wishlist(request)
+
+    # find if item already exists
+    w = BasketWishlist \
+            .objects \
+            .filter(variant=variant) \
+            .filter(basket_flag=False)
+    w = basket_auth_filter(request, w)
+
+    try:
+        w = w[0]
+    except:
+        w = None
+
+    # do add
+    if add and w is None:
+        b = BasketWishlist(
+            variant=variant,
+            quantity=1,
+            basket_flag=False
+        )
+        if request.user.is_authenticated:
+            b.user = request.user
+        else:
+            b.session = request.session.session_key
         b.save()
 
-    # update count
-    request.session['basket_size'] = get_basket_size(request)
+    # do delete
+    if not add and w is not None:
+        w.delete()
+
+    # update session
+    update_basket_session(request)
 
 
 def clean_basket_wishlist(request):
@@ -72,7 +124,10 @@ def clean_basket_wishlist(request):
                     wishlist[c.variant.id] = i
 
     # delete the empty items
-    BasketWishlist.objects.filter(quantity__lte=0).delete()
+    BasketWishlist  \
+        .objects \
+        .filter(quantity__lte=0) \
+        .delete()
 
 
 def basket_auth_filter(request, qs):
@@ -84,7 +139,7 @@ def basket_auth_filter(request, qs):
                  .filter(session=request.session.session_key)
 
 
-def set_basket_session(request):
+def update_basket_session(request):
     data = {
         'count': 0,
         'basket': {},

@@ -1,6 +1,6 @@
 import datetime
 
-from saleboxdjango.lib.basket import set_basket_session
+from saleboxdjango.lib.basket import update_basket_session
 
 
 class SaleboxMiddleware:
@@ -13,12 +13,12 @@ class SaleboxMiddleware:
         request.session.setdefault('basket_refresh', now)
         if now - request.session['basket_refresh'] > 300:  # 5 minutes
             request.session['basket_refresh'] = now
-            set_basket_session(request)
+            update_basket_session(request)
 
         # set basket
         request.session.setdefault('basket', None)
         if request.session['basket'] is None:
-            set_basket_session(request)
+            update_basket_session(request)
 
         # set product_list_order
         request.session.setdefault('product_list_order', 'rating_high_to_low')

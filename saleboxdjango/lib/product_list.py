@@ -1,4 +1,5 @@
 import math
+
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display
 from saleboxdjango.models import Product, ProductRatingCache
@@ -27,51 +28,67 @@ class ProductList:
         self.order = []
         self.where = []
 
-    def go(self):
-        # create output dict
-        output = {
-            'count': {
-                'from': None,
-                'to': None,
-                'total': self.get_count(),
-            },
-            'pagination': None,
-            'products': [],
-        }
+    def go(self, basket):
+        # retrieve from cache
+        #
+        #
+        output = None
 
-        # add products if applicable
-        if output['count']['total'] > 0:
-            output['products'] = self.get_list()
+        # cache doesn't exist, build it...
+        if output is None:
+            # create output dict
+            output = {
+                'count': {
+                    'from': None,
+                    'to': None,
+                    'total': self.get_count(),
+                },
+                'pagination': None,
+                'products': [],
+            }
 
-            # set count numbers
-            output['count']['from'] = (self.offset or 0) + 1
-            output['count']['to'] = output['count']['from'] + len(output['products']) - 1
+            # add products if applicable
+            if output['count']['total'] > 0:
+                output['products'] = self.get_list()
 
-            # pagination
-            if self.include_pagination:
-                self.pagination['num_of_pages'] = math.ceil(output['count']['total'] / self.pagination['items_per_page'])
-                self.pagination['page_range'] = range(1, self.pagination['num_of_pages'] + 1)
-                output['pagination'] = self.pagination
-                self.pagination['has_previous'] = self.pagination['page_num'] > 1
-                if self.pagination['has_previous']:
-                    self.pagination['previous'] = self.pagination['page_num'] - 1
-                self.pagination['has_next'] = self.pagination['page_num'] < self.pagination['num_of_pages']
-                if self.pagination['has_next']:
-                    self.pagination['next'] = self.pagination['page_num'] + 1
+                # set count numbers
+                output['count']['from'] = (self.offset or 0) + 1
+                output['count']['to'] = output['count']['from'] + len(output['products']) - 1
 
-            # modify content
-            for p in output['products']:
-                # price
-                p['price'] = price_display(p['price'])
+                # pagination
+                if self.include_pagination:
+                    self.pagination['num_of_pages'] = math.ceil(output['count']['total'] / self.pagination['items_per_page'])
+                    self.pagination['page_range'] = range(1, self.pagination['num_of_pages'] + 1)
+                    output['pagination'] = self.pagination
+                    self.pagination['has_previous'] = self.pagination['page_num'] > 1
+                    if self.pagination['has_previous']:
+                        self.pagination['previous'] = self.pagination['page_num'] - 1
+                    self.pagination['has_next'] = self.pagination['page_num'] < self.pagination['num_of_pages']
+                    if self.pagination['has_next']:
+                        self.pagination['next'] = self.pagination['page_num'] + 1
 
-                # score
-                if 'score' in p:
-                    p['score_10'] = math.floor(p['score'] / 10)
-                    p['score_5'] = math.floor(p['score'] / 20)
+                # modify content
+                for p in output['products']:
+                    # price
+                    p['price'] = price_display(p['price'])
 
-                # images
-                p['p_image'] = image_path(p['p_image'])
-                p['v_image'] = image_path(p['v_image'])
+                    # score
+                    if 'score' in p:
+                        p['score_10'] = math.floor(p['score'] / 10)
+                        p['score_5'] = math.floor(p['score'] / 20)
+
+                    # images
+                    p['p_image'] = image_path(p['p_image'])
+                    p['v_image'] = image_path(p['v_image'])
+
+        # save to cache
+        #
+        #
+
+        # personalise content
+        for p in output['products']:
+            p['in_basket'] = str(p['v_id']) in basket['basket']
+            p['in_wishlist'] = p['v_id'] in basket['wishlist']
 
         return output
 

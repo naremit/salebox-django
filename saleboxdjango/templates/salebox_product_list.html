@@ -33,8 +33,16 @@
                     <a href="/product/{{ p.v_id }}-{{ p.v_slug }}" style="text-decoration: none">{{ p.p_name }}</a>
                 </div>
                 <div class="price">{{ p.price.formatted_html|safe }}</div>
-                {% if p.score and p.score_10 > 0 %}<strong>{{ p.score_10 }}/10</strong>{% endif %}
-                <button onclick="setBasket({{ p.v_id }}, 1, true)">Add to basket</button>
+                {% if p.score and p.score_10 > 0 %}
+                    <strong>{{ p.score_10 }}/10</strong>
+                {% endif %}
+                <div>
+                {% if p.in_basket %}
+                    <button disabled>In basket</button>
+                {% else %}
+                    <button onclick="setBasket({{ p.v_id }}, 1, true, this)">Add to basket</button>
+                {% endif %}
+                </div>
             </div>
         {% endfor %}
     {% else %}

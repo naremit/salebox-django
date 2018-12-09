@@ -12,6 +12,23 @@ SALEBOX = {
 ```
 
 ```
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                ...
+                'saleboxdjango.context_processor.salebox',
+            ],
+        },
+    },
+]
+```
+
+```
 if not DEBUG:
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 ```
+
