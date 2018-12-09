@@ -19,21 +19,20 @@ def get_product_detail(request, variant_id, variant_slug):
     product.image = image_path(product.image)
     variant.image = image_path(variant.image)
 
+    # get sibling variants
+    siblings = ProductVariant \
+                    .objects \
+                    .filter(product=variant.product) \
+                    .exclude(id=variant.id) \
+                    .filter(active_flag=True) \
+                    .filter(available_on_ecom=True)
+
     # build context
     return {
         'in_basket': str(variant.id) in request.session['basket']['basket'],
         'in_wishlist': variant.id in request.session['basket']['wishlist'],
         'price': price_display(variant.price),
         'product': product,
-        'variant': variant,
-        'variants': get_sibling_variants(variant)
+        'siblings': siblings,
+        'variant': variant
     }
-
-
-def get_sibling_variants(variant):
-    return ProductVariant \
-            .objects \
-            .filter(product=variant.product) \
-            .exclude(id=variant.id) \
-            .filter(active_flag=True) \
-            .filter(available_on_ecom=True) \
