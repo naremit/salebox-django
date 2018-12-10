@@ -47,3 +47,11 @@ def image_path(img):
         )
 
     return img
+
+
+def get_rating_dict(rating):
+    return {
+        'rating': rating if rating else None,
+        'rating_5': round(rating / 20) if rating else None,
+        'rating_10': round(rating / 10) if rating else None,
+    }
