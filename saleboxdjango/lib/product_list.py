@@ -74,8 +74,8 @@ class ProductList:
 
                     # score
                     if 'score' in p:
-                        p['score_10'] = math.floor(p['score'] / 10)
-                        p['score_5'] = math.floor(p['score'] / 20)
+                        p['score_10'] = round(p['score'] / 10)
+                        p['score_5'] = round(p['score'] / 20)
 
                     # images
                     p['p_image'] = image_path(p['p_image'])

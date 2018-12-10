@@ -27,15 +27,15 @@ def get_product_detail(request, variant_id, variant_slug):
                     .filter(active_flag=True) \
                     .filter(available_on_ecom=True)
 
-    # get user's rating
-    rating = None
+    # get user's score
+    score = None
     if request.user.is_authenticated:
         pvr = ProductVariantRating \
                 .objects \
                 .filter(user=request.user) \
                 .filter(variant=variant)
         if len(pvr) > 0:
-            rating = pvr[0].score
+            score = pvr[0].score
 
     # build context
     return {
@@ -43,7 +43,9 @@ def get_product_detail(request, variant_id, variant_slug):
         'in_wishlist': variant.id in request.session['basket']['wishlist'],
         'price': price_display(variant.price),
         'product': product,
-        'rating': rating,
+        'score': score,
+        'score_10': round(score / 10) if score else None,
+        'score_5': round(score / 20) if score else None,
         'siblings': siblings,
         'variant': variant
     }
