@@ -1,7 +1,7 @@
 import math
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
-    dictfetchall, image_path, price_display
+    dictfetchall, image_path, price_display, get_rating_dict
 from saleboxdjango.models import Product, ProductRatingCache
 
 
@@ -72,10 +72,9 @@ class ProductList:
                     # price
                     p['price'] = price_display(p['price'])
 
-                    # score
-                    if 'score' in p:
-                        p['score_10'] = round(p['score'] / 10)
-                        p['score_5'] = round(p['score'] / 20)
+                    # rating
+                    if 'rating' in p:
+                        p['rating'] = get_rating_dict(p['rating'])
 
                     # images
                     p['p_image'] = image_path(p['p_image'])
@@ -150,7 +149,7 @@ class ProductList:
                 'pv.price AS price',
             ]
             if self.include_rating:
-                fields.append('COALESCE(prc.score, 0) AS score')
+                fields.append('COALESCE(prc.rating, 0) AS rating')
                 fields.append('COALESCE(prc.vote_count, 0) AS vote_count')
             sql = sql.replace('[FIELDS]', ', '.join(fields))
 
@@ -194,8 +193,8 @@ class ProductList:
         presets = {
             'price_low_to_high': 'price ASC',
             'price_high_to_low': 'price DESC',
-            'rating_low_to_high': 'score ASC',
-            'rating_high_to_low': 'score DESC',
+            'rating_low_to_high': 'rating ASC',
+            'rating_high_to_low': 'rating DESC',
         }
 
         # error prevention...

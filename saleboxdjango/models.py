@@ -284,7 +284,7 @@ class Product(models.Model):
 class ProductRatingCache(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     vote_count = models.IntegerField(default=1)
-    score = models.IntegerField(default=50)
+    rating = models.IntegerField(default=50)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -296,7 +296,7 @@ class ProductRatingCache(models.Model):
 class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    score = models.IntegerField()
+    rating = models.IntegerField(default=50)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -317,23 +317,23 @@ class ProductVariantRating(models.Model):
                         .objects \
                         .get_or_create(product=self.variant.product)
 
-        # calculate scores
+        # calculate rating
         if created:
             o.vote_count = 1
-            o.score = self.score
+            o.rating = self.rating
         else:
             vote_count = 0
-            sum_score = 0
+            sum_rating = 0
             ratings = ProductVariantRating \
                         .objects \
                         .filter(variant=self.variant)
 
             for r in ratings:
                 vote_count += 1
-                sum_score += r.score
+                sum_rating += r.rating
 
             o.vote_count = vote_count
-            o.score = round(sum_score / vote_count)
+            o.rating = round(sum_rating / vote_count)
 
         # save
         o.save()

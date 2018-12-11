@@ -61,7 +61,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class ProductRatingCacheAdmin(admin.ModelAdmin):
-    list_display = ('product', 'vote_count', 'score')
+    list_display = ('product', 'vote_count', 'rating')
 
 
 class ProductVariantAdmin(admin.ModelAdmin):
@@ -70,7 +70,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 
 class ProductVariantRatingAdmin(admin.ModelAdmin):
-    list_display = ('user', 'variant', 'score', 'created')
+    list_display = ('user', 'variant', 'rating', 'created')
     list_filter = ('user',)
 
 

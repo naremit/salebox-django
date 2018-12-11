@@ -33,6 +33,9 @@
                     <a href="/product/{{ p.v_id }}-{{ p.v_slug }}" style="text-decoration: none">{{ p.p_name }}</a>
                 </div>
                 <div class="price">{{ p.price.formatted_html|safe }}</div>
+                {% if p.rating.10 %}
+                {% include "_rating.html" with readonly=True rating=p.rating.10 %}
+                {% endif %}
                 {% if p.score and p.score_10 > 0 %}
                     <strong>{{ p.score_10 }}/10</strong>
                 {% endif %}
