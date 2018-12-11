@@ -304,18 +304,19 @@ class ProductVariantRating(models.Model):
         verbose_name = 'Product Variant Rating'
 
     def delete(self, *args, **kwargs):
+        product = self.variant.product
         super().delete(*args, **kwargs)
-        self.update_cache()
+        self.update_cache(product)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.update_cache()
+        self.update_cache(self.variant.product)
 
-    def update_cache(self):
+    def update_cache(self, product):
         # create / update product cache
         o, created = ProductRatingCache \
                         .objects \
-                        .get_or_create(product=self.variant.product)
+                        .get_or_create(product=product)
 
         # calculate rating
         if created:
@@ -333,7 +334,10 @@ class ProductVariantRating(models.Model):
                 sum_rating += r.rating
 
             o.vote_count = vote_count
-            o.rating = round(sum_rating / vote_count)
+            if vote_count > 0:
+                o.rating = round(sum_rating / vote_count)
+            else:
+                o.rating = 0
 
         # save
         o.save()

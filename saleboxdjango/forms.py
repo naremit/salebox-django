@@ -9,7 +9,7 @@ class BasketForm(forms.Form):
 
 class RatingForm(forms.Form):
     variant_id = forms.IntegerField()
-    rating = forms.IntegerField(min_value=0, max_value=100)
+    rating = forms.IntegerField(min_value=-1, max_value=100)
 
 
 class WishlistForm(forms.Form):

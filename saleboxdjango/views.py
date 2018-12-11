@@ -29,12 +29,24 @@ def rating_ajax_view(request):
                         .objects \
                         .get(id=form.cleaned_data['variant_id'])
 
-            o, created = ProductVariantRating \
-                            .objects \
-                            .get_or_create(user=request.user, variant=variant)
+            # delete
+            if form.cleaned_data['rating'] == -1:
+                o = ProductVariantRating \
+                        .objects \
+                        .filter(user=request.user) \
+                        .filter(variant=variant)
 
-            o.rating = form.cleaned_data['rating']
-            o.save()
+                if len(o) > 0:
+                    o[0].delete()
+
+            # add
+            else:
+                o, created = ProductVariantRating \
+                                .objects \
+                                .get_or_create(user=request.user, variant=variant)
+
+                o.rating = form.cleaned_data['rating']
+                o.save()
 
     return JsonResponse({})
 

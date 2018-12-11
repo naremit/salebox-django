@@ -38,7 +38,7 @@ def get_product_detail(request, variant_id, variant_slug):
             .objects \
             .filter(product=product)
     if len(prc) > 0:
-        rating['global'] = get_rating_dict(prc[0].score)
+        rating['global'] = get_rating_dict(prc[0].rating)
 
     # get logged in user's rating
     if request.user.is_authenticated:
@@ -47,7 +47,7 @@ def get_product_detail(request, variant_id, variant_slug):
                 .filter(user=request.user) \
                 .filter(variant=variant)
         if len(pvr) > 0:
-            rating['logged_in_user'] = get_rating_dict(pvr[0].score)
+            rating['logged_in_user'] = get_rating_dict(pvr[0].rating)
 
     # build context
     return {
