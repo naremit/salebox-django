@@ -148,7 +148,6 @@ class EmailValidator(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     action = models.CharField(max_length=1, choices=ACTION_CHOICES)
     hash_string = models.CharField(max_length=64, default='')
-    used_flag = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

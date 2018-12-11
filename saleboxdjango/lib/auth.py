@@ -11,8 +11,8 @@ def create_email_validator(action, user=None):
     return ev.get_hash()
 
 
-def retrieve_email_validator(action, hash, timeout_mins=1440):
-    # remove old
+def retrieve_email_validator(action, hash, remove_if_successful=False, timeout_mins=1440):
+    # remove expired
     cutoff = timezone.now() - timezone.timedelta(minutes=timeout_mins)
     EmailValidator \
         .objects \
@@ -20,10 +20,27 @@ def retrieve_email_validator(action, hash, timeout_mins=1440):
         .filter(created__lt=cutoff) \
         .delete()
 
-    # find new
-    #
-    #
-    #
+    # retrieve hash from DB
+    try:
+        id = hash[0:len(hash) - 64]
+        hash_string = hash[-64:]
+        ev = EmailValidator \
+                .objects \
+                .filter(action=action) \
+                .filter(id=hash[0:len(hash) - 64]) \
+                .filter(hash_string=hash[-64:])[0]
+
+        user = ev.user
+    except:
+        return (False, None)
+
+    # remove_if_successful
+    if remove_if_successful:
+        ev.delete()
+
+    # return
+    return (True, user)
+
 
 def salebox_login(request, username, password):
     # get all basket items collected as an anonymous visitor

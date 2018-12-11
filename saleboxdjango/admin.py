@@ -37,7 +37,7 @@ class DiscountGroupAdmin(admin.ModelAdmin):
 
 
 class EmailValidatorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'created', 'used_flag')
+    list_display = ('user', 'action', 'created')
 
 
 class LastUpdateAdmin(admin.ModelAdmin):
