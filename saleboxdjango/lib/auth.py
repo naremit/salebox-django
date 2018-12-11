@@ -5,13 +5,7 @@ from saleboxdjango.lib.basket import clean_basket_wishlist
 from saleboxdjango.models import BasketWishlist, EmailValidator
 
 
-def create_email_validator(action, user=None):
-    ev = EmailValidator(user=user, action=action)
-    ev.save()
-    return ev.get_hash()
-
-
-def retrieve_email_validator(action, hash, remove_if_successful=False, timeout_mins=1440):
+def get_email_validator(action, hash, remove_if_successful=False, timeout_mins=1440):
     # remove expired
     cutoff = timezone.now() - timezone.timedelta(minutes=timeout_mins)
     EmailValidator \
@@ -40,6 +34,12 @@ def retrieve_email_validator(action, hash, remove_if_successful=False, timeout_m
 
     # return
     return (True, user)
+
+
+def set_email_validator(action, user=None):
+    ev = EmailValidator(user=user, action=action)
+    ev.save()
+    return ev.get_hash()
 
 
 def salebox_login(request, username, password):

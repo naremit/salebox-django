@@ -1,5 +1,7 @@
 import datetime
 
+from django.conf import settings
+
 from saleboxdjango.lib.basket import update_basket_session
 
 
@@ -21,7 +23,10 @@ class SaleboxMiddleware:
             update_basket_session(request)
 
         # set product_list_order
-        request.session.setdefault('product_list_order', 'rating_high_to_low')
+        request.session.setdefault(
+            'product_list_order',
+            settings.SALEBOX['SESSION']['DEFAULT_PRODUCT_LIST_ORDER']
+        )
         if 'product_list_order' in request.GET:
             valid_orders = [
                 'price_low_to_high',
