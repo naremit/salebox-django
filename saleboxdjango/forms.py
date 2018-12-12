@@ -4,7 +4,7 @@ from django import forms
 class BasketForm(forms.Form):
     variant_id = forms.IntegerField()
     quantity = forms.IntegerField()
-    relative = forms.BooleanField()
+    relative = forms.BooleanField(required=False)
 
 
 class RatingForm(forms.Form):

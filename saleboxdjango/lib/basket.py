@@ -1,16 +1,24 @@
 from django.db.models import Sum
+from django.template.loader import render_to_string
 
 from saleboxdjango.lib.common import image_path_option, price_display
 from saleboxdjango.models import BasketWishlist
 
 
-def get_basket_wishlist(request, basket=True):
+def get_basket_wishlist_html(request, basket=True, default_max_qty=20):
+    context = {
+        'basket_detail': get_basket_wishlist(request, basket, default_max_qty)
+    }
+    return render_to_string('_basket.html', context)
+
+
+def get_basket_wishlist(request, basket=True, default_max_qty=20):
     qs = basket_auth_filter(
         request,
         BasketWishlist \
             .objects \
             .filter(basket_flag=basket) \
-            .order_by('last_update') \
+            .order_by('variant__product__name', 'variant__name') \
             .select_related(
                 'variant',
                 'variant__product',
@@ -28,7 +36,7 @@ def get_basket_wishlist(request, basket=True):
             ),
 
             # prices
-            'price': price_display(b.variant.price),
+            'price': price_display(b.variant.price * b.quantity),
 
             # category
             'c_id': b.variant.product.category.id,
@@ -53,7 +61,9 @@ def get_basket_wishlist(request, basket=True):
             'int_4': b.variant.int_4,
 
             # basket
+            'id': b.id,
             'quantity': b.quantity,
+            'quantity_range': range(1, max(b.quantity, default_max_qty) + 1),
             'weight': b.weight,
         })
 

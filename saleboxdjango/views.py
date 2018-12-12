@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 
 from saleboxdjango.forms import BasketForm, RatingForm, WishlistForm
-from saleboxdjango.lib.basket import set_basket, set_wishlist
+from saleboxdjango.lib.basket import get_basket_wishlist_html, \
+    set_basket, set_wishlist
 from saleboxdjango.models import ProductVariant, ProductVariantRating
 
 
@@ -17,6 +18,7 @@ def basket_ajax_view(request):
             )
 
     return JsonResponse({
+        'html': get_basket_wishlist_html(request, True, 25),
         'count': request.session['basket']['count']
     })
 
@@ -61,4 +63,6 @@ def wishlist_ajax_view(request):
                 form.cleaned_data['add']
             )
 
-    return JsonResponse({})
+    return JsonResponse({
+        'html': get_basket_wishlist_html(request, False),
+    })
