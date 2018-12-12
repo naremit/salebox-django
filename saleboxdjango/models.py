@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -40,7 +40,7 @@ class AttributeItem(models.Model):
 
 
 class BasketWishlist(models.Model):
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
     session = models.CharField(max_length=32, blank=True, null=True)
     basket_flag = models.BooleanField(default=True)
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
@@ -145,7 +145,7 @@ class EmailValidator(models.Model):
         ('f', 'Forgot Password'),
         ('r', 'Register'),
     )
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
     action = models.CharField(max_length=1, choices=ACTION_CHOICES)
     hash_string = models.CharField(max_length=64, default='')
     created = models.DateTimeField(auto_now_add=True)
@@ -320,7 +320,7 @@ class ProductRatingCache(models.Model):
 
 class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     rating = models.IntegerField(default=50)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
