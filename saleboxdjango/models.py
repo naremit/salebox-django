@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -148,6 +149,7 @@ class EmailValidator(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
     action = models.CharField(max_length=1, choices=ACTION_CHOICES)
     hash_string = models.CharField(max_length=64, default='')
+    data = JSONField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
