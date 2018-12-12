@@ -25,19 +25,20 @@ def get_email_validator(action, hash, remove_if_successful=False, timeout_mins=1
                 .filter(hash_string=hash[-64:])[0]
 
         user = ev.user
+        data = ev.data
     except:
-        return (False, None)
+        return (False, None, None)
 
     # remove_if_successful
     if remove_if_successful:
         ev.delete()
 
     # return
-    return (True, user)
+    return (True, user, data)
 
 
-def set_email_validator(action, user=None):
-    ev = EmailValidator(user=user, action=action)
+def set_email_validator(action, user=None, data=None):
+    ev = EmailValidator(user=user, action=action, data=data)
     ev.save()
     return ev.get_hash()
 
