@@ -7,9 +7,14 @@ from saleboxdjango.models import BasketWishlist
 
 def get_basket_wishlist_html(request, basket=True, default_max_qty=20):
     context = {
-        'basket_detail': get_basket_wishlist(request, basket, default_max_qty)
+        'basket_detail': get_basket_wishlist(request, basket, default_max_qty),
+        'request': request
     }
-    return render_to_string('_basket.html', context)
+
+    if basket:
+        return render_to_string('_basket.html', context)
+    else:
+        return render_to_string('_wishlist.html', context)
 
 
 def get_basket_wishlist(request, basket=True, default_max_qty=20):
@@ -215,6 +220,28 @@ def basket_auth_filter(request, qs):
     else:
         return qs.filter(user__isnull=True) \
                  .filter(session=request.session.session_key)
+
+
+def switch_basket_wishlist(request, variant, destination):
+    # ensure no duplicates
+    clean_basket_wishlist(request)
+
+    if destination in ['basket', 'wishlist']:
+        # get basket entry
+        b = BasketWishlist \
+                .objects \
+                .filter(variant=variant) \
+                .filter(basket_flag=True if destination == 'wishlist' else False)
+        b = basket_auth_filter(request, b)
+
+        # switch it
+        if len(b) > 0:
+            b[0].basket_flag = True if destination == 'basket' else False
+            b[0].save()
+
+    # update session
+    update_basket_session(request)
+
 
 
 def update_basket_session(request):
