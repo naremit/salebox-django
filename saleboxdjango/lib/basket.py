@@ -1,6 +1,74 @@
 from django.db.models import Sum
 
+from saleboxdjango.lib.common import image_path_option, price_display
 from saleboxdjango.models import BasketWishlist
+
+
+def get_basket_wishlist(request, basket=True):
+    qs = basket_auth_filter(
+        request,
+        BasketWishlist \
+            .objects \
+            .filter(basket_flag=basket) \
+            .order_by('last_update') \
+            .select_related(
+                'variant',
+                'variant__product',
+                'variant__product__category'
+            )
+    )
+
+    contents = []
+    for b in qs:
+        contents.append({
+            # image
+            'image': image_path_option(
+                b.variant.image,
+                b.variant.product.image
+            ),
+
+            # prices
+            'price': price_display(b.variant.price),
+
+            # category
+            'c_id': b.variant.product.category.id,
+
+            # product
+            'p_id': b.variant.product.id,
+            'p_name': b.variant.product.name,
+            'p_slug': b.variant.product.slug,
+
+            # variant
+            'v_id': b.variant.id,
+            'v_name': b.variant.name,
+            'v_slug': b.variant.slug,
+            'v_shipping_weight': b.variant.shipping_weight,
+            'string_1': b.variant.string_1,
+            'string_2': b.variant.string_2,
+            'string_3': b.variant.string_3,
+            'string_4': b.variant.string_4,
+            'int_1': b.variant.int_1,
+            'int_2': b.variant.int_2,
+            'int_3': b.variant.int_3,
+            'int_4': b.variant.int_4,
+
+            # basket
+            'quantity': b.quantity,
+            'weight': b.weight,
+        })
+
+    # TODO
+    # add sale-price stuff here
+
+    # add price total
+    total = 0
+    for c in contents:
+        total += c['price']['price']
+
+    return {
+        'contents': contents,
+        'total': price_display(total),
+    }
 
 
 def set_basket(request, variant, qty, relative):

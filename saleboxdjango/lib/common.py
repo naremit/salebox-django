@@ -49,6 +49,10 @@ def image_path(img):
     return img
 
 
+def image_path_option(img1, img2):
+    return image_path(img1) if img1 is not None else image_path(img2)
+
+
 def get_rating_dict(rating):
     return {
         '100': rating if rating else None,
