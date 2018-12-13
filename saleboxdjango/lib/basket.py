@@ -149,17 +149,21 @@ def set_wishlist(request, variant, add):
         w = None
 
     # do add
-    if add and w is None:
-        b = BasketWishlist(
-            variant=variant,
-            quantity=1,
-            basket_flag=False
-        )
-        if request.user.is_authenticated:
-            b.user = request.user
+    if add:
+        if w is None:
+            b = BasketWishlist(
+                variant=variant,
+                quantity=1,
+                basket_flag=False
+            )
+            if request.user.is_authenticated:
+                b.user = request.user
+            else:
+                b.session = request.session.session_key
+            b.save()
         else:
-            b.session = request.session.session_key
-        b.save()
+            b.quantity = 1
+            b.save()
 
     # do delete
     if not add and w is not None:
@@ -237,6 +241,8 @@ def switch_basket_wishlist(request, variant, destination):
         # switch it
         if len(b) > 0:
             b[0].basket_flag = True if destination == 'basket' else False
+            if not b[0].basket_flag:
+                b[0].quantity = 1
             b[0].save()
 
     # update session
