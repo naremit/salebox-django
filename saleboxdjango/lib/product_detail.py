@@ -51,8 +51,8 @@ def get_product_detail(request, variant_id, variant_slug):
 
     # build context
     return {
-        'in_basket': str(variant.id) in request.session['basket']['basket'],
-        'in_wishlist': variant.id in request.session['basket']['wishlist'],
+        'in_basket': str(variant.id) in request.session['basket']['basket']['contents'],
+        'in_wishlist': variant.id in request.session['basket']['wishlist']['contents'],
         'price': price_display(variant.price),
         'product': product,
         'rating': rating,

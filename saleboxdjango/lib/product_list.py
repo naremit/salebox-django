@@ -87,9 +87,9 @@ class ProductList:
         # personalise content
         for p in output['products']:
             p['in_basket'] = str(p['v_id']) in \
-                request.session['basket']['basket']
+                request.session['basket']['basket']['contents']
             p['in_wishlist'] = p['v_id'] in \
-                request.session['basket']['wishlist']
+                request.session['basket']['wishlist']['contents']
 
         return output
 

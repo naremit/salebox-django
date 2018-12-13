@@ -20,7 +20,7 @@ def basket_ajax_view(request):
 
     return JsonResponse({
         'basketHtml': get_basket_wishlist_html(request, True, 25),
-        'basketCount': request.session['basket']['count']
+        'basketCount': request.session['basket']['basket']['count']
     })
 
 
@@ -66,8 +66,9 @@ def switch_basket_wishlist_ajax_view(request):
 
     return JsonResponse({
         'basketHtml': get_basket_wishlist_html(request, True, 25),
-        'basketCount': request.session['basket']['count'],
+        'basketCount': request.session['basket']['basket']['count'],
         'wishlistHtml': get_basket_wishlist_html(request, False),
+        'wishlistCount': request.session['basket']['wishlist']['count']
     })
 
 
@@ -83,4 +84,5 @@ def wishlist_ajax_view(request):
 
     return JsonResponse({
         'wishlistHtml': get_basket_wishlist_html(request, False),
+        'wishlistCount': request.session['basket']['wishlist']['count']
     })
