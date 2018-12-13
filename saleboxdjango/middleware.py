@@ -2,6 +2,7 @@ import datetime
 
 from django.conf import settings
 
+from saleboxdjango.lib.auth import salebox_logout
 from saleboxdjango.lib.basket import update_basket_session
 
 
@@ -10,6 +11,10 @@ class SaleboxMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # kick out inactive users
+        if request.user.is_authenticated and not request.user.is_active:
+            salebox_logout(request)
+
         # set basket_refresh
         now = datetime.datetime.now().timestamp()
         request.session.setdefault('basket_refresh', now)
