@@ -78,6 +78,18 @@ class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_filter = ('user',)
 
 
+class UserAddressAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'full_name',
+        'address_1',
+        'address_2',
+        'country_state',
+        'country',
+        'postcode'
+    )
+
+
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
 admin.site.register(BasketWishlist, BasketWishlistAdmin)
@@ -93,3 +105,4 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductRatingCache, ProductRatingCacheAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(ProductVariantRating, ProductVariantRatingAdmin)
+admin.site.register(UserAddress, UserAddressAdmin)

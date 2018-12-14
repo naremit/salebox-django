@@ -443,3 +443,47 @@ class LastUpdate(models.Model):
     class Meta:
         ordering = ['code']
         verbose_name = 'Last Update'
+
+
+class UserAddress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    default = models.BooleanField(default=False)
+    full_name = models.CharField(max_length=150)
+    address_1 = models.CharField(max_length=150)
+    address_2 = models.CharField(max_length=150, blank=True, null=True)
+    address_3 = models.CharField(max_length=150, blank=True, null=True)
+    address_4 = models.CharField(max_length=150, blank=True, null=True)
+    address_5 = models.CharField(max_length=150, blank=True, null=True)
+    country_state = models.ForeignKey(CountryState, blank=True, null=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
+    postcode = models.CharField(max_length=12, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '%s, %s...' % (self.full_name, self.address_1)
+
+    class Meta:
+        ordering = ['full_name', 'address_1']
+        verbose_name = 'User Address'
+
+    def delete(self, *args, **kwargs):
+        user = self.user
+        super().save(*args, **kwargs)
+        self.ensure_one_default_exists(user)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.ensure_one_default_exists(self.user)
+
+    def ensure_one_default_exists(self, user):
+        siblings = UserAddress \
+                    .objects \
+                    .filter(user=self.user)
+
+        if len(siblings) > 0 and siblings.all().filter(default=True) != 1:
+            first = siblings.all().order_by('-last_update')[0]
+            siblings.all().exclude(id=first.id).update(default=False)
+            if not first.default:
+                first.default = True
+                first.save()
