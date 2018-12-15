@@ -446,8 +446,14 @@ class LastUpdate(models.Model):
 
 
 class UserAddress(models.Model):
+    ADDRESS_TYPE_CHOICES = (
+        ('d', 'Delivery'),
+        ('r', 'Receipt')
+    )
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
+    address_type = models.CharField(max_length=1, default='d')
     full_name = models.CharField(max_length=150)
     address_1 = models.CharField(max_length=150)
     address_2 = models.CharField(max_length=150, blank=True, null=True)
@@ -469,17 +475,19 @@ class UserAddress(models.Model):
 
     def delete(self, *args, **kwargs):
         user = self.user
+        address_type = sale.address_type
         super().save(*args, **kwargs)
-        self.ensure_one_default_exists(user)
+        self.ensure_one_default_exists(user, address_type)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.ensure_one_default_exists(self.user)
+        self.ensure_one_default_exists(self.user, self.address_type)
 
-    def ensure_one_default_exists(self, user):
+    def ensure_one_default_exists(self, user, address_type):
         siblings = UserAddress \
                     .objects \
-                    .filter(user=self.user)
+                    .filter(user=user) \
+                    .filter(address_type=address_type)
 
         if len(siblings) > 0 and siblings.all().filter(default=True) != 1:
             first = siblings.all().order_by('-last_update')[0]
@@ -487,3 +495,38 @@ class UserAddress(models.Model):
             if not first.default:
                 first.default = True
                 first.save()
+
+    def get_address_list(self):
+        address = []
+
+        # first lines
+        for f in ['address_1', 'address_2', 'address_3', 'address_4', 'address_5']:
+            s = getattr(self, f, None)
+            if s is not None and len(s.strip()) > 0:
+                address.append(s)
+
+        # county + state
+        if self.country_state is not None:
+            address.append(self.country_state.name)
+        if self.country is not None:
+            address.append(self.country.name)
+
+        # postcode
+        s = getattr(self, 'postcode', None)
+        if s is not None and len(s.strip()) > 0:
+            address.append(s)
+
+        return address
+
+    def get_address_html(self, include_commas=True):
+        address = self.get_address_list()
+        if include_commas:
+            address = ['<span>%s,</span>' % a for a in address]
+            address[-1] = address[-1].replace(',</span>', '</span>')
+        else:
+            address = ['<span>%s</span>' % a for a in address]
+        return ''.join(address)
+
+    def get_address_str(self, delimeter=', ',):
+        address = self.get_address_list()
+        return delimeter.join(address)
