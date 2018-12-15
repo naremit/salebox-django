@@ -470,13 +470,13 @@ class UserAddress(models.Model):
         return '%s, %s...' % (self.full_name, self.address_1)
 
     class Meta:
-        ordering = ['full_name', 'address_1']
+        ordering = ['-default', 'full_name', 'address_1']
         verbose_name = 'User Address'
 
     def delete(self, *args, **kwargs):
         user = self.user
-        address_type = sale.address_type
-        super().save(*args, **kwargs)
+        address_type = self.address_type
+        super().delete(*args, **kwargs)
         self.ensure_one_default_exists(user, address_type)
 
     def save(self, *args, **kwargs):
