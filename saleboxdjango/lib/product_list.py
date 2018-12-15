@@ -4,6 +4,10 @@ from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
 from saleboxdjango.models import Product, ProductRatingCache
 
+"""
+
+"""
+
 
 class ProductList:
     def __init__(self):
@@ -18,13 +22,14 @@ class ProductList:
             'has_next': False,
         }
 
+        self.member_discount_active = False
+        self.member_discount_rate = 0
+
         self.include_rating = False
         self.offset = None
         self.limit = None
-        self.min_orig_price = None
-        self.max_orig_price = None
-        self.min_sale_price = None
-        self.max_sale_price = None
+        self.min_price = None
+        self.max_price = None
         self.order = []
         self.where = []
 
@@ -70,7 +75,8 @@ class ProductList:
                 # modify content
                 for p in output['products']:
                     # price
-                    p['price'] = price_display(p['price'])
+                    p['orig_price'] = price_display(p['orig_price'])
+                    p['sale_price'] = price_display(p['sale_price'])
 
                     # rating
                     if 'rating' in p:
@@ -146,8 +152,17 @@ class ProductList:
                 'pv.int_2 AS v_int_2',
                 'pv.int_3 AS v_int_3',
                 'pv.int_4 AS v_int_4',
-                'pv.price AS price',
+                'pv.price AS orig_price'
             ]
+
+            # sale caclulation
+            if self.member_discount_active and self.member_discount_rate > 0:
+                tmp = (100 - self.member_discount_rate) / 100
+                fields.append('CASE pv.member_discount_applicable WHEN true THEN pv.price * %s ELSE pv.price END AS sale_price' % tmp)
+            else:
+                fields.append('pv.price AS sale_price')
+
+            # rating
             if self.include_rating:
                 fields.append('COALESCE(prc.rating, 0) AS rating')
                 fields.append('COALESCE(prc.vote_count, 0) AS vote_count')
@@ -177,11 +192,11 @@ class ProductList:
             'p.active_flag = true'
         ]
 
-        # min / max orig price
-        if self.min_orig_price is not None:
-            where.append('pv.price >= %s' % self.min_orig_price)
-        if self.max_orig_price is not None:
-            where.append('pv.price <= %s' % self.max_orig_price)
+        # min / max price
+        if self.min_price is not None:
+            where.append('pv.sale_price >= %s' % self.min_price)
+        if self.max_price is not None:
+            where.append('pv.sale_price <= %s' % self.max_price)
 
         # compile sql
         return 'WHERE %s' % ' AND '.join(where)
@@ -191,8 +206,8 @@ class ProductList:
 
     def set_order_preset(self, preset):
         presets = {
-            'price_low_to_high': 'price ASC',
-            'price_high_to_low': 'price DESC',
+            'price_low_to_high': 'sale_price ASC',
+            'price_high_to_low': 'sale_price DESC',
             'rating_low_to_high': 'rating ASC',
             'rating_high_to_low': 'rating DESC',
         }
@@ -203,13 +218,20 @@ class ProductList:
 
         self.order.append(presets[preset])
 
-    def set_orig_price_filter(self, mn=None, mx=None):
-        self.min_orig_price = mn
-        self.max_orig_price = mx
+    def set_price_filter(self, mn=None, mx=None):
+        self.min_price = mn
+        self.max_price = mx
 
     def set_limit_offset(self, limit=None, offset=None):
         self.limit = limit
         self.offset = offset
+
+    def set_member_discount(self, rate):
+        if rate < 0 or rate > 100:
+            raise 'Invalid rate'
+
+        self.member_discount_active = True
+        self.member_discount_rate = rate
 
     def set_pagination(self, page_num, items_per_page, url_prefix):
         self.include_pagination = True
