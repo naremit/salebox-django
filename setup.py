@@ -3,13 +3,13 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(
-    name='salebox-ecom-django',
+    name='salebox-django',
     version='0.0.1',
     author=u'Jon Combe',
     author_email='jon@getsalebox.com',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['django-mptt', 'reqeusts'],
+    install_requires=['django-mptt', 'requests'],
     url='https://getsalebox.com',
     license='BSD licence, see LICENCE file',
     description='Django ecommerce powered by Salebox',
