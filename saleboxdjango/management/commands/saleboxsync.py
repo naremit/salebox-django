@@ -30,101 +30,110 @@ class Command(BaseCommand):
         for code in sync_from_dict:
             post['lu_%s' % code] = sync_from_dict[code]
 
+        print()
+        print('Attempting sync with the following parameters:')
         pprint(sync_from_dict)
+        print()
 
         # do request
         url = '%s/api/pos/v2/sync' % settings.SALEBOX['API']['URL']
-        r = requests.post(url, data=post)
-
-        # handle response
         try:
-            response = r.json()
-            # pprint(response)
-            if response['status'] == 'OK':
-                for i, value in enumerate(response['sync']):
-                    if value['code'] == 'attribute':
-                        self.sync_attribute(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'attribute_item':
-                        self.sync_attribute_item(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'country':
-                        self.sync_country(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'country_state':
-                        self.sync_country_state(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'discount_seasonal_group':
-                        self.sync_discount_seasonal_group(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'discount_seasonal_ruleset':
-                        self.sync_discount_seasonal_ruleset(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'member':
-                        self.sync_member(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'member_group':
-                        self.sync_member_group(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'product':
-                        self.sync_product(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'product_category':
-                        self.sync_product_category(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    elif value['code'] == 'product_variant':
-                        self.sync_product_variant(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
-                    else:
-                        print('Error: %s' % value['code'])
-
-                return response['resync_now']
-                # return False
+            r = requests.post(url, data=post)
+            have_response = True
         except:
+            print('Something went wrong: ConnectionError')
+            have_response = False
+
+        try:
+            if have_response:
+                response = r.json()
+                # pprint(response)
+                if response['status'] == 'OK':
+                    for i, value in enumerate(response['sync']):
+                        if value['code'] == 'attribute':
+                            self.sync_attribute(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'attribute_item':
+                            self.sync_attribute_item(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'country':
+                            self.sync_country(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'country_state':
+                            self.sync_country_state(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'discount_seasonal_group':
+                            self.sync_discount_seasonal_group(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'discount_seasonal_ruleset':
+                            self.sync_discount_seasonal_ruleset(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'member':
+                            self.sync_member(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'member_group':
+                            self.sync_member_group(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'product':
+                            self.sync_product(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'product_category':
+                            self.sync_product_category(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'product_variant':
+                            self.sync_product_variant(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        else:
+                            print('Error: %s' % value['code'])
+
+                    return response['resync_now']
+                    # return False
+        except:
+            print('Something went wrong')
             return False
 
     def get_sync_from_dict(self):
@@ -183,6 +192,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x Attribute' % len(data))
         except:
             pass
 
@@ -202,6 +213,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x AttributeItem' % len(data))
         except:
             pass
 
@@ -222,6 +235,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x Country' % len(data))
         except:
             pass
 
@@ -241,6 +256,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x CountryState' % len(data))
         except:
             pass
 
@@ -353,6 +370,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x Member' % len(data))
         except:
             pass
 
@@ -374,6 +393,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x MemberGroup' % len(data))
         except:
             pass
 
@@ -413,6 +434,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x Product' % len(data))
         except:
             pass
 
@@ -453,6 +476,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x ProductCategory' % len(data))
         except:
             pass
 
@@ -516,6 +541,8 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            print('%s x ProductVariant' % len(data))
         except:
             pass
 
