@@ -2,45 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 
 from saleboxdjango.lib.basket import clean_basket_wishlist
-from saleboxdjango.models import BasketWishlist, EmailValidator
-
-
-def get_email_validator(action, hash, remove_if_successful=False, timeout_mins=1440):
-    # remove expired
-    cutoff = timezone.now() - timezone.timedelta(minutes=timeout_mins)
-    EmailValidator \
-        .objects \
-        .filter(action=action) \
-        .filter(created__lt=cutoff) \
-        .delete()
-
-    # retrieve hash from DB
-    try:
-        id = hash[0:len(hash) - 64]
-        hash_string = hash[-64:]
-        ev = EmailValidator \
-                .objects \
-                .filter(action=action) \
-                .filter(id=hash[0:len(hash) - 64]) \
-                .filter(hash_string=hash[-64:])[0]
-
-        user = ev.user
-        data = ev.data
-    except:
-        return (False, None, None)
-
-    # remove_if_successful
-    if remove_if_successful:
-        ev.delete()
-
-    # return
-    return (True, user, data)
-
-
-def set_email_validator(action, user=None, data=None):
-    ev = EmailValidator(user=user, action=action, data=data)
-    ev.save()
-    return ev.get_hash()
+from saleboxdjango.models import BasketWishlist
 
 
 def salebox_login(request, username, password):

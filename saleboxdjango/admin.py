@@ -36,10 +36,6 @@ class DiscountGroupAdmin(admin.ModelAdmin):
     list_filter = ('group_type',)
 
 
-class EmailValidatorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'created')
-
-
 class LastUpdateAdmin(admin.ModelAdmin):
     list_display = ('code', 'value')
 
@@ -98,7 +94,6 @@ admin.site.register(BasketWishlist, BasketWishlistAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(CountryState, CountryStateAdmin)
 admin.site.register(DiscountGroup, DiscountGroupAdmin)
-admin.site.register(EmailValidator, EmailValidatorAdmin)
 admin.site.register(LastUpdate, LastUpdateAdmin)
 admin.site.register(MemberGroup, MemberGroupAdmin)
 admin.site.register(Member, MemberAdmin)

@@ -141,30 +141,6 @@ class DiscountRuleset(models.Model):
         pass
 
 
-class EmailValidator(models.Model):
-    ACTION_CHOICES = (
-        ('e', 'Change Email'),
-        ('f', 'Forgot Password'),
-        ('r', 'Register'),
-    )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
-    action = models.CharField(max_length=1, choices=ACTION_CHOICES)
-    hash_string = models.CharField(max_length=64, default='')
-    data = JSONField(blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return '%s%s' % (self.id, self.action)
-
-    def get_hash(self):
-        return '%s%s' % (self.id, self.hash_string)
-
-    def save(self, *args, **kwargs):
-        if len(self.hash_string) < 64:
-            self.hash_string = '%s%s' % (uuid.uuid4().hex, uuid.uuid4().hex)
-        super().save(*args, **kwargs)
-
-
 class MemberGroup(models.Model):
     name = models.CharField(max_length=50)
     flat_discount_percentage = models.FloatField(default=0)
