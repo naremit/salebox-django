@@ -35,11 +35,12 @@ class SaleboxMiddleware:
         # so we can populate their cart on login
         if not request.user.is_authenticated:
             key = request.session.session_key
-            if 'prev_session_key' in request.session:
-                if request.session['prev_session_key'] != key:
+            if key is not None:
+                if 'prev_session_key' in request.session:
+                    if request.session['prev_session_key'] != key:
+                        request.session['prev_session_key'] = key
+                else:
                     request.session['prev_session_key'] = key
-            else:
-                request.session['prev_session_key'] = key
 
         # set product_list_order
         request.session.setdefault(
