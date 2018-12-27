@@ -1,0 +1,5 @@
+{% if readonly %}
+    <div class="rating rating-{{ rating }}"></div>
+{% else %}
+    <div class="rating rating-vote rating-{{ rating }}" data-rating="{{ rating }}" data-id="{{ id }}"></div>
+{% endif %}

@@ -1,0 +1,23 @@
+{% if products.count.total > 0 %}
+    <div class="pagination">
+        {% if products.pagination.has_previous %}
+            <a href="{{ products.pagination.url_prefix }}/{% if products.pagination.previous > 1 %}{{ products.pagination.previous }}/{% endif %}">&laquo;</a>
+        {% else %}
+            <span>&laquo;</span>
+        {% endif %}
+
+        {% for i in products.pagination.page_range %}
+            {% if i == products.pagination.page_num %}
+                <span>{{ i }}</span>
+            {% else %}
+                <a href="{{ products.pagination.url_prefix }}/{% if i > 1 %}{{ i }}/{% endif %}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.pagination.has_next %}
+            <a href="{{ products.pagination.url_prefix }}/{% if products.pagination.next > 1 %}{{ products.pagination.next }}/{% endif %}">&raquo;</a>
+        {% else %}
+            <span>&raquo;</span>
+        {% endif %}
+    </div>
+{% endif %}

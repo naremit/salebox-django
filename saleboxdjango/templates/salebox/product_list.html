@@ -1,0 +1,29 @@
+{% load humanize %}
+
+<hr>
+
+<div style="overflow: hidden">
+    {% if products.count.total > 0 %}
+    <span>Showing {{ products.count.from }} {% if products.count.total > 1 %}to {{ products.count.to }}{% endif %} of {{ products.count.total }}</span>
+    {% endif %}
+
+    <select style="float: right" onchange="setOrder(this.value)">
+        {% for o in order.options %}
+            <option value="{{ o.code }}"{% if o.code == order.current %} selected{% endif %}>{{ o.label }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<hr>
+
+<div class="product_list">
+    {% if products.count.total > 0 %}
+        {% for p in products.products %}
+            {% include 'salebox/product_list_product.html' %}
+        {% endfor %}
+    {% else %}
+        <p>No products found</p>
+    {% endif %}
+</div>
+
+<hr>

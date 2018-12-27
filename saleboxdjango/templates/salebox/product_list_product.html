@@ -1,0 +1,30 @@
+<div class="product">
+    <a href="/product/{{ p.v_id }}-{{ p.v_slug }}" style="text-decoration: none">
+        <div class="img">
+            {% if p.p_image or p.v_image %}
+                <img src="{% if p.v_image %}{{ p.v_image }}{% else %}{{ p.p_image }}{% endif %}">
+            {% else %}
+                <div>No picture available</div>
+            {% endif %}
+        </div>
+    </a>
+    <div>
+        <a href="/product/{{ p.v_id }}-{{ p.v_slug }}" style="text-decoration: none">{{ p.p_name }}</a>
+    </div>
+    {% if p.sale_price != p.orig_price %}
+        <div class="price price-orig" style="text-decoration: line-through;">{{ p.orig_price.formatted_html|safe }}</div>
+    {% endif %}
+    <div class="price">{{ p.sale_price.formatted_html|safe }}</div>
+
+    {% if p.rating.10 %}
+        {% include "_rating.html" with readonly=True rating=p.rating.10 %}
+    {% endif %}
+
+    <div>
+    {% if p.in_basket %}
+        <button disabled>In basket</button>
+    {% else %}
+        <button onclick="setBasket({{ p.v_id }}, 1, true, this)">Add to basket</button>
+    {% endif %}
+    </div>
+</div>

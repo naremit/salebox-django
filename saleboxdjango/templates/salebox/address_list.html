@@ -1,0 +1,29 @@
+{% spaceless %}
+{% if addresses %}
+    <table>
+        <tbody>
+            {% for a in addresses %}
+            <tr>
+                <td>
+                    {% if a.default %}<span>&#10003;</span>{% endif %}
+                </td>
+                <td>
+                    <strong>{{ a.full_name }}</strong>
+                    <br />
+                    {{ a.get_address_html | safe }}
+                </td>
+                <td>
+                    {% if not a.default %}
+                        <span onclick="setAddressDefault({{ a.id }})" style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">make default</span>
+                        <span> &nbsp; | &nbsp; </span>
+                    {% endif %}
+                    <span onclick="setAddressRemove({{ a.id }})" style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">remove</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <span>No addresses registered</span>
+{% endif %}
+{% endspaceless %}

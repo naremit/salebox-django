@@ -3,6 +3,7 @@ import requests
 from pprint import pprint
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 
 from saleboxdjango.models import *
@@ -10,12 +11,16 @@ from saleboxdjango.models import *
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        do_sync = True
+        do_sync = cache.get('saleboxsync') is None
+
         while do_sync:
             try:
+                cache.set('saleboxsync', 1, 60)
                 do_sync = self.do_sync()
             except:
                 do_sync = False
+
+        cache.delete('saleboxsync')
 
     def do_sync(self):
         post = {

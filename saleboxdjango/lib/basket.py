@@ -12,9 +12,9 @@ def get_basket_wishlist_html(request, basket=True, default_max_qty=20):
     }
 
     if basket:
-        return render_to_string('_basket.html', context)
+        return render_to_string('salebox/basket.html', context)
     else:
-        return render_to_string('_wishlist.html', context)
+        return render_to_string('salebox/wishlist.html', context)
 
 
 def get_basket_wishlist(request, basket=True, default_max_qty=20):

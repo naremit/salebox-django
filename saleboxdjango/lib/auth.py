@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate, login, logout
-from django.utils import timezone
 
 from saleboxdjango.lib.basket import clean_basket_wishlist
 from saleboxdjango.models import BasketWishlist
@@ -11,7 +10,7 @@ def salebox_login(request, username, password):
                 .objects \
                 .filter(user__isnull=True) \
                 .filter(session=request.session.session_key) \
-                .filter(basket_flag=True) \
+                .filter(basket_flag=True)
 
     # do authentication
     user = authenticate(username=username, password=password)

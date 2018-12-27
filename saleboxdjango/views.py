@@ -33,7 +33,7 @@ def addresslist_ajax_view(request):
     }
 
     return JsonResponse({
-        'addressHtml': render_to_string('_address_list.html', context)
+        'addressHtml': render_to_string('salebox/address_list.html', context)
     })
 
 
