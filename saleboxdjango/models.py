@@ -238,6 +238,7 @@ class ProductCategory(MPTTModel):
     image = models.CharField(max_length=70, blank=True, null=True)
     seasonal_flag = models.BooleanField(default=False)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+    slug_path = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     active_flag = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
@@ -252,6 +253,17 @@ class ProductCategory(MPTTModel):
 
     def delete(self):
         pass
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        root = self.get_root()
+        nodes = root.get_descendants(include_self=True)
+        for node in nodes:
+            slugs = node.get_ancestors(include_self=True).values_list('slug', flat=True)
+            slugs = ['' if s is None else s for s in slugs]
+            slug_path = '/%s/' % '/'.join(slugs)
+            if node.slug_path != slug_path:
+                ProductCategory.objects.filter(id=node.id).update(slug_path=slug_path)
 
 
 class Product(models.Model):

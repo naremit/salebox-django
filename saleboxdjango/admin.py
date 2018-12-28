@@ -51,7 +51,7 @@ class MemberAdmin(admin.ModelAdmin):
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
+    list_display = ('name', 'slug_path')
 
 
 class ProductAdmin(admin.ModelAdmin):
