@@ -53,6 +53,17 @@ class Command(BaseCommand):
             if have_response:
                 response = r.json()
                 # pprint(response)
+
+                # display debug meta
+                print('Output received (\'data\' attribute truncated to len(data)):')
+                response_meta = r.json()
+                for code in response_meta['sync']:
+                    code['data'] = len(code['data'])
+                pprint(response_meta)
+                print()
+                print('Updating:')
+
+                # save data
                 if response['status'] == 'OK':
                     for i, value in enumerate(response['sync']):
                         if value['code'] == 'attribute':
