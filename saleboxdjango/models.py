@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
+from django.core.cache import cache
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -264,6 +265,7 @@ class ProductCategory(MPTTModel):
             slug_path = '/'.join(slugs)
             if node.slug_path != slug_path:
                 ProductCategory.objects.filter(id=node.id).update(slug_path=slug_path)
+        cache.delete('category_tree')
 
 
 class Product(models.Model):

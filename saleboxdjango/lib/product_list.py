@@ -1,8 +1,10 @@
 import math
 
+from django.core.cache import cache
+
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
-from saleboxdjango.models import Product, ProductRatingCache
+from saleboxdjango.models import Product, ProductCategory, ProductRatingCache
 
 """
 
@@ -252,6 +254,91 @@ class ProductList:
 
     def set_include_rating(self, value=True):
         self.include_rating = value
+
+
+def get_category_tree(root=None):
+    # fetch from cache
+    cached_tree = cache.get('category_tree')
+    if cached_tree is not None:
+        return get_category_tree_segment_dict(root, cached_tree)
+
+    # extract root node(s)
+    tree = []
+    categories = ProductCategory \
+                    .objects \
+                    .filter(active_flag=True)
+    for c in categories:
+        if c.is_root_node():
+            tree.append(c)
+
+    # build children
+    tree = [get_category_tree_recurse(c) for c in tree]
+
+    # finish up
+    cache.set('category_tree', tree, 60 * 60 * 24 * 7)
+
+    # return tree segment
+    return get_category_tree_segment_dict(root, tree)
+
+
+def get_category_tree_segment_dict(root, tree):
+    o = {
+        'root_level': root is None,
+        'ancestors': [],
+        'category': get_category_tree_segment(root, tree)
+    }
+
+    if root is not None:
+        o['category'] = [o['category']]
+        ancestors = root.get_ancestors(include_self=False)
+        for a in ancestors:
+            o['ancestors'].append({
+                'id': a.id,
+                'short_name': a.short_name,
+                'name': a.name,
+                'image': a.image,
+                'slug': a.slug,
+                'slug_path': a.slug_path,
+            })
+
+    return o
+
+
+def get_category_tree_segment(root, tree):
+    if root is None:
+        return tree
+    else:
+        for subtree in tree:
+            result = get_category_tree_segment_recurse(root, subtree)
+            if result is not None:
+                return result
+
+        return None
+
+
+def get_category_tree_segment_recurse(root, tree):
+    if root.id == tree['id']:
+        return tree
+    else:
+        for subtree in tree['children']:
+            result = get_category_tree_segment_recurse(root, subtree)
+            if result is not None:
+                return result
+
+    return None
+
+
+def get_category_tree_recurse(c):
+    children = c.get_children().filter(active_flag=True)
+    return {
+        'id': c.id,
+        'short_name': c.short_name,
+        'name': c.name,
+        'image': c.image,
+        'slug': c.slug,
+        'slug_path': c.slug_path,
+        'children': [get_category_tree_recurse(c) for c in children]
+    }
 
 
 def translate_path(path):
