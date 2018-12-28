@@ -261,7 +261,7 @@ class ProductCategory(MPTTModel):
         for node in nodes:
             slugs = node.get_ancestors(include_self=True).values_list('slug', flat=True)
             slugs = ['' if s is None else s for s in slugs]
-            slug_path = '/%s/' % '/'.join(slugs)
+            slug_path = '/'.join(slugs)
             if node.slug_path != slug_path:
                 ProductCategory.objects.filter(id=node.id).update(slug_path=slug_path)
 

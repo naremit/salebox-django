@@ -5,6 +5,8 @@ from saleboxdjango.models import ProductRatingCache, ProductVariant, ProductVari
 
 
 def get_product_detail(request, variant_id, variant_slug):
+    variant_slug = variant_slug.strip('/')
+
     # get variant
     variant = get_object_or_404(
         ProductVariant,

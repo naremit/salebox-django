@@ -201,8 +201,16 @@ class ProductList:
         # compile sql
         return 'WHERE %s' % ' AND '.join(where)
 
-    def set_category(self, category, include_child_categories=False):
-        self.where.append('p.category_id = %s' % category.id)
+    def set_category(self, category, include_child_categories=True):
+        if include_child_categories:
+            id_list = category \
+                        .get_descendants(include_self=True) \
+                        .values_list('id', flat=True)
+        else:
+            id_list = [category.id]
+        id_list = ','.join([str(i) for i in id_list])
+
+        self.where.append('p.category_id IN (%s)' % id_list)
 
     def set_order_preset(self, preset):
         presets = {
@@ -244,3 +252,20 @@ class ProductList:
 
     def set_include_rating(self, value=True):
         self.include_rating = value
+
+
+def translate_path(path):
+    path_list = path.strip('/').split('/')
+    o = {}
+
+    try:
+        o['page_num'] = int(path_list[-1])
+        if o['page_num'] < 1:
+            # raise 404
+            pass
+        path_list = path_list[:-1]
+    except:
+        o['page_num'] = 1
+
+    o['path'] = '/'.join(path_list)
+    return o
