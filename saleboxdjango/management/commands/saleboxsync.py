@@ -415,18 +415,31 @@ class Command(BaseCommand):
             pass
 
     def sync_product(self, data, api_lu, sync_from_dict):
-        # TODO
-        # add attributes
+        def sync_attributes(product, attribute_number, id_list):
+            attributes_changed = False
+            attribute_m2m = getattr(product, 'attribute_%s' % attribute_number)
+
+            # remove
+            for a in attribute_m2m.all():
+                if a.id not in id_list:
+                    attribute_m2m.remove(a)
+                    attributes_changed = True
+
+            # add
+            for id in id_list:
+                ai = AttributeItem.objects.get(id=id)
+                attribute_m2m.add(ai)
+                attributes_changed = True
+
+            # save
+            if attributes_changed:
+                product.save()
 
         try:
             for d in data:
                 # create object
                 o, created = Product.objects.get_or_create(id=d['id'])
                 o.category = ProductCategory.objects.get(id=d['category'])
-
-                # get attributes
-                #
-                #
 
                 # update
                 for a in [
@@ -442,6 +455,10 @@ class Command(BaseCommand):
                     setattr(o, a, d[a])
 
                 o.save()
+
+                # sync attributes
+                for i in range(1, 5):
+                    sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
             self.set_sync_from_dict(
@@ -498,18 +515,31 @@ class Command(BaseCommand):
             pass
 
     def sync_product_variant(self, data, api_lu, sync_from_dict):
-        # TODO
-        # add attributes
+        def sync_attributes(variant, attribute_number, id_list):
+            attributes_changed = False
+            attribute_m2m = getattr(variant, 'attribute_%s' % attribute_number)
+
+            # remove
+            for a in attribute_m2m.all():
+                if a.id not in id_list:
+                    attribute_m2m.remove(a)
+                    attributes_changed = True
+
+            # add
+            for id in id_list:
+                ai = AttributeItem.objects.get(id=id)
+                attribute_m2m.add(ai)
+                attributes_changed = True
+
+            # save
+            if attributes_changed:
+                variant.save()
 
         try:
             for d in data:
                 # create object
                 o, created = ProductVariant.objects.get_or_create(id=d['id'])
                 o.product = Product.objects.get(id=d['product'])
-
-                # get attributes
-                #
-                #
 
                 # update
                 for a in [
@@ -549,6 +579,10 @@ class Command(BaseCommand):
                     setattr(o, a, d[a])
 
                 o.save()
+
+                # sync attributes
+                for i in range(1, 7):
+                    sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
             self.set_sync_from_dict(

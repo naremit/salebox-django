@@ -4,7 +4,7 @@ from django.core.cache import cache
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
-from saleboxdjango.models import Product, ProductCategory, ProductRatingCache
+from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductRatingCache
 
 """
 
@@ -203,6 +203,16 @@ class ProductList:
         # compile sql
         return 'WHERE %s' % ' AND '.join(where)
 
+    def set_attribute_product(self, number, attribute):
+        template = 'SELECT product_id FROM saleboxdjango_product_attribute_%s WHERE attributeitem_id = %s'
+        sql = template % (number, attribute.id)
+        self.where.append('p.id IN (%s)' % sql)
+
+    def set_attribute_variant(self, number, attribute):
+        template = 'SELECT productvariant_id FROM saleboxdjango_productvariant_attribute_%s WHERE attributeitem_id = %s'
+        sql = template % (number, attribute.id)
+        self.where.append('pv.id IN (%s)' % sql)
+
     def set_category(self, category, include_child_categories=True):
         if include_child_categories:
             id_list = category \
@@ -352,8 +362,12 @@ def translate_path(path):
             # raise 404
             pass
         o['path_list'] = o['path_list'][:-1]
+        if len(o['path_list']) == 0:
+            o['path_list'].append('')
     except:
         o['page_num'] = 1
+
+
 
     o['path'] = '/'.join(o['path_list'])
     return o
