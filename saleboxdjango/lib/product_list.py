@@ -343,17 +343,17 @@ def get_category_tree_recurse(c):
 
 
 def translate_path(path):
-    path_list = path.strip('/').split('/')
     o = {}
+    o['path_list'] = path.strip('/').split('/')
 
     try:
-        o['page_num'] = int(path_list[-1])
+        o['page_num'] = int(o['path_list'][-1])
         if o['page_num'] < 1:
             # raise 404
             pass
-        path_list = path_list[:-1]
+        o['path_list'] = o['path_list'][:-1]
     except:
         o['page_num'] = 1
 
-    o['path'] = '/'.join(path_list)
+    o['path'] = '/'.join(o['path_list'])
     return o
