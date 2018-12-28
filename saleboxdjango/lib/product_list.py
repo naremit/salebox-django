@@ -266,7 +266,8 @@ def get_category_tree(root=None):
     tree = []
     categories = ProductCategory \
                     .objects \
-                    .filter(active_flag=True)
+                    .filter(active_flag=True) \
+                    .order_by('name')
     for c in categories:
         if c.is_root_node():
             tree.append(c)
@@ -329,7 +330,7 @@ def get_category_tree_segment_recurse(root, tree):
 
 
 def get_category_tree_recurse(c):
-    children = c.get_children().filter(active_flag=True)
+    children = c.get_children().filter(active_flag=True).order_by('name')
     return {
         'id': c.id,
         'short_name': c.short_name,
