@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from saleboxdjango.lib.common import image_path, price_display, get_rating_dict
@@ -6,6 +7,12 @@ from saleboxdjango.models import ProductRatingCache, ProductVariant, ProductVari
 
 def get_product_detail(request, variant_id, variant_slug):
     variant_slug = variant_slug.strip('/')
+
+    try:
+        variant_id = int(variant_id)
+        variant_slug = str(variant_slug)
+    except:
+        raise Http404()
 
     # get variant
     variant = get_object_or_404(

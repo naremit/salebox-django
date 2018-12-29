@@ -1,6 +1,7 @@
 import math
 
 from django.core.cache import cache
+from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
@@ -359,8 +360,7 @@ def translate_path(path):
     try:
         o['page_num'] = int(o['path_list'][-1])
         if o['page_num'] < 1:
-            # raise 404
-            pass
+            raise Http404()
         o['path_list'] = o['path_list'][:-1]
         if len(o['path_list']) == 0:
             o['path_list'].append('')
