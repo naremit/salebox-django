@@ -5,6 +5,7 @@ from pprint import pprint
 from django.conf import settings
 from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.timezone import now
 
 from saleboxdjango.models import *
 
@@ -182,8 +183,7 @@ class Command(BaseCommand):
 
     def set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
         if increment:
-            now = datetime.datetime.utcnow().timestamp()
-            if now - api_lu > 60:
+            if now().timestamp() - api_lu > 60:
                 if api_lu == 0:
                     api_lu = 1.0
                 else:
