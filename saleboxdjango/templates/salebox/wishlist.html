@@ -11,13 +11,13 @@
                         <span>n/a</span>
                     {% endif %}
                 </td>
-                <td>{{ b.v_name }}</td>
+                <td>{{ b.variant.name }}</td>
                 <td style="text-align: right;">{{ b.price.formatted_html | safe }}</td>
                 <td style="color: blue; font-size: 12px; text-decoration: underline;">
-                    <span onclick="setWishlist({{ b.v_id }}, false)">remove</span>
+                    <span onclick="setWishlist({{ b.variant.id }}, false)">remove</span>
                 </td>
                 <td style="color: blue; font-size: 12px; text-decoration: underline;">
-                    <span onclick="switchBasketWishlist({{ b.v_id }}, true)">add to basket</span>
+                    <span onclick="switchBasketWishlist({{ b.variant.id }}, true)">add to basket</span>
                 </td>
             </tr>
             {% endfor %}

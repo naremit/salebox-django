@@ -34,6 +34,17 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
     contents = []
     for b in qs:
         contents.append({
+            # basket
+            'id': b.id,
+            'quantity': b.quantity,
+            'quantity_range': range(1, max(b.quantity, default_max_qty) + 1),
+            'weight': b.weight,
+
+            # product detail
+            'category': b.variant.product.category,
+            'product': b.variant.product,
+            'variant': b.variant,
+
             # image
             'image': image_path_option(
                 b.variant.image,
@@ -42,34 +53,6 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
 
             # prices
             'price': price_display(b.variant.price * b.quantity),
-
-            # category
-            'c_id': b.variant.product.category.id,
-
-            # product
-            'p_id': b.variant.product.id,
-            'p_name': b.variant.product.name,
-            'p_slug': b.variant.product.slug,
-
-            # variant
-            'v_id': b.variant.id,
-            'v_name': b.variant.name,
-            'v_slug': b.variant.slug,
-            'v_shipping_weight': b.variant.shipping_weight,
-            'string_1': b.variant.string_1,
-            'string_2': b.variant.string_2,
-            'string_3': b.variant.string_3,
-            'string_4': b.variant.string_4,
-            'int_1': b.variant.int_1,
-            'int_2': b.variant.int_2,
-            'int_3': b.variant.int_3,
-            'int_4': b.variant.int_4,
-
-            # basket
-            'id': b.id,
-            'quantity': b.quantity,
-            'quantity_range': range(1, max(b.quantity, default_max_qty) + 1),
-            'weight': b.weight,
         })
 
     # TODO

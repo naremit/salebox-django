@@ -12,21 +12,21 @@
                     {% endif %}
                 </td>
                 <td>
-                    <select onchange="setBasket({{ b.v_id }}, this.value, false)">
+                    <select onchange="setBasket({{ b.variant.id }}, this.value, false)">
                         {% for q in b.quantity_range %}
                         <option value="{{ q }}"{% if q == b.quantity %} selected{% endif %}>{{ q }}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>x</td>
-                <td>{{ b.v_name }}</td>
+                <td>{{ b.variant.name }}</td>
                 <td style="text-align: right;">{{ b.price.formatted_html | safe }}</td>
                 <td style="color: blue; font-size: 12px; text-decoration: underline;">
-                    <span onclick="setBasket({{ b.v_id }}, 0, false)">remove</span>
+                    <span onclick="setBasket({{ b.variant.id }}, 0, false)">remove</span>
                 </td>
                 {% if request.user.is_authenticated %}
                     <td style="color: blue; font-size: 12px; text-decoration: underline;">
-                        <span onclick="switchBasketWishlist({{ b.v_id }}, false)">move to wishlist</span>
+                        <span onclick="switchBasketWishlist({{ b.variant.id }}, false)">move to wishlist</span>
                     </td>
                 {% endif %}
             </tr>
