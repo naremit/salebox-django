@@ -71,7 +71,7 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
     price = 0
     for c in contents:
         quantity += c['quantity']
-        loyalty += c['variant'].loyalty_points or 0
+        loyalty += (c['quantity'] * c['variant'].loyalty_points) or 0
         price += c['price']['price']
 
     return {
