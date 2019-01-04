@@ -6,15 +6,22 @@ from saleboxdjango.models import BasketWishlist
 
 
 def get_basket_wishlist_html(request, basket=True, default_max_qty=20):
+    basket_wishlist = get_basket_wishlist(request, basket, default_max_qty)
+
+    # build html
+    template = 'salebox/basket.html' if basket else 'salebox/wishlist.html'
     context = {
-        'basket_detail': get_basket_wishlist(request, basket, default_max_qty),
+        'basket_detail': basket_wishlist,
         'request': request
     }
 
-    if basket:
-        return render_to_string('salebox/basket.html', context)
-    else:
-        return render_to_string('salebox/wishlist.html', context)
+    # return json
+    return {
+        'html': render_to_string(template, context),
+        'quantity':  basket_wishlist['quantity'],
+        'loyalty': basket_wishlist['loyalty'],
+        'price': basket_wishlist['price']
+    }
 
 
 def get_basket_wishlist(request, basket=True, default_max_qty=20):
@@ -59,14 +66,21 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
     # add sale-price stuff here
 
     # add price total
-    total = 0
+    quantity = 0
+    loyalty = 0
+    price = 0
     for c in contents:
-        total += c['price']['price']
+        quantity += c['quantity']
+        loyalty += c['variant'].loyalty_points or 0
+        price += c['price']['price']
 
     return {
         'contents': contents,
-        'total': price_display(total),
+        'quantity': quantity,
+        'loyalty': loyalty,
+        'price': price_display(price),
     }
+
 
 
 def set_basket(request, variant, qty, relative):

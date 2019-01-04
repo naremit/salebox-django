@@ -34,8 +34,8 @@ def price_display(price):
         'minor': minor,
         'formatted': formatted,
         'unformatted': unformatted,
-        'formatted_html': '%s.<span>%s</span>' % (formatted.split('.')[0], minor),
-        'unformatted_html': '%s.<span>%s</span>' % (unformatted.split('.')[0], minor)
+        'formatted_html': '%s<span>.%s</span>' % (formatted.split('.')[0], minor),
+        'unformatted_html': '%s<span>.%s</span>' % (unformatted.split('.')[0], minor)
     }
 
 

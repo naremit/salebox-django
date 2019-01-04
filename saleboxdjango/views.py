@@ -48,10 +48,7 @@ def basket_ajax_view(request):
                 form.cleaned_data['relative']
             )
 
-    return JsonResponse({
-        'basketHtml': get_basket_wishlist_html(request, True, 25),
-        'basketCount': request.session['basket']['basket']['count']
-    })
+    return JsonResponse(get_basket_wishlist_html(request, True, 25))
 
 
 def rating_ajax_view(request):
@@ -112,7 +109,4 @@ def wishlist_ajax_view(request):
                 form.cleaned_data['add']
             )
 
-    return JsonResponse({
-        'wishlistHtml': get_basket_wishlist_html(request, False),
-        'wishlistCount': request.session['basket']['wishlist']['count']
-    })
+    return JsonResponse(get_basket_wishlist_html(request, False))
