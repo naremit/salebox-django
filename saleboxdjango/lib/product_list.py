@@ -5,7 +5,7 @@ from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
-from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductRatingCache
+from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductRatingCache, ProductVariant
 
 """
 
@@ -341,12 +341,21 @@ def get_category_tree_segment_recurse(root, tree):
 
 
 def get_category_tree_recurse(c):
+    product_ids = ProductVariant \
+                    .objects \
+                    .filter(product__category=c) \
+                    .filter(product__active_flag=True) \
+                    .filter(active_flag=True) \
+                    .filter(available_on_ecom=True) \
+                    .values_list('product_id', flat=True)
+
     children = c.get_children().filter(active_flag=True).order_by('name')
     return {
         'id': c.id,
         'short_name': c.short_name,
         'name': c.name,
         'image': c.image,
+        'product_count': len(set(list(product_ids))),
         'slug': c.slug,
         'slug_path': c.slug_path,
         'children': [get_category_tree_recurse(c) for c in children]
