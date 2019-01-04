@@ -71,7 +71,10 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
     price = 0
     for c in contents:
         quantity += c['quantity']
-        loyalty += (c['quantity'] * c['variant'].loyalty_points) or 0
+        try:
+            loyalty += c['quantity'] * c['variant'].loyalty_points
+        except:
+            pass
         price += c['price']['price']
 
     return {
@@ -80,7 +83,6 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
         'loyalty': loyalty,
         'price': price_display(price),
     }
-
 
 
 def set_basket(request, variant, qty, relative):
@@ -250,6 +252,8 @@ def update_basket_session(request):
     data = {
         'basket': {
             'quantity': 0,
+            'loyalty': 0,
+            'price': 0,
             'contents': {},
         },
         'wishlist': {
@@ -267,7 +271,17 @@ def update_basket_session(request):
     # populate data
     for q in qs:
         if q.basket_flag:
-            if q.variant.id not in data['basket']:
+            try:
+                data['basket']['loyalty'] += q.quantity * q.variant.loyalty_points
+            except:
+                pass
+
+            try:
+                data['basket']['price'] += q.quantity * q.variant.price
+            except:
+                pass
+
+            if q.variant.id not in data['basket']['contents']:
                 data['basket']['contents'][str(q.variant.id)] = q.quantity
             else:
                 data['basket']['contents'][str(q.variant.id)] += q.quantity
@@ -277,5 +291,6 @@ def update_basket_session(request):
                 data['wishlist']['contents'].append(q.variant.id)
 
     # save to session
+    data['basket']['price'] = price_display(data['basket']['price'])
     data['wishlist']['quantity'] = len(data['wishlist']['contents'])
     request.session['basket'] = data
