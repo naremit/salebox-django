@@ -249,11 +249,11 @@ def switch_basket_wishlist(request, variant, destination):
 def update_basket_session(request):
     data = {
         'basket': {
-            'count': 0,
+            'quantity': 0,
             'contents': {},
         },
         'wishlist': {
-            'count': 0,
+            'quantity': 0,
             'contents': [],
         }
     }
@@ -271,11 +271,11 @@ def update_basket_session(request):
                 data['basket']['contents'][str(q.variant.id)] = q.quantity
             else:
                 data['basket']['contents'][str(q.variant.id)] += q.quantity
-            data['basket']['count'] += q.quantity
+            data['basket']['quantity'] += q.quantity
         else:
             if q.variant.id not in data['wishlist']:
                 data['wishlist']['contents'].append(q.variant.id)
 
     # save to session
-    data['wishlist']['count'] = len(data['wishlist']['contents'])
+    data['wishlist']['quantity'] = len(data['wishlist']['contents'])
     request.session['basket'] = data

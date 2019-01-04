@@ -92,10 +92,8 @@ def switch_basket_wishlist_ajax_view(request):
             )
 
     return JsonResponse({
-        'basketHtml': get_basket_wishlist_html(request, True, 25),
-        'basketCount': request.session['basket']['basket']['count'],
-        'wishlistHtml': get_basket_wishlist_html(request, False),
-        'wishlistCount': request.session['basket']['wishlist']['count']
+        'basket': get_basket_wishlist_html(request, True, 25),
+        'wishlist': get_basket_wishlist_html(request, False),
     })
 
 
