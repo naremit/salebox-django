@@ -308,7 +308,7 @@ def get_category_tree_segment_dict(root, tree):
                 'id': a.id,
                 'short_name': a.short_name,
                 'name': a.name,
-                'image': a.image,
+                'image': image_path(a.image),
                 'slug': a.slug,
                 'slug_path': a.slug_path,
             })
@@ -354,7 +354,7 @@ def get_category_tree_recurse(c):
         'id': c.id,
         'short_name': c.short_name,
         'name': c.name,
-        'image': c.image,
+        'image': image_path(c.image),
         'product_count': len(set(list(product_ids))),
         'slug': c.slug,
         'slug_path': c.slug_path,
