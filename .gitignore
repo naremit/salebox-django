@@ -1,3 +1,4 @@
 *.pyc
 dist/
 salebox_django.egg-info/
+.DS_Store
