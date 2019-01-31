@@ -4,6 +4,8 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
 from django.db import models
+from django.db.models import Avg
+
 from mptt.models import MPTTModel, TreeForeignKey
 
 
@@ -280,6 +282,16 @@ class Product(models.Model):
     attribute_2 = models.ManyToManyField(AttributeItem, related_name='product_attr_2', blank=True)
     attribute_3 = models.ManyToManyField(AttributeItem, related_name='product_attr_3', blank=True)
     attribute_4 = models.ManyToManyField(AttributeItem, related_name='product_attr_4', blank=True)
+    attribute_5 = models.ManyToManyField(AttributeItem, related_name='product_attr_5', blank=True)
+    attribute_6 = models.ManyToManyField(AttributeItem, related_name='product_attr_6', blank=True)
+    attribute_7 = models.ManyToManyField(AttributeItem, related_name='product_attr_7', blank=True)
+    attribute_8 = models.ManyToManyField(AttributeItem, related_name='product_attr_8', blank=True)
+    attribute_9 = models.ManyToManyField(AttributeItem, related_name='product_attr_9', blank=True)
+    attribute_10 = models.ManyToManyField(AttributeItem, related_name='product_attr_10', blank=True)
+    string_1 = models.CharField(max_length=150, blank=True, null=True)
+    string_2 = models.CharField(max_length=150, blank=True, null=True)
+    string_3 = models.CharField(max_length=150, blank=True, null=True)
+    string_4 = models.CharField(max_length=150, blank=True, null=True)
     sold_by = models.CharField(max_length=6, choices=SOLD_BY_CHOICES, default='item')
     vat_applicable = models.BooleanField(default=True)
     image = models.CharField(max_length=70, blank=True, null=True)
@@ -311,56 +323,6 @@ class ProductRatingCache(models.Model):
     class Meta:
         verbose_name = 'Product Rating Cache'
         verbose_name_plural = 'Product Rating Cache'
-
-
-class ProductVariantRating(models.Model):
-    variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    rating = models.IntegerField(default=50)
-    created = models.DateTimeField(auto_now_add=True)
-    last_update = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = 'Product Variant Rating'
-
-    def delete(self, *args, **kwargs):
-        product = self.variant.product
-        super().delete(*args, **kwargs)
-        self.update_cache(product)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.update_cache(self.variant.product)
-
-    def update_cache(self, product):
-        # create / update product cache
-        o, created = ProductRatingCache \
-                        .objects \
-                        .get_or_create(product=product)
-
-        # calculate rating
-        if created:
-            o.vote_count = 1
-            o.rating = self.rating
-        else:
-            vote_count = 0
-            sum_rating = 0
-            ratings = ProductVariantRating \
-                        .objects \
-                        .filter(variant=self.variant)
-
-            for r in ratings:
-                vote_count += 1
-                sum_rating += r.rating
-
-            o.vote_count = vote_count
-            if vote_count > 0:
-                o.rating = round(sum_rating / vote_count)
-            else:
-                o.rating = 0
-
-        # save
-        o.save()
 
 
 class ProductVariant(models.Model):
@@ -415,6 +377,10 @@ class ProductVariant(models.Model):
     attribute_4 = models.ManyToManyField(AttributeItem, related_name='variant_attr_4', blank=True)
     attribute_5 = models.ManyToManyField(AttributeItem, related_name='variant_attr_5', blank=True)
     attribute_6 = models.ManyToManyField(AttributeItem, related_name='variant_attr_6', blank=True)
+    attribute_7 = models.ManyToManyField(AttributeItem, related_name='variant_attr_7', blank=True)
+    attribute_8 = models.ManyToManyField(AttributeItem, related_name='variant_attr_8', blank=True)
+    attribute_9 = models.ManyToManyField(AttributeItem, related_name='variant_attr_9', blank=True)
+    attribute_10 = models.ManyToManyField(AttributeItem, related_name='variant_attr_10', blank=True)
     active_flag = models.BooleanField(default=True)
     ecommerce_description = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -429,6 +395,85 @@ class ProductVariant(models.Model):
 
     def delete(self):
         pass
+
+
+class ProductVariantRating(models.Model):
+    variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=50)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Product Variant Rating'
+
+    def delete(self, *args, **kwargs):
+        variant = self.variant
+        super().delete(*args, **kwargs)
+        self.update_cache(variant)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.update_cache(self.variant)
+
+    def update_cache(self, variant):
+        # create / update variant cache
+        o, created = ProductVariantRatingCache \
+                        .objects \
+                        .get_or_create(variant=variant)
+
+        # calculate rating
+        if created:
+            o.vote_count = 1
+            o.rating = self.rating
+        else:
+            o.vote_count = ProductVariantRating \
+                                .objects \
+                                .filter(variant=variant) \
+                                .count()
+            o.rating = ProductVariantRating \
+                                .objects \
+                                .filter(variant=variant) \
+                                .aggregate(rating=Avg('rating'))['rating']
+        o.rating = round(o.rating)
+        o.save()
+
+        # create / update product cache
+        o, created = ProductRatingCache \
+                        .objects \
+                        .get_or_create(product=variant.product)
+
+        # calculate rating
+        if created:
+            o.vote_count = 1
+            o.rating = self.rating
+        else:
+            variant_ids = ProductVariant \
+                            .objects \
+                            .filter(product=variant.product) \
+                            .values_list('id', flat=True)
+            o.vote_count = ProductVariantRating \
+                                .objects \
+                                .filter(variant__in=list(variant_ids)) \
+                                .count()
+            o.rating = ProductVariantRating \
+                                .objects \
+                                .filter(variant__in=list(variant_ids)) \
+                                .aggregate(rating=Avg('rating'))['rating']
+        o.rating = round(o.rating)
+        o.save()
+
+
+class ProductVariantRatingCache(models.Model):
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    vote_count = models.IntegerField(default=1)
+    rating = models.IntegerField(default=50)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Product Variant Rating Cache'
+        verbose_name_plural = 'Product Variant Rating Cache'
 
 
 class LastUpdate(models.Model):

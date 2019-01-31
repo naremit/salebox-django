@@ -450,6 +450,10 @@ class Command(BaseCommand):
                     'season',
                     'sold_by',
                     'slug',
+                    'string_1',
+                    'string_2',
+                    'string_3',
+                    'string_4',
                     'vat_applicable',
                 ]:
                     setattr(o, a, d[a])
@@ -457,7 +461,7 @@ class Command(BaseCommand):
                 o.save()
 
                 # sync attributes
-                for i in range(1, 5):
+                for i in range(1, 11):
                     sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
@@ -581,7 +585,7 @@ class Command(BaseCommand):
                 o.save()
 
                 # sync attributes
-                for i in range(1, 7):
+                for i in range(1, 11):
                     sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
