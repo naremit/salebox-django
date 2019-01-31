@@ -354,6 +354,8 @@ class ProductVariant(models.Model):
     size_order = models.FloatField(default=0)
     size_uom = models.CharField(max_length=2, choices=SIZE_UOM_CHOICES, blank=True, default='')
     price = models.IntegerField(null=True)
+    sale_price = models.IntegerField(default=0)
+    sale_percent = models.IntegerField(default=0)
     barcode = models.CharField(max_length=50, blank=True, default='')
     available_to_order = models.BooleanField(default=True)
     available_on_pos = models.BooleanField(default=True)

@@ -444,6 +444,7 @@ class Command(BaseCommand):
                 # update
                 for a in [
                     'active_flag',
+                    'bestseller_rank',
                     'image',
                     'inventory_flag',
                     'name',
@@ -551,6 +552,7 @@ class Command(BaseCommand):
                     'available_to_order',
                     'available_on_pos',
                     'available_on_ecom',
+                    'bestseller_rank',
                     'barcode',
                     'bo_name',
                     'color',
@@ -566,6 +568,8 @@ class Command(BaseCommand):
                     'name',
                     'plu',
                     'price',
+                    'sale_percent',
+                    'sale_price',
                     'shelf_expiry_type',
                     'shelf_life_days',
                     'shipping_weight',
