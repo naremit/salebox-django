@@ -18,7 +18,7 @@
 
 <div class="product_list">
     {% if products.count.total > 0 %}
-        {% for p in products.products %}
+        {% for pv in products.products %}
             {% include 'salebox/product_list_product.html' %}
         {% endfor %}
     {% else %}

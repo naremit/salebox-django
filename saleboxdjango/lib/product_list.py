@@ -14,12 +14,14 @@ class ProductList:
     def __init__(self, active_status='active_only'):
         self.active_status = active_status
         self.query = ProductVariant.objects
-        self.offset = None
-        self.limit = None
+        self.offset = 0
+        self.limit = 100
+
         self.min_price = None
         self.max_price = None
         self.order = []
         self.where = []
+
 
     def go(self, request):
         # retrieve from cache
@@ -29,19 +31,6 @@ class ProductList:
 
         # cache doesn't exist, build it...
         if output is None:
-            self.offset = self.offset or 0
-
-            # create output dict
-            output = {
-                'count': {
-                    'from': self.offset + 1,
-                    'to': None,
-                    'total': 0,
-                },
-                'pagination': None,
-                'products': [],
-            }
-
             # retrieve list of variant IDs (one variant per product)
             # which match our criteria
             self.set_active_status()
@@ -51,21 +40,35 @@ class ProductList:
                     .distinct('product__id') \
                     .values_list('id', flat=True))
 
-            # update output count:total
-            output['count']['total'] = len(variant_ids)
-
             # add products
-            if output['count']['total'] > 0:
+            if len(variant_ids) > 0:
                 qs = ProductVariant \
                         .objects \
                         .filter(id__in=variant_ids) \
                         .select_related('product', 'product__category')
 
-                print(qs)
+                # add ordering
+                #
+                #
 
-                # output['count']['to'] = output['count']['from'] + len(output['products']) - 1
+                # add offset / limit
+                qs = qs[self.offset:self.limit]
 
-            # save to cache
+                # force evaluation of the queryset
+                tmp = len(qs)
+
+            # create output dict
+            output = {
+                'count': {
+                    'from': self.offset + 1,
+                    'to': self.offset + len(qs),
+                    'total': len(variant_ids),
+                },
+                'pagination': None,
+                'products': qs,
+            }
+
+            # save output to cache
             #
             #
 
@@ -80,9 +83,9 @@ class ProductList:
         return output
 
     def set_active_status(self):
-        # i can think of no reason for this to ever be set to anything
+        # I can think of no reason for this to ever be set to anything
         # other than 'active_only' but include this here so it doesn't
-        # bit me later
+        # bite us later
 
         if self.active_status == 'active_only':
             self.query = \
@@ -97,6 +100,15 @@ class ProductList:
 
         elif self.active_status == 'all':
             pass
+
+    def set_pagination(self, page_num, items_per_page, url_prefix):
+        self.pagination['page_num'] = page_num
+        self.pagination['items_per_page'] = items_per_page
+        self.pagination['url_prefix'] = url_prefix
+
+        self.limit = items_per_page
+        self.offset = (page_num - 1) * items_per_page
+
 
 """
 class ProductList:
