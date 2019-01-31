@@ -5,7 +5,7 @@ from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
-from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductRatingCache, ProductVariant
+from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant
 
 """
 
@@ -175,13 +175,13 @@ class ProductList:
             sql = sql.replace('[EXTRAS]', '')
 
         # rating join
-        if action == 'list' and self.include_rating:
-            sql = sql.replace(
-                '[RATING_JOIN]',
-                'LEFT JOIN saleboxdjango_productratingcache AS prc ON p.id = prc.product_id'
-            )
-        else:
-            sql = sql.replace('[RATING_JOIN]', '')
+        #if action == 'list' and self.include_rating:
+        #    sql = sql.replace(
+        #        '[RATING_JOIN]',
+        #        'LEFT JOIN saleboxdjango_productratingcache AS prc ON p.id = prc.product_id'
+        #    )
+        #else:
+        #    sql = sql.replace('[RATING_JOIN]', '')
 
         # where clause(s)
         sql = sql.replace('[WHERE]', self.get_where())

@@ -2,7 +2,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from saleboxdjango.lib.common import image_path, price_display, get_rating_dict
-from saleboxdjango.models import ProductRatingCache, ProductVariant, ProductVariantRating
+from saleboxdjango.models import ProductVariant, ProductVariantRating
 
 
 def get_product_detail(request, variant_id, variant_slug):
@@ -39,15 +39,8 @@ def get_product_detail(request, variant_id, variant_slug):
     # get ratings
     rating = {
         'logged_in_user': get_rating_dict(None),
-        'global': get_rating_dict(None)
+        'global': get_rating_dict(product.rating_score)
     }
-
-    # get global rating
-    prc = ProductRatingCache \
-            .objects \
-            .filter(product=product)
-    if len(prc) > 0:
-        rating['global'] = get_rating_dict(prc[0].rating)
 
     # get logged in user's rating
     if request.user.is_authenticated:

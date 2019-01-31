@@ -298,9 +298,14 @@ class Product(models.Model):
     inventory_flag = models.BooleanField(default=True)
     # season = models.ForeignKey(OrganizationSeason, null=True, blank=True)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+    bestseller_rank = models.IntegerField(default=0)
     active_flag = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+
+    # local values
+    rating_score = models.IntegerField(default=0)
+    rating_vote_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -312,18 +317,19 @@ class Product(models.Model):
     def delete(self):
         pass
 
-
-class ProductRatingCache(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    vote_count = models.IntegerField(default=1)
-    rating = models.IntegerField(default=50)
-    created = models.DateTimeField(auto_now_add=True)
-    last_update = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = 'Product Rating Cache'
-        verbose_name_plural = 'Product Rating Cache'
-
+    def update_rating(self):
+        self.rating_score = \
+            ProductVariant \
+                .objects \
+                .filter(product=self) \
+                .aggregate(rating=Avg('rating_score'))['rating_score']
+        self.rating_vote_count = \
+            ProductVariant \
+                .objects \
+                .filter(product=self) \
+                .count()
+        self.save()
+        self.product.update_rating()
 
 class ProductVariant(models.Model):
     SHELF_EXPIRY_CHOICES = (
@@ -383,8 +389,14 @@ class ProductVariant(models.Model):
     attribute_10 = models.ManyToManyField(AttributeItem, related_name='variant_attr_10', blank=True)
     active_flag = models.BooleanField(default=True)
     ecommerce_description = models.TextField(blank=True, null=True)
+    bestseller_rank = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+
+    # local values
+    rating_score = models.IntegerField(default=0)
+    rating_vote_count = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.name or ''
@@ -396,6 +408,19 @@ class ProductVariant(models.Model):
     def delete(self):
         pass
 
+    def update_rating(self):
+        self.rating_score = \
+            ProductVariantRating \
+                .objects \
+                .filter(variant=self) \
+                .aggregate(rating=Avg('rating'))['rating']
+        self.rating_vote_count = \
+            ProductVariantRating \
+                .objects \
+                .filter(variant=self) \
+                .count()
+        self.save()
+        self.product.update_rating()
 
 class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
@@ -410,70 +435,11 @@ class ProductVariantRating(models.Model):
     def delete(self, *args, **kwargs):
         variant = self.variant
         super().delete(*args, **kwargs)
-        self.update_cache(variant)
+        self.variant.update_cache()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.update_cache(self.variant)
-
-    def update_cache(self, variant):
-        # create / update variant cache
-        o, created = ProductVariantRatingCache \
-                        .objects \
-                        .get_or_create(variant=variant)
-
-        # calculate rating
-        if created:
-            o.vote_count = 1
-            o.rating = self.rating
-        else:
-            o.vote_count = ProductVariantRating \
-                                .objects \
-                                .filter(variant=variant) \
-                                .count()
-            o.rating = ProductVariantRating \
-                                .objects \
-                                .filter(variant=variant) \
-                                .aggregate(rating=Avg('rating'))['rating']
-        o.rating = round(o.rating)
-        o.save()
-
-        # create / update product cache
-        o, created = ProductRatingCache \
-                        .objects \
-                        .get_or_create(product=variant.product)
-
-        # calculate rating
-        if created:
-            o.vote_count = 1
-            o.rating = self.rating
-        else:
-            variant_ids = ProductVariant \
-                            .objects \
-                            .filter(product=variant.product) \
-                            .values_list('id', flat=True)
-            o.vote_count = ProductVariantRating \
-                                .objects \
-                                .filter(variant__in=list(variant_ids)) \
-                                .count()
-            o.rating = ProductVariantRating \
-                                .objects \
-                                .filter(variant__in=list(variant_ids)) \
-                                .aggregate(rating=Avg('rating'))['rating']
-        o.rating = round(o.rating)
-        o.save()
-
-
-class ProductVariantRatingCache(models.Model):
-    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
-    vote_count = models.IntegerField(default=1)
-    rating = models.IntegerField(default=50)
-    created = models.DateTimeField(auto_now_add=True)
-    last_update = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = 'Product Variant Rating Cache'
-        verbose_name_plural = 'Product Variant Rating Cache'
+        self.variant.update_cache()
 
 
 class LastUpdate(models.Model):
