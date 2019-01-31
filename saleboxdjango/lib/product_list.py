@@ -7,11 +7,98 @@ from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, image_path, price_display, get_rating_dict
 from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant
 
-"""
+
+
+
+class ProductList:
+    def __init__(self, active_status='active_only'):
+        self.active_status = active_status
+        self.query = ProductVariant.objects
+        self.offset = None
+        self.limit = None
+        self.min_price = None
+        self.max_price = None
+        self.order = []
+        self.where = []
+
+    def go(self, request):
+        # retrieve from cache
+        #
+        #
+        output = None
+
+        # cache doesn't exist, build it...
+        if output is None:
+            self.offset = self.offset or 0
+
+            # create output dict
+            output = {
+                'count': {
+                    'from': self.offset + 1,
+                    'to': None,
+                    'total': 0,
+                },
+                'pagination': None,
+                'products': [],
+            }
+
+            # retrieve list of variant IDs (one variant per product)
+            # which match our criteria
+            self.set_active_status()
+            variant_ids = list(
+                self.query \
+                    .order_by('product__id', 'price') \
+                    .distinct('product__id') \
+                    .values_list('id', flat=True))
+
+            # update output count:total
+            output['count']['total'] = len(variant_ids)
+
+            # add products
+            if output['count']['total'] > 0:
+                qs = ProductVariant \
+                        .objects \
+                        .filter(id__in=variant_ids) \
+                        .select_related('product', 'product__category')
+
+                print(qs)
+
+                # output['count']['to'] = output['count']['from'] + len(output['products']) - 1
+
+            # save to cache
+            #
+            #
+
+        # personalise content
+        # for p in output['products']:
+        #     p['in_basket'] = str(p['v_id']) in \
+        #         request.session['basket']['basket']['contents']
+        #     p['in_wishlist'] = p['v_id'] in \
+        #         request.session['basket']['wishlist']['contents']
+
+        print(output)
+        return output
+
+    def set_active_status(self):
+        # i can think of no reason for this to ever be set to anything
+        # other than 'active_only' but include this here so it doesn't
+        # bit me later
+
+        if self.active_status == 'active_only':
+            self.query = \
+                self.query.filter(active_flag=True) \
+                    .filter(product__active_flag=True) \
+                    .filter(product__category__active_flag=True)
+
+        elif self.active_status == 'inactive_only':
+            self.query.filter(active_flag=False) \
+                .filter(product__active_flag=False) \
+                .filter(product__category__active_flag=False)
+
+        elif self.active_status == 'all':
+            pass
 
 """
-
-
 class ProductList:
     def __init__(self):
         self.include_pagination = False
@@ -122,14 +209,14 @@ class ProductList:
         return dictfetchall(sql)
 
     def get_subquery(self, action):
-        sql = """
+        sql = "" "
             SELECT          DISTINCT ON (pv.product_id) [FIELDS] [EXTRAS]
             FROM            saleboxdjango_productvariant AS pv
             INNER JOIN      saleboxdjango_product AS p ON p.id = pv.product_id
             [RATING_JOIN]
             [WHERE]
             ORDER BY        pv.product_id, price ASC
-        """
+        "" "
 
         if action == 'count':
             sql = sql.replace('[FIELDS]', 'pv.product_id')
@@ -265,7 +352,7 @@ class ProductList:
 
     def set_include_rating(self, value=True):
         self.include_rating = value
-
+"""
 
 def get_category_tree(root=None):
     # fetch from cache
