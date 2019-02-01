@@ -16,9 +16,6 @@
     {% endif %}
     <div class="price">{{ pv.sale_price_display.formatted_html|safe }}</div>
 
-    <div>{{ pv.rating_score }}</div>
-    <div>{{ pv.bestseller_rank }}</div>
-
     {% if p.rating.10 %}
         {% include "salebox/rating.html" with readonly=True rating=pv.rating.10 %}
     {% endif %}
