@@ -49,6 +49,7 @@ class ProductList:
                     .values_list('id', flat=True))
 
             # add products
+            qs = []
             if len(variant_ids) > 0:
                 qs = ProductVariant \
                         .objects \
