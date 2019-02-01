@@ -59,11 +59,8 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
             ),
 
             # prices
-            'price': price_display(b.variant.price * b.quantity),
+            'price': price_display(b.variant.sale_price * b.quantity),
         })
-
-    # TODO
-    # add sale-price stuff here
 
     # add price total
     quantity = 0

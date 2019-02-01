@@ -38,8 +38,8 @@ def get_product_detail(request, variant_id, variant_slug):
 
     # get ratings
     rating = {
-        'logged_in_user': get_rating_dict(None),
-        'global': get_rating_dict(product.rating_score)
+        'logged_in_user': get_rating_dict(0, 0),
+        'global': get_rating_dict(variant.rating_score, variant.rating_vote_count)
     }
 
     # get logged in user's rating
@@ -47,9 +47,10 @@ def get_product_detail(request, variant_id, variant_slug):
         pvr = ProductVariantRating \
                 .objects \
                 .filter(user=request.user) \
-                .filter(variant=variant)
-        if len(pvr) > 0:
-            rating['logged_in_user'] = get_rating_dict(pvr[0].rating)
+                .filter(variant=variant) \
+                .first()
+        if pvr:
+            rating['logged_in_user'] = get_rating_dict(pvr.rating, 1)
 
     # build context
     return {

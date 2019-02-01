@@ -84,6 +84,9 @@ class ProductList:
                     o.price_display = price_display(o.price)
                     o.sale_price_display = price_display(o.sale_price)
 
+                    # rating display helpers
+                    o.rating_display = get_rating_dict(o.rating_score, o.rating_vote_count)
+
             # pagination calculations
             number_of_pages = math.ceil(len(variant_ids) / self.items_per_page)
 

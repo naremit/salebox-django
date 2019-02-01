@@ -16,12 +16,12 @@
     {% endif %}
     <div class="price">{{ pv.sale_price_display.formatted_html|safe }}</div>
 
-    {% if p.rating.10 %}
-        {% include "salebox/rating.html" with readonly=True rating=pv.rating.10 %}
+    {% if pv.rating_display.10 is not None %}
+        {% include "salebox/rating.html" with readonly=True rating=pv.rating_display.10 %}
     {% endif %}
 
     <div>
-    {% if p.in_basket %}
+    {% if pv.in_basket %}
         <button disabled>In basket</button>
     {% else %}
         <button onclick="setBasket({{ pv.id }}, 1, true, this)">Add to basket</button>

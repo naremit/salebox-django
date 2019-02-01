@@ -322,14 +322,14 @@ class Product(models.Model):
             ProductVariant \
                 .objects \
                 .filter(product=self) \
-                .aggregate(rating=Avg('rating_score'))['rating_score']
+                .aggregate(rating=Avg('rating_score'))['rating']
         self.rating_vote_count = \
             ProductVariant \
                 .objects \
                 .filter(product=self) \
                 .count()
         self.save()
-        self.product.update_rating()
+
 
 class ProductVariant(models.Model):
     SHELF_EXPIRY_CHOICES = (
@@ -424,6 +424,7 @@ class ProductVariant(models.Model):
         self.save()
         self.product.update_rating()
 
+
 class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -437,11 +438,11 @@ class ProductVariantRating(models.Model):
     def delete(self, *args, **kwargs):
         variant = self.variant
         super().delete(*args, **kwargs)
-        self.variant.update_cache()
+        self.variant.update_rating()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.variant.update_cache()
+        self.variant.update_rating()
 
 
 class LastUpdate(models.Model):

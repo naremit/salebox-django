@@ -28,6 +28,7 @@ def price_display(price):
     minor = formatted.split('.')[1]
 
     return {
+        'price': price,
         'float': price / 100,
         'major': int(unformatted.split('.')[0]),
         'minor': minor,
@@ -52,9 +53,9 @@ def image_path_option(img1, img2):
     return image_path(img1) if img1 is not None else image_path(img2)
 
 
-def get_rating_dict(rating):
+def get_rating_dict(score, votes):
     return {
-        '100': rating if rating else None,
-        '5': round(rating / 20) if rating else None,
-        '10': round(rating / 10) if rating else None,
+        '100': score if votes > 0 else None,
+        '5': round(score / 20) if votes > 0 else None,
+        '10': round(score / 10) if votes > 0 else None
     }
