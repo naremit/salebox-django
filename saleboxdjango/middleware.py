@@ -49,6 +49,8 @@ class SaleboxMiddleware:
         )
         if 'product_list_order' in request.GET:
             valid_orders = [
+                'bestseller_low_to_high',
+                'bestseller_high_to_low',
                 'price_low_to_high',
                 'price_high_to_low',
                 'rating_high_to_low',

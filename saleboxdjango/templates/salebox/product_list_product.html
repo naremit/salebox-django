@@ -11,10 +11,13 @@
     <div>
         <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">{{ p.p_name }}</a>
     </div>
-    {% if p.sale_price != p.orig_price %}
-        <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price.formatted_html|safe }}</div>
+    {% if pv.sale_price != pv.price %}
+        <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price_display.formatted_html|safe }}</div>
     {% endif %}
-    <div class="price">{{ pv.sale_price.formatted_html|safe }}</div>
+    <div class="price">{{ pv.sale_price_display.formatted_html|safe }}</div>
+
+    <div>{{ pv.rating_score }}</div>
+    <div>{{ pv.bestseller_rank }}</div>
 
     {% if p.rating.10 %}
         {% include "salebox/rating.html" with readonly=True rating=pv.rating.10 %}

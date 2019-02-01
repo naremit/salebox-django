@@ -1,5 +1,6 @@
 import math
 
+from django.conf import settings
 from django.core.cache import cache
 from django.http import Http404
 
@@ -48,14 +49,25 @@ class ProductList:
                         .select_related('product', 'product__category')
 
                 # add ordering
-                #
-                #
+                if len(self.order) > 0:
+                    qs = qs.order_by(*self.order)
 
                 # add offset / limit
                 qs = qs[self.offset:self.limit]
 
-                # force evaluation of the queryset
-                tmp = len(qs)
+                # modify results
+                for o in qs:
+                    # use local image if available
+                    # TODO
+                    #
+                    #
+                    o.image = '%s%s' % (
+                        settings.SALEBOX['IMG']['POSASSETS'],
+                        o.image
+                    )
+
+                    o.price_display = price_display(o.price)
+                    o.sale_price_display = price_display(o.sale_price)
 
             # create output dict
             output = {
@@ -79,7 +91,7 @@ class ProductList:
         #     p['in_wishlist'] = p['v_id'] in \
         #         request.session['basket']['wishlist']['contents']
 
-        print(output)
+        # print(output)
         return output
 
     def set_active_status(self):
@@ -101,14 +113,51 @@ class ProductList:
         elif self.active_status == 'all':
             pass
 
+    def set_category(self, category, include_child_categories=True):
+        if include_child_categories:
+            id_list = category \
+                        .get_descendants(include_self=True) \
+                        .values_list('id', flat=True)
+        else:
+            id_list = [category.id]
+
+        self.query = self.query.filter(product__category__in=id_list)
+
     def set_pagination(self, page_num, items_per_page, url_prefix):
-        self.pagination['page_num'] = page_num
-        self.pagination['items_per_page'] = items_per_page
-        self.pagination['url_prefix'] = url_prefix
+        # self.pagination['page_num'] = page_num
+        # self.pagination['items_per_page'] = items_per_page
+        # self.pagination['url_prefix'] = url_prefix
+        # self.limit = items_per_page
+        # self.offset = (page_num - 1) * items_per_page
+        pass
 
-        self.limit = items_per_page
-        self.offset = (page_num - 1) * items_per_page
+    def set_order_preset(self, preset):
+        self.order = {
+            'bestseller_low_to_high': ['bestseller_rank', 'sale_price', 'name'],
+            'bestseller_high_to_low': ['-bestseller_rank', 'sale_price', 'name'],
+            'price_low_to_high': ['sale_price', 'name'],
+            'price_high_to_low': ['-sale_price', 'name'],
+            'rating_low_to_high': ['rating_score', 'sale_price', 'name'],
+            'rating_high_to_low': ['-rating_score', 'sale_price', 'name'],
+        }[preset]
 
+
+
+
+        """
+        presets = {
+            'price_low_to_high': 'sale_price ASC',
+            'price_high_to_low': 'sale_price DESC',
+            'rating_low_to_high': 'rating ASC',
+            'rating_high_to_low': 'rating DESC',
+        }
+
+        # error prevention...
+        if preset.startswith('rating_'):
+            self.set_include_rating()
+
+        self.order.append(presets[preset])
+        """
 
 """
 class ProductList:

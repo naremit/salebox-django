@@ -28,7 +28,6 @@ def price_display(price):
     minor = formatted.split('.')[1]
 
     return {
-        'price': price,
         'float': price / 100,
         'major': int(unformatted.split('.')[0]),
         'minor': minor,
