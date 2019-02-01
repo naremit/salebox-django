@@ -170,13 +170,15 @@ class ProductList:
         self.query = self.query.filter(sale_price__gte=minimum)
 
     def set_order_preset(self, preset):
+        # so... it turns out having multiple ORDER BYs with a LIMIT
+        # clause slows things down a lot.
         self.order = {
-            'bestseller_low_to_high': ['bestseller_rank', 'sale_price', 'name'],
-            'bestseller_high_to_low': ['-bestseller_rank', 'sale_price', 'name'],
-            'price_low_to_high': ['sale_price', 'name'],
-            'price_high_to_low': ['-sale_price', 'name'],
-            'rating_low_to_high': ['rating_score', 'sale_price', 'name'],
-            'rating_high_to_low': ['-rating_score', 'sale_price', 'name'],
+            'bestseller_low_to_high': ['bestseller_rank'],
+            'bestseller_high_to_low': ['-bestseller_rank'],
+            'price_low_to_high': ['sale_price'],
+            'price_high_to_low': ['-sale_price'],
+            'rating_low_to_high': ['rating_score'],
+            'rating_high_to_low': ['-rating_score'],
         }[preset]
 
 
