@@ -22,7 +22,7 @@ def fetchsinglevalue(sql):
     return fetchflatlist(sql)[0]
 
 
-def price_display(price):
+def get_price_display(price):
     formatted = '{:,.2f}'.format(price / 100)
     unformatted = '{:.2f}'.format(price / 100)
     minor = formatted.split('.')[1]
@@ -39,6 +39,17 @@ def price_display(price):
     }
 
 
+def get_rating_display(score, vote_count):
+        if vote_count > 0:
+            return {
+                '100': score,
+                '5': round(score / 20),
+                '10': round(score / 10)
+            }
+        else:
+            return {'100': 0, '5': 0, '10': 0}
+
+
 def image_path(img):
     if img is not None:
         img = '%s%s' % (
@@ -51,11 +62,3 @@ def image_path(img):
 
 def image_path_option(img1, img2):
     return image_path(img1) if img1 is not None else image_path(img2)
-
-
-def get_rating_dict(score, votes):
-    return {
-        '100': score if votes > 0 else None,
-        '5': round(score / 20) if votes > 0 else None,
-        '10': round(score / 10) if votes > 0 else None
-    }

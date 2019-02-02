@@ -1,7 +1,7 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from saleboxdjango.lib.common import image_path, price_display, get_rating_dict
+from saleboxdjango.lib.common import image_path, get_rating_display
 from saleboxdjango.models import ProductVariant, ProductVariantRating
 
 
@@ -38,8 +38,8 @@ def get_product_detail(request, variant_id, variant_slug):
 
     # get ratings
     rating = {
-        'logged_in_user': get_rating_dict(0, 0),
-        'global': get_rating_dict(variant.rating_score, variant.rating_vote_count)
+        'logged_in_user': get_rating_display(0, 0),
+        'global': get_rating_display(variant.rating_score, variant.rating_vote_count)
     }
 
     # get logged in user's rating
@@ -50,15 +50,15 @@ def get_product_detail(request, variant_id, variant_slug):
                 .filter(variant=variant) \
                 .first()
         if pvr:
-            rating['logged_in_user'] = get_rating_dict(pvr.rating, 1)
+            rating['logged_in_user'] = get_rating_display(pvr.rating, 1)
 
     # build context
     return {
-        'in_basket': str(variant.id) in request.session['basket']['basket']['contents'],
-        'in_wishlist': variant.id in request.session['basket']['wishlist']['contents'],
-        'price': price_display(variant.price),
+        'in_basket': str(variant.id) in \
+            request.session['basket']['basket']['contents'],
+        'in_wishlist': variant.id in \
+            request.session['basket']['wishlist']['contents'],
         'product': product,
-        'rating': rating,
         'siblings': siblings,
         'variant': variant
     }

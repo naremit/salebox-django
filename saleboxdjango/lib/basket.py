@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from django.template.loader import render_to_string
 
-from saleboxdjango.lib.common import image_path_option, price_display
+from saleboxdjango.lib.common import image_path_option, get_price_display
 from saleboxdjango.models import BasketWishlist
 
 
@@ -59,7 +59,7 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
             ),
 
             # prices
-            'price': price_display(b.variant.sale_price * b.quantity),
+            'price': get_price_display(b.variant.sale_price * b.quantity),
         })
 
     # add price total
@@ -78,7 +78,7 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
         'contents': contents,
         'quantity': quantity,
         'loyalty': loyalty,
-        'price': price_display(price),
+        'price': get_price_display(price),
     }
 
 
@@ -288,6 +288,6 @@ def update_basket_session(request):
                 data['wishlist']['contents'].append(q.variant.id)
 
     # save to session
-    data['basket']['price'] = price_display(data['basket']['price'])
+    data['basket']['price'] = get_price_display(data['basket']['price'])
     data['wishlist']['quantity'] = len(data['wishlist']['contents'])
     request.session['basket'] = data

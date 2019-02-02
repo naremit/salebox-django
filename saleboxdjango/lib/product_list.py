@@ -5,7 +5,7 @@ from django.core.cache import cache
 from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
-    dictfetchall, image_path, price_display, get_rating_dict
+    dictfetchall, image_path
 from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant
 
 
@@ -80,13 +80,6 @@ class ProductList:
                     if self.flat_discount > 0:
                         discount = (o.price * self.flat_discount) / 100
                         o.sale_price = o.price - discount
-
-                    # price display helpers
-                    o.price_display = price_display(o.price)
-                    o.sale_price_display = price_display(o.sale_price)
-
-                    # rating display helpers
-                    o.rating_display = get_rating_dict(o.rating_score, o.rating_vote_count)
 
             # pagination calculations
             number_of_pages = math.ceil(len(variant_ids) / self.items_per_page)
