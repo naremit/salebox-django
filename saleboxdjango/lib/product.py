@@ -30,6 +30,7 @@ class SaleboxProduct:
         self.pagination_url_prefix = ''
 
         # misc
+        self.fetch_user_ratings = True
         self.flat_discount = 0
         self.flat_member_discount = 0
 
@@ -76,9 +77,9 @@ class SaleboxProduct:
                 'number_of_pages': number_of_pages,
                 'page_range': range(1, number_of_pages + 1),
                 'has_previous': self.page_number > 1,
-                'previous': self.page_number + 1,
+                'previous': self.page_number - 1,
                 'has_next': self.page_number < number_of_pages,
-                'next': self.page_number - 1,
+                'next': self.page_number + 1,
                 'url_prefix': self.pagination_url_prefix
             },
             'products': self.retrieve_user_interaction(request, data['qs'])
@@ -169,7 +170,7 @@ class SaleboxProduct:
     def retrieve_user_interaction(self, request, variants):
         # get user ratings
         rating_dict = {}
-        if request.user.is_authenticated:
+        if self.fetch_user_ratings and request.user.is_authenticated:
             ratings = ProductVariantRating \
                         .objects \
                         .filter(variant__id__in=[pv.id for pv in variants]) \
@@ -222,6 +223,10 @@ class SaleboxProduct:
             id_list = [category.id]
 
         self.query = self.query.filter(product__category__in=id_list)
+
+
+    def set_fetch_user_ratings(self, value):
+        self.fetch_user_ratings = value
 
 
     def set_flat_discount(self, percent):
