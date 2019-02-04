@@ -43,12 +43,13 @@ class ProductList:
         if data is None:
             # retrieve list of variant IDs (one variant per product)
             # which match our criteria
-            variant_ids = list(
-                self.query
+            self.query = \
+                self.query \
                     .order_by('product__id', 'price') \
                     .distinct('product__id') \
                     .values_list('id', flat=True)
-            )
+
+            variant_ids = self.retrieve_variant_ids()
 
             data = {
                 'variant_ids': variant_ids,
@@ -84,7 +85,23 @@ class ProductList:
 
 
     def get_single(self, request, id, slug):
-        pass
+        self.query = \
+            self.query \
+                .filter(id=id) \
+                .filter(slug=slug) \
+                .values_list('id', flat=True)
+
+        # ensure variant exists
+        variant_ids = self.retrieve_variant_ids()
+        if len(variant_ids) > 0:
+            raise Http404
+
+        # retrieve variant
+        variant = self.retrieve_in_basket_flags(
+            request,
+            self.retrieve_results([id])
+        )[0]
+
 
 
     def retrieve_in_basket_flags(self, request, variants):
@@ -98,8 +115,6 @@ class ProductList:
 
 
     def retrieve_results(self, variant_ids):
-        self.set_active_status()
-
         qs = []
         if len(variant_ids) > 0:
             qs = ProductVariant \
@@ -159,6 +174,11 @@ class ProductList:
                     pass
 
         return qs
+
+
+    def retrieve_variant_ids(self):
+        self.set_active_status()
+        return list(self.query)
 
 
     def set_active_status(self):
