@@ -425,7 +425,7 @@ class ProductVariant(models.Model):
             ProductVariantRating \
                 .objects \
                 .filter(variant=self) \
-                .aggregate(rating=Avg('rating'))['rating']
+                .aggregate(rating=Avg('rating'))['rating'] or 0
         self.rating_vote_count = \
             ProductVariantRating \
                 .objects \

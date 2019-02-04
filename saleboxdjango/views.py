@@ -64,10 +64,11 @@ def rating_ajax_view(request):
                 o = ProductVariantRating \
                         .objects \
                         .filter(user=request.user) \
-                        .filter(variant=variant)
+                        .filter(variant=variant) \
+                        .first()
 
-                if len(o) > 0:
-                    o[0].delete()
+                if o is not None:
+                    o.delete()
 
             # add
             else:

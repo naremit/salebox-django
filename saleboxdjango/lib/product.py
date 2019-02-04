@@ -8,9 +8,8 @@ from django.http import Http404
 from saleboxdjango.lib.common import fetchsinglevalue, \
     dictfetchall, get_rating_display, image_path
 
-from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant, ProductVariantRating
-
-
+from saleboxdjango.models import Attribute, AttributeItem, \
+    Product, ProductCategory, ProductVariant, ProductVariantRating
 
 
 class SaleboxProduct:
@@ -212,6 +211,18 @@ class SaleboxProduct:
 
         elif self.active_status == 'all':
             pass
+
+
+    def set_attribute_product(self, number, value):
+        self.query = self.query.filter(**{
+            'product__attribute_%s' % number: value
+        })
+
+
+    def set_attribute_variant(self, number, value):
+        self.query = self.query.filter(**{
+            'attribute_%s' % number: value
+        })
 
 
     def set_category(self, category, include_child_categories=True):
