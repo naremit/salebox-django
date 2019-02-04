@@ -2,6 +2,7 @@ import math
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import Case, F, Value, When
 from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
@@ -29,112 +30,152 @@ class ProductList:
 
         # misc
         self.flat_discount = 0
+        self.flat_member_discount = 0
 
 
-    def go(self, request):
-        # retrieve from cache
+    def get_list(self, request):
+        # TODO: retrieve from cache
         #
         #
-        output = None
+        data = None
 
         # cache doesn't exist, build it...
-        if output is None:
+        if data is None:
             # retrieve list of variant IDs (one variant per product)
             # which match our criteria
-            self.set_active_status()
             variant_ids = list(
-                self.query \
+                self.query
                     .order_by('product__id', 'price') \
                     .distinct('product__id') \
-                    .values_list('id', flat=True))
+                    .values_list('id', flat=True)
+            )
 
-            # add products
-            qs = []
-            if len(variant_ids) > 0:
-                qs = ProductVariant \
-                        .objects \
-                        .filter(id__in=variant_ids) \
-                        .select_related('product', 'product__category')
-
-                # add ordering
-                if len(self.order) > 0:
-                    if self.flat_discount > 0:
-                        self.order = [o.replace('sale_price', 'price') for o in self.order]
-                    qs = qs.order_by(*self.order)
-
-                # add offset / limit
-                qs = qs[self.offset:self.limit]
-
-                # modify results
-                for o in qs:
-                    # use local image if available
-                    # TODO
-                    #
-                    #
-                    o.image = '%s%s' % (
-                        settings.SALEBOX['IMG']['POSASSETS'],
-                        o.image
-                    )
-
-                    # flat discount modifiers
-                    if self.flat_discount > 0:
-                        discount = (o.price * self.flat_discount) / 100
-                        o.sale_price = o.price - discount
-
-            # pagination calculations
-            number_of_pages = math.ceil(len(variant_ids) / self.items_per_page)
-
-            # create output dict
-            output = {
-                'count': {
-                    'from': self.offset + 1,
-                    'to': self.offset + len(qs),
-                    'total': len(variant_ids),
-                },
-                'pagination': {
-                    'page_number': self.page_number,
-                    'number_of_pages': number_of_pages,
-                    'page_range': range(1, number_of_pages + 1),
-                    'has_previous': self.page_number > 1,
-                    'previous': self.page_number + 1,
-                    'has_next': self.page_number < number_of_pages,
-                    'next': self.page_number - 1,
-                    'url_prefix': self.pagination_url_prefix
-                },
-                'products': qs,
+            data = {
+                'variant_ids': variant_ids,
+                'qs': self.retrieve_results(variant_ids)
             }
 
-            # save output to cache
+            # TODO: save data to cache
             #
             #
 
-        # personalise content
-        for pv in output['products']:
+        # pagination calculations
+        number_of_pages = math.ceil(len(data['variant_ids']) / self.items_per_page)
+
+        # create output dict
+        return {
+            'count': {
+                'from': self.offset + 1,
+                'to': self.offset + len(data['qs']),
+                'total': len(data['variant_ids']),
+            },
+            'pagination': {
+                'page_number': self.page_number,
+                'number_of_pages': number_of_pages,
+                'page_range': range(1, number_of_pages + 1),
+                'has_previous': self.page_number > 1,
+                'previous': self.page_number + 1,
+                'has_next': self.page_number < number_of_pages,
+                'next': self.page_number - 1,
+                'url_prefix': self.pagination_url_prefix
+            },
+            'products': self.retrieve_in_basket_flags(request, data['qs'])
+        }
+
+
+    def get_single(self, request, id, slug):
+        pass
+
+
+    def retrieve_in_basket_flags(self, request, variants):
+        for pv in variants:
             pv.in_basket = str(pv.id) in \
                 request.session['basket']['basket']['contents']
             pv.in_wishlist = str(pv.id) in \
                 request.session['basket']['wishlist']['contents']
 
-        return output
+        return variants
+
+
+    def retrieve_results(self, variant_ids):
+        self.set_active_status()
+
+        qs = []
+        if len(variant_ids) > 0:
+            qs = ProductVariant \
+                    .objects \
+                    .filter(id__in=variant_ids) \
+                    .select_related('product', 'product__category')
+
+            # price modifier: flat_discount
+            if self.flat_discount > 0:
+                ratio = 1 - (self.flat_discount / 100)
+                qs = qs.annotate(
+                    modified_price=F('price') * ratio
+                )
+
+            # price modifier: flat_member_discount
+            if self.flat_member_discount > 0:
+                ratio = 1 - (self.flat_member_discount / 100)
+                qs = qs.annotate(modified_price=Case(
+                    When(
+                        member_discount_applicable=True,
+                        then=F('price') * ratio
+                    ),
+                    default=F('price')
+                ))
+
+            # add ordering
+            if len(self.order) > 0:
+                if (
+                    self.flat_discount > 0 or
+                    self.flat_member_discount > 0
+                ):
+                    self.order = [
+                        o.replace('sale_price', 'modified_price')
+                        for o in self.order
+                    ]
+                qs = qs.order_by(*self.order)
+
+            # add offset / limit
+            qs = qs[self.offset:self.limit]
+
+            # modify results
+            for o in qs:
+                # TODO: use local image if available
+                #
+                #
+                o.image = '%s%s' % (
+                    settings.SALEBOX['IMG']['POSASSETS'],
+                    o.image
+                )
+
+                # flat discount modifiers
+                try:
+                    if o.modified_price:
+                        o.sale_price = o.modified_price
+                        del o.modified_price
+                except:
+                    pass
+
+        return qs
+
 
     def set_active_status(self):
         # I can think of no reason for this to ever be set to anything
         # other than 'active_only' but include this here so it doesn't
         # bite us later
-
         if self.active_status == 'active_only':
             self.query = \
-                self.query.filter(active_flag=True) \
+                self.query \
+                    .filter(active_flag=True) \
+                    .filter(available_on_ecom=True) \
                     .filter(product__active_flag=True) \
                     .filter(product__category__active_flag=True)
 
-        elif self.active_status == 'inactive_only':
-            self.query.filter(active_flag=False) \
-                .filter(product__active_flag=False) \
-                .filter(product__category__active_flag=False)
-
         elif self.active_status == 'all':
             pass
+
 
     def set_category(self, category, include_child_categories=True):
         if include_child_categories:
@@ -146,8 +187,14 @@ class ProductList:
 
         self.query = self.query.filter(product__category__in=id_list)
 
+
     def set_flat_discount(self, percent):
         self.flat_discount = percent
+
+
+    def set_flat_member_discount(self, percent):
+        self.flat_member_discount = percent
+
 
     def set_pagination(self, page_number, items_per_page, url_prefix):
         self.page_number = page_number
@@ -156,11 +203,14 @@ class ProductList:
         self.items_per_page = items_per_page
         self.pagination_url_prefix = url_prefix
 
+
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
 
+
     def set_min_price(self, minimun):
         self.query = self.query.filter(sale_price__gte=minimum)
+
 
     def set_order_preset(self, preset):
         # so... it turns out having multiple ORDER BYs with a LIMIT
