@@ -6,13 +6,14 @@ from django.db.models import Case, F, Value, When
 from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
-    dictfetchall, image_path
-from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant
+    dictfetchall, get_rating_display, image_path
+
+from saleboxdjango.models import Attribute, AttributeItem, Product, ProductCategory, ProductVariant, ProductVariantRating
 
 
 
 
-class ProductList:
+class SaleboxProduct:
     def __init__(self, active_status='active_only'):
         # product filters
         self.query = ProductVariant.objects
@@ -80,7 +81,7 @@ class ProductList:
                 'next': self.page_number - 1,
                 'url_prefix': self.pagination_url_prefix
             },
-            'products': self.retrieve_in_basket_flags(request, data['qs'])
+            'products': self.retrieve_user_interaction(request, data['qs'])
         }
 
 
@@ -93,25 +94,14 @@ class ProductList:
 
         # ensure variant exists
         variant_ids = self.retrieve_variant_ids()
-        if len(variant_ids) > 0:
+        if len(variant_ids) == 0:
             raise Http404
 
         # retrieve variant
-        variant = self.retrieve_in_basket_flags(
+        return self.retrieve_user_interaction(
             request,
-            self.retrieve_results([id])
+            self.retrieve_results(variant_ids)
         )[0]
-
-
-
-    def retrieve_in_basket_flags(self, request, variants):
-        for pv in variants:
-            pv.in_basket = str(pv.id) in \
-                request.session['basket']['basket']['contents']
-            pv.in_wishlist = str(pv.id) in \
-                request.session['basket']['wishlist']['contents']
-
-        return variants
 
 
     def retrieve_results(self, variant_ids):
@@ -174,6 +164,32 @@ class ProductList:
                     pass
 
         return qs
+
+
+    def retrieve_user_interaction(self, request, variants):
+        # get user ratings
+        rating_dict = {}
+        if request.user.is_authenticated:
+            ratings = ProductVariantRating \
+                        .objects \
+                        .filter(variant__id__in=[pv.id for pv in variants]) \
+                        .filter(user=request.user)
+            for r in ratings:
+                rating_dict[r.variant.id] = r.rating
+
+        # get basket / wishlist flags
+        for pv in variants:
+            pv.in_basket = str(pv.id) in \
+                request.session['basket']['basket']['contents']
+            pv.in_wishlist = str(pv.id) in \
+                request.session['basket']['wishlist']['contents']
+
+            if pv.id in rating_dict:
+                pv.user_rating = get_rating_display(rating_dict[pv.id], 1)
+            else:
+                pv.user_rating = None
+
+        return variants
 
 
     def retrieve_variant_ids(self):
