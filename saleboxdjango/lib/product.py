@@ -20,6 +20,8 @@ class SaleboxProduct:
         self.min_price = None
         self.max_price = None
         self.order = []
+        self.prefetch_product_attributes = []
+        self.prefetch_variant_attributes = []
 
         # pagination
         self.offset = 0
@@ -112,6 +114,12 @@ class SaleboxProduct:
                     .filter(id__in=variant_ids) \
                     .select_related('product', 'product__category')
 
+            # prefetch attributes
+            if len(self.prefetch_product_attributes) > 0:
+                qs = qs.prefetch_related(*self.prefetch_product_attributes)
+            if len(self.prefetch_variant_attributes) > 0:
+                qs = qs.prefetch_related(*self.prefetch_variant_attributes)
+
             # price modifier: flat_discount
             if self.flat_discount > 0:
                 ratio = 1 - (self.flat_discount / 100)
@@ -197,6 +205,22 @@ class SaleboxProduct:
         return list(self.query)
 
 
+    def set_prefetch_product_attributes(self, numbers):
+        if isinstance(numbers, int):
+            numbers = [numbers]
+        self.prefetch_product_attributes = [
+            'product__attribute_%s' % i for i in numbers
+        ]
+
+
+    def set_prefetch_variant_attributes(self, numbers):
+        if isinstance(numbers, int):
+            numbers = [numbers]
+        self.prefetch_variant_attributes = [
+            'attribute_%s' % i for i in numbers
+        ]
+
+
     def set_active_status(self):
         # I can think of no reason for this to ever be set to anything
         # other than 'active_only' but include this here so it doesn't
@@ -248,14 +272,6 @@ class SaleboxProduct:
         self.flat_member_discount = percent
 
 
-    def set_pagination(self, page_number, items_per_page, url_prefix):
-        self.page_number = page_number
-        self.offset = (page_number - 1) * items_per_page
-        self.limit = self.offset + items_per_page
-        self.items_per_page = items_per_page
-        self.pagination_url_prefix = url_prefix
-
-
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
 
@@ -275,6 +291,15 @@ class SaleboxProduct:
             'rating_low_to_high': ['rating_score'],
             'rating_high_to_low': ['-rating_score'],
         }[preset]
+
+
+    def set_pagination(self, page_number, items_per_page, url_prefix):
+        self.page_number = page_number
+        self.offset = (page_number - 1) * items_per_page
+        self.limit = self.offset + items_per_page
+        self.items_per_page = items_per_page
+        self.pagination_url_prefix = url_prefix
+
 
 
 def get_category_tree(root=None):
