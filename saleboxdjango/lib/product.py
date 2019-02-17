@@ -1,5 +1,6 @@
 import math
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Case, F, Value, When
 from django.http import Http404
