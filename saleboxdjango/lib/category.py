@@ -5,10 +5,7 @@ from saleboxdjango.lib.common import image_path
 
 
 class SaleboxCategory:
-    def __init__(self, cache_key='salebox_category_tree', cache_timeout=86400):
-        self.cache_key = cache_key
-        self.cache_timeout = cache_timeout
-
+    def __init__(self):
         self.populated_categories_only = True
         self.product_attributes_include = []
         self.product_attributes_exclude = []
@@ -17,23 +14,45 @@ class SaleboxCategory:
 
         self.valid_ids = []
 
-    def get_tree(self):
-        if self.cache_key is not None:
-            tree = cache.get(self.cache_key)
-            if tree is not None:
-                return tree
+    def get_tree(self, cache_key=None, cache_timeout=86400, category_id=None):
+        if cache_key is not None:
+            tree = cache.get(cache_key)
 
-        # init build process
-        tree = self._get_root_categories()
-        tree = self._get_tree(tree)
+        # build tree
+        if tree is None:
+            tree = self._get_tree(self._get_root_categories())
+            if cache_key is not None:
+                cache.set(cache_key, tree, cache_timeout)
 
-        # cache results
-        if self.cache_key is not None:
-            # cache.set(self.cache_key, tree, self.cache_timeout)
-            pass
+        # create output
+        current = self._find_node(tree, 106)
+        output = {
+            'tree': tree,
+            'current': current,
+            'ancestors': self._find_ancestors(tree, [], current['parent'] if current else None)
+        }
 
-        # return
-        return tree
+        return output
+
+    def _find_ancestors(self, tree, ancestors, id):
+        if id is not None:
+            curr = self._find_node(tree, id)
+            del curr['children']
+            if curr is not None:
+                ancestors.append(curr)
+                if curr['parent'] is not None:
+                    ancestors = self._find_ancestors(tree, ancestors, curr['parent'])
+
+        return ancestors
+
+    def _find_node(self, tree, id):
+        for c in tree:
+            if id == c['id']:
+                return c
+            else:
+                res = self._find_node(c['children'], id)
+                if res is not None:
+                    return res
 
     def _get_root_categories(self):
         tree = []
@@ -64,6 +83,7 @@ class SaleboxCategory:
                 'children': children,
                 'image': image_path(c.image),
                 'name': c.name,
+                'parent': c.parent.id if c.parent else None,
                 'product_count': count,
                 'short_name': c.short_name,
                 'slug': c.slug,
