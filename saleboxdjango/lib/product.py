@@ -1,6 +1,5 @@
 import math
 
-from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Case, F, Value, When
 from django.http import Http404
@@ -34,7 +33,6 @@ class SaleboxProduct:
         self.fetch_user_ratings = True
         self.flat_discount = 0
         self.flat_member_discount = 0
-
 
     def get_list(self, request):
         # TODO: retrieve from cache
@@ -86,7 +84,6 @@ class SaleboxProduct:
             'products': self.retrieve_user_interaction(request, data['qs'])
         }
 
-
     def get_single(self, request, id, slug):
         self.query = \
             self.query \
@@ -104,7 +101,6 @@ class SaleboxProduct:
             request,
             self.retrieve_results(variant_ids)
         )[0]
-
 
     def retrieve_results(self, variant_ids):
         qs = []
@@ -173,7 +169,6 @@ class SaleboxProduct:
 
         return qs
 
-
     def retrieve_user_interaction(self, request, variants):
         # get user ratings
         rating_dict = {}
@@ -199,11 +194,9 @@ class SaleboxProduct:
 
         return variants
 
-
     def retrieve_variant_ids(self):
         self.set_active_status()
         return list(self.query)
-
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
@@ -212,14 +205,12 @@ class SaleboxProduct:
             'product__attribute_%s' % i for i in numbers
         ]
 
-
     def set_prefetch_variant_attributes(self, numbers):
         if isinstance(numbers, int):
             numbers = [numbers]
         self.prefetch_variant_attributes = [
             'attribute_%s' % i for i in numbers
         ]
-
 
     def set_active_status(self):
         # I can think of no reason for this to ever be set to anything
@@ -236,18 +227,15 @@ class SaleboxProduct:
         elif self.active_status == 'all':
             pass
 
-
     def set_attribute_product(self, number, value):
         self.query = self.query.filter(**{
             'product__attribute_%s' % number: value
         })
 
-
     def set_attribute_variant(self, number, value):
         self.query = self.query.filter(**{
             'attribute_%s' % number: value
         })
-
 
     def set_category(self, category, include_child_categories=True):
         if include_child_categories:
@@ -259,26 +247,20 @@ class SaleboxProduct:
 
         self.query = self.query.filter(product__category__in=id_list)
 
-
     def set_fetch_user_ratings(self, value):
         self.fetch_user_ratings = value
-
 
     def set_flat_discount(self, percent):
         self.flat_discount = percent
 
-
     def set_flat_member_discount(self, percent):
         self.flat_member_discount = percent
-
 
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
 
-
     def set_min_price(self, minimun):
         self.query = self.query.filter(sale_price__gte=minimum)
-
 
     def set_order_preset(self, preset):
         # so... it turns out having multiple ORDER BYs with a LIMIT
@@ -292,14 +274,12 @@ class SaleboxProduct:
             'rating_high_to_low': ['-rating_score'],
         }[preset]
 
-
     def set_pagination(self, page_number, items_per_page, url_prefix):
         self.page_number = page_number
         self.offset = (page_number - 1) * items_per_page
         self.limit = self.offset + items_per_page
         self.items_per_page = items_per_page
         self.pagination_url_prefix = url_prefix
-
 
 
 def get_category_tree(root=None):
@@ -410,8 +390,6 @@ def translate_path(path):
             o['path_list'].append('')
     except:
         o['page_number'] = 1
-
-
 
     o['path'] = '/'.join(o['path_list'])
     return o
