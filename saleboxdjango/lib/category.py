@@ -25,7 +25,7 @@ class SaleboxCategory:
                 cache.set(cache_key, tree, cache_timeout)
 
         # create output
-        current = self._find_node(tree, 106)
+        current = self._find_node(tree, category_id) if category_id else None
         output = {
             'tree': tree,
             'current': current,
