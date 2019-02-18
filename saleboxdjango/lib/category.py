@@ -7,17 +7,17 @@ from saleboxdjango.lib.common import image_path
 class SaleboxCategory:
     def __init__(self):
         self.populated_categories_only = True
-        self.product_attributes_include = {}
-        self.product_attributes_exclude = {}
-        self.variant_attributes_include = {}
-        self.variant_attributes_exclude = {}
+        self.product_attribute_include = {}
+        self.product_attribute_exclude = {}
+        self.variant_attribute_include = {}
+        self.variant_attribute_exclude = {}
 
         self.valid_ids = []
 
     def get_tree(self, cache_key=None, cache_timeout=86400, category_id=None):
         tree = None
-        # if cache_key is not None:
-        #     tree = cache.get(cache_key)
+        if cache_key is not None:
+            tree = cache.get(cache_key)
 
         # build tree
         if tree is None:
@@ -79,17 +79,17 @@ class SaleboxCategory:
                 .filter(active_flag=True) \
                 .filter(available_on_ecom=True) \
 
-        if len(self.product_attributes_include.keys()) > 0:
-            pv = pv.filter(**self.product_attributes_include)
+        if len(self.product_attribute_include.keys()) > 0:
+            pv = pv.filter(**self.product_attribute_include)
 
-        if len(self.product_attributes_exclude.keys()) > 0:
-            pv = pv.exclude(**self.product_attributes_exclude)
+        if len(self.product_attribute_exclude.keys()) > 0:
+            pv = pv.exclude(**self.product_attribute_exclude)
 
-        if len(self.variant_attributes_include.keys()) > 0:
-            pv = pv.filter(**self.variant_attributes_include)
+        if len(self.variant_attribute_include.keys()) > 0:
+            pv = pv.filter(**self.variant_attribute_include)
 
-        if len(self.variant_attributes_exclude.keys()) > 0:
-            pv = pv.exclude(**self.variant_attributes_exclude)
+        if len(self.variant_attribute_exclude.keys()) > 0:
+            pv = pv.exclude(**self.variant_attribute_exclude)
 
         return pv \
                 .order_by('product__id') \
@@ -122,38 +122,66 @@ class SaleboxCategory:
 
         return output
 
-    def add_product_attributes_include(
+    def set_product_attribute_include(self, attribute_number, value):
+        key = 'product__attribute_%s' % attribute_number
+        self.product_attribute_include[key] = value
+
+    def set_product_attribute_include_keyvalue(
             self,
             attribute_number,
             field_name,
-            field_value
+            field_value,
+            field_modifier=None
         ):
         key = 'product__attribute_%s__%s' % (attribute_number, field_name)
-        self.product_attributes_include[key] = field_value
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.product_attribute_include[key] = field_value
 
-    def add_product_attributes_exclude(
+    def set_product_attribute_exclude(self, attribute_number, value):
+        key = 'product__attribute_%s' % attribute_number
+        self.product_attribute_exclude[key] = value
+
+    def set_product_attribute_exclude_keyvalue(
             self,
             attribute_number,
             field_name,
-            field_value
+            field_value,
+            field_modifier=None
         ):
         key = 'product__attribute_%s__%s' % (attribute_number, field_name)
-        self.product_attributes_exclude[key] = field_value
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.product_attribute_exclude[key] = field_value
 
-    def add_variant_attributes_include(
+    def set_variant_attribute_include(self, attribute_number, value):
+        key = 'attribute_%s' % attribute_number
+        self.variant_attribute_include[key] = value
+
+    def set_variant_attribute_include_keyvalue(
             self,
             attribute_number,
             field_name,
-            field_value
+            field_value,
+            field_modifier=None
         ):
         key = 'attribute_%s__%s' % (attribute_number, field_name)
-        self.variant_attributes_include[key] = field_value
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.variant_attribute_include[key] = field_value
 
-    def add_variant_attributes_exclude(
+    def set_variant_attribute_exclude(self, attribute_number, value):
+        key = 'attribute_%s' % attribute_number
+        self.variant_attribute_exclude[key] = value
+
+    def set_variant_attribute_exclude_keyvalue(
             self,
             attribute_number,
             field_name,
-            field_value
+            field_value,
+            field_modifier=None
         ):
         key = 'attribute_%s__%s' % (attribute_number, field_name)
-        self.variant_attributes_exclude[key] = field_value
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.variant_attribute_exclude[key] = field_value

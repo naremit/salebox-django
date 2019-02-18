@@ -228,16 +228,6 @@ class SaleboxProduct:
         elif self.active_status == 'all':
             pass
 
-    def set_attribute_product(self, number, value):
-        self.query = self.query.filter(**{
-            'product__attribute_%s' % number: value
-        })
-
-    def set_attribute_variant(self, number, value):
-        self.query = self.query.filter(**{
-            'attribute_%s' % number: value
-        })
-
     def set_category(self, category, include_child_categories=True):
         if include_child_categories:
             id_list = category \
@@ -281,6 +271,70 @@ class SaleboxProduct:
         self.limit = self.offset + items_per_page
         self.items_per_page = items_per_page
         self.pagination_url_prefix = url_prefix
+
+    def set_product_attribute_include(self, attribute_number, value):
+        key = 'product__attribute_%s' % attribute_number
+        self.query = self.query.filter(**{key: value})
+
+    def set_product_attribute_include_keyvalue(
+            self,
+            attribute_number,
+            field_name,
+            field_value,
+            field_modifier=None
+        ):
+        key = 'product__attribute_%s__%s' % (attribute_number, field_name)
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.query = self.query.filter(**{key: field_value})
+
+    def set_product_attribute_exclude(self, attribute_number, value):
+        key = 'product__attribute_%s' % attribute_number
+        self.query = self.query.exclude(**{key: value})
+
+    def set_product_attribute_exclude_keyvalue(
+            self,
+            attribute_number,
+            field_name,
+            field_value,
+            field_modifier=None
+        ):
+        key = 'product__attribute_%s__%s' % (attribute_number, field_name)
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.query = self.query.exclude(**{key: field_value})
+
+    def set_variant_attribute_include(self, attribute_number, value):
+        key = 'attribute_%s' % attribute_number
+        self.query = self.query.filter(**{key: value})
+
+    def set_variant_attribute_include_keyvalue(
+            self,
+            attribute_number,
+            field_name,
+            field_value,
+            field_modifier=None
+        ):
+        key = 'attribute_%s__%s' % (attribute_number, field_name)
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.query = self.query.filter(**{key: field_value})
+
+    def set_variant_attribute_exclude(self, attribute_number, value):
+        key = 'attribute_%s' % attribute_number
+        self.query = self.query.exclude(**{key: value})
+
+    def set_variant_attribute_exclude_keyvalue(
+            self,
+            attribute_number,
+            field_name,
+            field_value,
+            field_modifier=None
+        ):
+        key = 'attribute_%s__%s' % (attribute_number, field_name)
+        if field_modifier is not None:
+            key = '%s__%s' % (key, field_modifier)
+        self.query = self.query.exclude(**{key: field_value})
 
 
 def translate_path(path):

@@ -193,6 +193,7 @@ class Command(BaseCommand):
             lu = LastUpdate.objects.get(code=code)
             lu.value = float(api_lu)
             lu.save()
+            cache.clear()  # TODO, this probable wants to be a setting, and better still, have a list of cache keys to void, rather than all
 
     def sync_attribute(self, data, api_lu, sync_from_dict):
         try:
