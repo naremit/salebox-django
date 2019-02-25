@@ -1,7 +1,6 @@
 from django.core.cache import cache
 
 from saleboxdjango.models import Product, ProductCategory, ProductVariant
-from saleboxdjango.lib.common import image_path
 
 
 class SaleboxCategory:
@@ -111,7 +110,7 @@ class SaleboxCategory:
             output.append({
                 'id': c.id,
                 'children': children,
-                'image': c.default_image,
+                'image': c.local_image,
                 'name': c.name,
                 'parent': c.parent.id if c.parent else None,
                 'product_count': count,
