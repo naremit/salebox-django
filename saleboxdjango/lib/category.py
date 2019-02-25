@@ -111,7 +111,7 @@ class SaleboxCategory:
             output.append({
                 'id': c.id,
                 'children': children,
-                'image': image_path(c.image),
+                'image': c.default_image,
                 'name': c.name,
                 'parent': c.parent.id if c.parent else None,
                 'product_count': count,

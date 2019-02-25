@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from django.template.loader import render_to_string
 
-from saleboxdjango.lib.common import image_path_option, get_price_display
+from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import BasketWishlist
 
 
@@ -53,10 +53,7 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
             'variant': b.variant,
 
             # image
-            'image': image_path_option(
-                b.variant.image,
-                b.variant.product.image
-            ),
+            'image': b.variant.default_image,
 
             # prices
             'price': get_price_display(b.variant.sale_price * b.quantity),

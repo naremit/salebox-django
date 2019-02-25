@@ -48,17 +48,3 @@ def get_rating_display(score, vote_count):
             }
         else:
             return {'100': 0, '5': 0, '10': 0}
-
-
-def image_path(img):
-    if img is not None:
-        img = '%s%s' % (
-            settings.SALEBOX['IMG']['POSASSETS'],
-            img
-        )
-
-    return img
-
-
-def image_path_option(img1, img2):
-    return image_path(img1) if img1 is not None else image_path(img2)

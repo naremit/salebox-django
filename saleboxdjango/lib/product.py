@@ -6,7 +6,7 @@ from django.db.models import Case, F, Value, When
 from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
-    dictfetchall, get_rating_display, image_path
+    dictfetchall, get_rating_display
 
 from saleboxdjango.models import Attribute, AttributeItem, \
     Product, ProductCategory, ProductVariant, ProductVariantRating
