@@ -152,14 +152,6 @@ class SaleboxProduct:
 
             # modify results
             for o in qs:
-                # TODO: use local image if available
-                #
-                #
-                o.image = '%s%s' % (
-                    settings.SALEBOX['IMG']['POSASSETS'],
-                    o.image
-                )
-
                 # flat discount modifiers
                 try:
                     if o.modified_price:

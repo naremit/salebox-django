@@ -240,7 +240,7 @@ class ProductCategory(MPTTModel):
     name = models.CharField(max_length=100)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True, on_delete=models.CASCADE)
     image = models.CharField(max_length=70, blank=True, null=True)
-    local_image = models.CharField(max_length=20, blank=True, null=True)
+    local_image = models.CharField(max_length=25, blank=True, null=True)
     seasonal_flag = models.BooleanField(default=False)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     slug_path = models.CharField(max_length=255, blank=True, null=True, db_index=True)
@@ -297,7 +297,7 @@ class Product(models.Model):
     sold_by = models.CharField(max_length=6, choices=SOLD_BY_CHOICES, default='item')
     vat_applicable = models.BooleanField(default=True)
     image = models.CharField(max_length=70, blank=True, null=True)
-    local_image = models.CharField(max_length=20, blank=True, null=True)
+    local_image = models.CharField(max_length=25, blank=True, null=True)
     inventory_flag = models.BooleanField(default=True)
     # season = models.ForeignKey(OrganizationSeason, null=True, blank=True)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
@@ -396,6 +396,7 @@ class ProductVariant(models.Model):
     active_flag = models.BooleanField(default=True)
     ecommerce_description = models.TextField(blank=True, null=True)
     bestseller_rank = models.IntegerField(default=0)
+    default_image = models.CharField(max_length=35, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -423,6 +424,27 @@ class ProductVariant(models.Model):
     def sale_price_display(self):
         return get_price_display(self.sale_price)
 
+    def save(self, *args, **kwargs):
+        self.default_image = None
+
+        # attempt to use first variant image
+        pvi = ProductVariantImage \
+                .objects \
+                .filter(variant=self) \
+                .filter(local_img__isnull=False) \
+                .order_by('order') \
+                .first()
+        if pvi is not None:
+            self.default_image = 'pvi/%s' % pvi.local_img
+
+        # fallback to POS image if that exists
+        if self.default_image is None and self.local_image is not None:
+            self.default_image = 'pospv/%s' % self.local_image
+
+        # save
+        super(ProductVariant, self).save(*args, **kwargs)
+
+
     def update_rating(self):
         self.rating_score = \
             ProductVariantRating \
@@ -441,7 +463,7 @@ class ProductVariant(models.Model):
 class ProductVariantImage(models.Model):
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     img = models.CharField(max_length=100, default='')
-    local_img = models.CharField(max_length=20, blank=True, null=True)
+    local_img = models.CharField(max_length=25, blank=True, null=True)
     img_height = models.IntegerField(default=0)
     img_width = models.IntegerField(default=0)
     title = models.CharField(max_length=150, blank=True, null=True)
@@ -453,6 +475,10 @@ class ProductVariantImage(models.Model):
 
     class Meta:
         ordering = ('order',)
+
+    def save(self, *args, **kwargs):
+        super(ProductVariantImage, self).save(*args, **kwargs)
+        self.variant.save()
 
 
 class ProductVariantRating(models.Model):
