@@ -1,4 +1,7 @@
-from django.http import JsonResponse
+from opposablethumbs.opposablethumbs import OpposableThumbs
+
+from django.conf import settings
+from django.http import Http404, JsonResponse
 from django.template.loader import render_to_string
 
 from saleboxdjango.forms import BasketForm, RatingForm, \
@@ -50,6 +53,21 @@ def basket_ajax_view(request):
 
     return JsonResponse(get_basket_wishlist_html(request, True, 25))
 
+
+def image_view(request, imgtype, dir, id, hash, suffix):
+    try:
+        f = '%s/salebox/%s/%s.%s.%s' % (
+            settings.MEDIA_ROOT,
+            dir,
+            id,
+            hash,
+            suffix
+        )
+        params = 'file=%s&%s' % (f, settings.SALEBOX['IMG'][imgtype])
+        ot = OpposableThumbs(params)
+        return ot.response()
+    except:
+        raise Http404()
 
 def rating_ajax_view(request):
     if request.user.is_authenticated and request.method == 'POST':
