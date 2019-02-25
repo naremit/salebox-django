@@ -144,6 +144,13 @@ class Command(BaseCommand):
                                 sync_from_dict
                             )
 
+                        elif value['code'] == 'product_variant_image':
+                            self.sync_product_variant_image(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
                         else:
                             print('Error: %s' % value['code'])
 
@@ -174,6 +181,7 @@ class Command(BaseCommand):
             'product',
             'product_category',
             'product_variant',
+            'product_variant_image',
         ]:
             if code not in lu:
                 LastUpdate(code=code, value=0.0).save()
@@ -602,6 +610,41 @@ class Command(BaseCommand):
             )
 
             print('%s x ProductVariant' % len(data))
+        except:
+            pass
+
+    def sync_product_variant_image(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                # create object
+                o, created = ProductVariantImage.objects.get_or_create(
+                    id=d['id'],
+                    variant=ProductVariant.objects.get(id=d['variant'])
+                )
+
+                # update
+                for a in [
+                    'active_flag',
+                    'description',
+                    'img',
+                    'img_height',
+                    'img_width',
+                    'order',
+                    'title'
+                ]:
+                    setattr(o, a, d[a])
+
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'product_variant_image',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x ProductVariantImage' % len(data))
         except:
             pass
 

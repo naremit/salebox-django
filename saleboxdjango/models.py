@@ -240,6 +240,7 @@ class ProductCategory(MPTTModel):
     name = models.CharField(max_length=100)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True, on_delete=models.CASCADE)
     image = models.CharField(max_length=70, blank=True, null=True)
+    local_image = models.CharField(max_length=100, blank=True, null=True)
     seasonal_flag = models.BooleanField(default=False)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     slug_path = models.CharField(max_length=255, blank=True, null=True, db_index=True)
@@ -296,6 +297,7 @@ class Product(models.Model):
     sold_by = models.CharField(max_length=6, choices=SOLD_BY_CHOICES, default='item')
     vat_applicable = models.BooleanField(default=True)
     image = models.CharField(max_length=70, blank=True, null=True)
+    local_image = models.CharField(max_length=100, blank=True, null=True)
     inventory_flag = models.BooleanField(default=True)
     # season = models.ForeignKey(OrganizationSeason, null=True, blank=True)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
@@ -365,6 +367,7 @@ class ProductVariant(models.Model):
     shelf_life_days = models.IntegerField(blank=True, null=True)
     slug = models.CharField(max_length=150, blank=True, null=True, db_index=True)
     image = models.CharField(max_length=70, blank=True, null=True)
+    local_image = models.CharField(max_length=100, blank=True, null=True)
     unique_string = models.CharField(max_length=255, blank=True)
     shipping_weight = models.IntegerField(blank=True, null=True)
     loyalty_points = models.FloatField(blank=True, null=True)
@@ -433,6 +436,23 @@ class ProductVariant(models.Model):
                 .count()
         self.save()
         self.product.update_rating()
+
+
+class ProductVariantImage(models.Model):
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    img = models.CharField(max_length=100, default='')
+    local_img = models.CharField(max_length=100, blank=True, null=True)
+    img_height = models.IntegerField(default=0)
+    img_width = models.IntegerField(default=0)
+    title = models.CharField(max_length=150, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    order = models.IntegerField(blank=True, null=True)
+    active_flag = models.BooleanField(default=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('order',)
 
 
 class ProductVariantRating(models.Model):
