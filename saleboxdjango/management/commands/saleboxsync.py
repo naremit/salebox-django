@@ -1,4 +1,5 @@
 import datetime
+import os
 import requests
 from pprint import pprint
 
@@ -14,6 +15,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         do_sync = cache.get('saleboxsync') is None
 
+        # sync data
         while do_sync:
             try:
                 cache.set('saleboxsync', 1, 60)
@@ -21,6 +23,8 @@ class Command(BaseCommand):
             except:
                 do_sync = False
 
+        # sync images
+        self.get_images()
         cache.delete('saleboxsync')
 
     def do_sync(self):
@@ -159,6 +163,80 @@ class Command(BaseCommand):
         except:
             print('Something went wrong')
             return False
+
+    def get_image(self, id, urlpath, dir):
+        cache.set('saleboxsync', 1, 60)
+
+        # ensure target dir exists
+        target_dir = '%s/salebox/%s' % (settings.MEDIA_ROOT, dir)
+        try:
+            os.makedirs(target_dir)
+        except:
+            pass
+
+        # fetch image
+        try:
+            url = '%s/%s' % (settings.SALEBOX['API']['URL'], urlpath)
+            suffix = urlpath.split('.')[-1]
+            filename = '%s.%s.%s' % (id, urlpath.split('/')[-1][0:6], suffix)
+            target = '%s/%s' % (target_dir, filename)
+            r = requests.get(url)
+            if r.status_code == 200:
+                open(target, 'wb').write(r.content)
+                return filename, True
+        except:
+            pass
+
+        return None, False
+
+    def get_images(self):
+        # product category
+        imgs = ProductCategory \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.get_image(img.id, img.image[1:], 'pospc')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product
+        imgs = Product \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.get_image(img.id, img.image[1:], 'posp')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product variant
+        imgs = ProductVariant \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.get_image(img.id, img.image[1:], 'pospv')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product variant image
+        imgs = ProductVariantImage \
+                .objects \
+                .exclude(img__isnull=True) \
+                .filter(local_img__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.get_image(img.id, img.img, 'pvi')
+            if success:
+                img.local_img = path
+                img.save()
 
     def get_sync_from_dict(self):
         lus = LastUpdate.objects.all()
