@@ -1,0 +1,48 @@
+{% spaceless %}
+{% if basket_detail.contents %}
+    <table>
+        <tbody>
+            {% for b in basket_detail.contents %}
+            <tr>
+                <td style="background: #f8f8f8; color: #ccc; height: 50px; text-align: center; vertical-align: middle; width: 50px;">
+                    {% if b.image %}
+                        <img src="{{ b.image }}" style="height: 50px; width: 50px;" />
+                    {% else %}
+                        <span>n/a</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <select onchange="setBasket({{ b.variant.id }}, this.value, false)">
+                        {% for q in b.quantity_range %}
+                        <option value="{{ q }}"{% if q == b.quantity %} selected{% endif %}>{{ q }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>x</td>
+                <td>{{ b.variant.name }}</td>
+                <td style="text-align: right;">{{ b.price.formatted_html | safe }}</td>
+                <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <span onclick="setBasket({{ b.variant.id }}, 0, false)">remove</span>
+                </td>
+                {% if request.user.is_authenticated %}
+                    <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                        <span onclick="switchBasketWishlist({{ b.variant.id }}, false)">move to wishlist</span>
+                    </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4"></th>
+                <th style="text-align: right">{{ basket_detail.price.formatted_html | safe }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <br />
+    <button onclick="alert('Coming soon')">Checkout</button>
+{% else %}
+    <div>Your basket is empty</div>
+{% endif %}
+{% endspaceless %}

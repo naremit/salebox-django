@@ -5,23 +5,48 @@ from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import BasketWishlist
 
 
-def get_basket_wishlist_html(request, basket=True, default_max_qty=20):
-    basket_wishlist = get_basket_wishlist(request, basket, default_max_qty)
-
-    # build html
-    template = 'salebox/basket.html' if basket else 'salebox/wishlist.html'
-    context = {
+def get_basket_wishlist_html(request, template, basket_wishlist):
+    return render_to_string(template, {
         'basket_detail': basket_wishlist,
         'request': request
-    }
+    })
 
-    # return json
-    return {
-        'html': render_to_string(template, context),
-        'quantity':  basket_wishlist['quantity'],
-        'loyalty': basket_wishlist['loyalty'],
-        'price': basket_wishlist['price']
-    }
+
+def get_basket_wishlist_results(request, results, basket=True):
+    default_max_qty = 25  # TODO: make this a setting
+    basket_wishlist = get_basket_wishlist(request, basket, default_max_qty)
+    results = results.split(',')
+    output = {}
+
+    # construct output
+    if 'html_full' in results:
+        if basket:
+            template = 'salebox/basket_full.html'
+        else:
+            template = 'salebox/wishlist_full.html'
+        get_basket_wishlist_html(request, template, basket_wishlist)
+
+    if 'html_summary' in results:
+        if basket:
+            template = 'salebox/basket_summary.html'
+        else:
+            template = 'salebox/wishlist_summary.html'
+        get_basket_wishlist_html(request, template, basket_wishlist)
+
+    if 'loyalty' in results:
+        output['loyalty'] = basket_wishlist['loyalty']
+
+    if 'price' in results:
+        output['price'] = basket_wishlist['price']
+
+    if 'qty_total' in results:
+        output['qty_total'] = basket_wishlist['qty_total']
+
+    if 'qty_variant' in results:
+        output['qty_variant'] = basket_wishlist['qty_variant']
+
+    # return
+    return output
 
 
 def get_basket_wishlist(request, basket=True, default_max_qty=20):
@@ -60,11 +85,13 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
         })
 
     # add price total
-    quantity = 0
+    qty_total = 0
+    qty_variant = {}
     loyalty = 0
     price = 0
     for c in contents:
-        quantity += c['quantity']
+        qty_total += c['quantity']
+        qty_variant[c['variant'].id] = c['quantity']
         try:
             loyalty += c['quantity'] * c['variant'].loyalty_points
         except:
@@ -73,9 +100,10 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
 
     return {
         'contents': contents,
-        'quantity': quantity,
         'loyalty': loyalty,
         'price': get_price_display(price),
+        'qty_total': qty_total,
+        'qty_variant': qty_variant,
     }
 
 
@@ -121,7 +149,8 @@ def set_basket(request, variant, qty, relative):
     if b.quantity < 1:
         b.delete()
 
-    # update session
+    # remove empties, update session
+    clean_basket_wishlist(request)
     update_basket_session(request)
 
 
@@ -162,7 +191,8 @@ def set_wishlist(request, variant, add):
     if not add and w is not None:
         w.delete()
 
-    # update session
+    # remove empties, update session
+    clean_basket_wishlist(request)
     update_basket_session(request)
 
 
@@ -238,7 +268,8 @@ def switch_basket_wishlist(request, variant, destination):
                 b[0].quantity = 1
             b[0].save()
 
-    # update session
+    # remove empties, update session
+    clean_basket_wishlist(request)
     update_basket_session(request)
 
 

@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 
 from saleboxdjango.forms import BasketForm, RatingForm, \
     SwitchBasketWishlistForm, WishlistForm
-from saleboxdjango.lib.basket import get_basket_wishlist_html, \
+from saleboxdjango.lib.basket import get_basket_wishlist_results, \
     set_basket, set_wishlist, switch_basket_wishlist
 from saleboxdjango.models import ProductVariant, ProductVariantRating, UserAddress
 
@@ -41,9 +41,11 @@ def addresslist_ajax_view(request):
 
 
 def basket_ajax_view(request):
+    results = ''
     if request.method == 'POST':
         form = BasketForm(request.POST)
         if form.is_valid():
+            results = form.cleaned_data['results']
             set_basket(
                 request,
                 ProductVariant.objects.get(id=form.cleaned_data['variant_id']),
@@ -51,7 +53,7 @@ def basket_ajax_view(request):
                 form.cleaned_data['relative']
             )
 
-    return JsonResponse(get_basket_wishlist_html(request, True, 25))
+    return JsonResponse(get_basket_wishlist_results(request, results, True))
 
 
 def image_view(request, imgtype, dir, id, hash, suffix):
@@ -68,6 +70,7 @@ def image_view(request, imgtype, dir, id, hash, suffix):
         return ot.response()
     except:
         raise Http404()
+
 
 def rating_ajax_view(request):
     if request.user.is_authenticated and request.method == 'POST':
@@ -117,13 +120,15 @@ def switch_basket_wishlist_ajax_view(request):
 
 
 def wishlist_ajax_view(request):
+    results = ''
     if request.method == 'POST':
         form = WishlistForm(request.POST)
         if form.is_valid():
+            results = form.cleaned_data['results']
             set_wishlist(
                 request,
                 ProductVariant.objects.get(id=form.cleaned_data['variant_id']),
                 form.cleaned_data['add']
             )
 
-    return JsonResponse(get_basket_wishlist_html(request, False))
+    return JsonResponse(get_basket_wishlist_results(request, results, False))

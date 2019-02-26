@@ -1,0 +1,29 @@
+{% spaceless %}
+{% if basket_detail.contents %}
+    <table>
+        <tbody>
+            {% for b in basket_detail.contents %}
+            <tr>
+                <td style="background: #f8f8f8; color: #ccc; height: 50px; text-align: center; vertical-align: middle; width: 50px;">
+                    {% if b.image %}
+                        <img src="{{ b.image }}" style="height: 50px; width: 50px;" />
+                    {% else %}
+                        <span>n/a</span>
+                    {% endif %}
+                </td>
+                <td>{{ b.variant.name }}</td>
+                <td style="text-align: right;">{{ b.price.formatted_html | safe }}</td>
+                <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <span onclick="setWishlist({{ b.variant.id }}, false)">remove</span>
+                </td>
+                <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <span onclick="switchBasketWishlist({{ b.variant.id }}, true)">add to basket</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div>Your wishlist is empty</div>
+{% endif %}
+{% endspaceless %}

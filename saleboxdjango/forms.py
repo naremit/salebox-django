@@ -5,6 +5,7 @@ class BasketForm(forms.Form):
     variant_id = forms.IntegerField()
     quantity = forms.IntegerField()
     relative = forms.BooleanField(required=False)
+    results = forms.CharField(required=False)
 
 
 class RatingForm(forms.Form):
@@ -20,3 +21,4 @@ class SwitchBasketWishlistForm(forms.Form):
 class WishlistForm(forms.Form):
     variant_id = forms.IntegerField()
     add = forms.BooleanField(required=False)
+    results = forms.CharField(required=False)
