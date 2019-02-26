@@ -2,7 +2,7 @@
     {% if pv.basket_qty > 0 %}
         <div class="product-basketbtn-populated">
             <button onclick="setBasket({{ pv.id }}, -1, true, this.parentNode.parentNode)"><i class="fas fa-minus"></i></button>
-            <div><i class="fas fa-shopping-cart"></i><span>x<span>{{ pv.basket_qty }}</div>
+            <div><i class="fas fa-shopping-cart"></i><span>x</span>{{ pv.basket_qty }}</div>
             <button onclick="setBasket({{ pv.id }}, 1, true,this.parentNode.parentNode)"><i class="fas fa-plus"></i></button>
         </div>
     {% else %}
