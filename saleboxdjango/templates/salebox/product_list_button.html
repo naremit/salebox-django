@@ -1,12 +1,14 @@
-{% spaceless %}<div class="product-basket {% if pv.basket_qty > 0 %}product-basket-populated{% else %}product-basket-empty{% endif %}">
+{% spaceless %}<div class="product-basketbtn">
     {% if pv.basket_qty > 0 %}
-        <div class="product-basket-populated">
-            <button onclick="setBasket({{ pv.id }}, -1, true, this.parentNode.parentNode)">-</button>
-            <div>In basket x{{ pv.basket_qty }}</div>
-            <button onclick="setBasket({{ pv.id }}, 1, true,this.parentNode.parentNode)">+</button>
+        <div class="product-basketbtn-populated">
+            <button onclick="setBasket({{ pv.id }}, -1, true, this.parentNode.parentNode)"><i class="fas fa-minus"></i></button>
+            <div><i class="fas fa-shopping-cart"></i><span>x<span>{{ pv.basket_qty }}</div>
+            <button onclick="setBasket({{ pv.id }}, 1, true,this.parentNode.parentNode)"><i class="fas fa-plus"></i></button>
         </div>
     {% else %}
-        <button class="product-basket-empty" onclick="setBasket({{ pv.id }}, 1, true, this.parentNode)">Add to basket</button>
+        <button class="product-basketbtn-empty" onclick="setBasket({{ pv.id }}, 1, true, this.parentNode)">Add to basket</button>
     {% endif %}
-    <div class="product-basket-loading">Loading...</div>
+    <div class="product-basketbtn-loading">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
 </div>{% endspaceless %}
