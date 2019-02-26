@@ -53,7 +53,14 @@ def basket_ajax_view(request):
                 form.cleaned_data['relative']
             )
 
-    return JsonResponse(get_basket_wishlist_results(request, results, True))
+    return JsonResponse(
+        get_basket_wishlist_results(
+            request,
+            results,
+            True,
+            form.cleaned_data['variant_id']
+        )
+    )
 
 
 def image_view(request, imgtype, dir, id, hash, suffix):

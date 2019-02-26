@@ -12,26 +12,46 @@ def get_basket_wishlist_html(request, template, basket_wishlist):
     })
 
 
-def get_basket_wishlist_results(request, results, basket=True):
+def get_basket_wishlist_results(request, results, basket=True, variant_id=None):
     default_max_qty = 25  # TODO: make this a setting
     basket_wishlist = get_basket_wishlist(request, basket, default_max_qty)
     results = results.split(',')
     output = {}
 
     # construct output
+    if 'html_button' in results and variant_id:
+        output['html_button'] = render_to_string(
+            'salebox/product_list_button.html',
+            {
+                'pv': {
+                    'id': variant_id,
+                    'basket_qty': basket_wishlist['qty_variant'].get(variant_id, 0)
+                },
+                'request': request
+            }
+        )
+
     if 'html_full' in results:
         if basket:
             template = 'salebox/basket_full.html'
         else:
             template = 'salebox/wishlist_full.html'
-        get_basket_wishlist_html(request, template, basket_wishlist)
+        output['html_full'] = get_basket_wishlist_html(
+            request,
+            template,
+            basket_wishlist
+        )
 
     if 'html_summary' in results:
         if basket:
             template = 'salebox/basket_summary.html'
         else:
             template = 'salebox/wishlist_summary.html'
-        get_basket_wishlist_html(request, template, basket_wishlist)
+        output['html_summary'] = get_basket_wishlist_html(
+            request,
+            template,
+            basket_wishlist
+        )
 
     if 'loyalty' in results:
         output['loyalty'] = basket_wishlist['loyalty']
@@ -42,8 +62,8 @@ def get_basket_wishlist_results(request, results, basket=True):
     if 'qty_total' in results:
         output['qty_total'] = basket_wishlist['qty_total']
 
-    if 'qty_variant' in results:
-        output['qty_variant'] = basket_wishlist['qty_variant']
+    if 'qty_variant' in results and variant_id:
+        output['qty_variant'] = basket_wishlist['qty_variant'].get(variant_id, 0)
 
     # return
     return output

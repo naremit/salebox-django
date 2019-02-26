@@ -1,0 +1,12 @@
+{% spaceless %}<div class="product-basket {% if pv.basket_qty > 0 %}product-basket-populated{% else %}product-basket-empty{% endif %}">
+    {% if pv.basket_qty > 0 %}
+        <div class="product-basket-populated">
+            <button onclick="setBasket({{ pv.id }}, -1, true, this.parentNode.parentNode)">-</button>
+            <div>In basket x{{ pv.basket_qty }}</div>
+            <button onclick="setBasket({{ pv.id }}, 1, true,this.parentNode.parentNode)">+</button>
+        </div>
+    {% else %}
+        <button class="product-basket-empty" onclick="setBasket({{ pv.id }}, 1, true, this.parentNode)">Add to basket</button>
+    {% endif %}
+    <div class="product-basket-loading">Loading...</div>
+</div>{% endspaceless %}

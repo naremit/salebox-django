@@ -20,11 +20,5 @@
         {% include "salebox/rating.html" with readonly=True rating=pv.rating_display.10 %}
     {% endif %}
 
-    <div>
-    {% if pv.in_basket %}
-        <button disabled>In basket</button>
-    {% else %}
-        <button onclick="setBasket({{ pv.id }}, 1, true, this)">Add to basket</button>
-    {% endif %}
-    </div>
+    {% include 'salebox/product_list_button.html' %}
 </div>

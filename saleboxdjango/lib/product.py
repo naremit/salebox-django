@@ -175,8 +175,12 @@ class SaleboxProduct:
 
         # get basket / wishlist flags
         for pv in variants:
-            pv.in_basket = str(pv.id) in \
-                request.session['basket']['basket']['contents']
+            try:
+                pv.basket_qty = \
+                    request.session['basket']['basket']['contents'][str(pv.id)]
+            except:
+                pv.basket_qty = 0
+
             pv.in_wishlist = str(pv.id) in \
                 request.session['basket']['wishlist']['contents']
 
