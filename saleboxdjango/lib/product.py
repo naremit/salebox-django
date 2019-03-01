@@ -25,9 +25,10 @@ class SaleboxProduct:
 
         # pagination
         self.offset = 0
-        self.page_numberber = 1
+        self.page_number = 1
         self.limit = 50
         self.items_per_page = 50
+        self.max_number_of_items = None
         self.pagination_url_prefix = ''
 
         # misc
@@ -193,7 +194,7 @@ class SaleboxProduct:
 
     def retrieve_variant_ids(self):
         self.set_active_status()
-        return list(self.query)
+        return list(self.query[0:self.max_number_of_items])
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
@@ -242,6 +243,9 @@ class SaleboxProduct:
 
     def set_flat_member_discount(self, percent):
         self.flat_member_discount = percent
+
+    def set_max_number_of_items(self, i):
+        self.max_number_of_items = i
 
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
@@ -300,6 +304,10 @@ class SaleboxProduct:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
 
+
+
+        self.query = self.query.filter(qo)
+
     def set_variant_attribute_include(self, attribute_number, value):
         key = 'attribute_%s' % attribute_number
         self.query = self.query.filter(**{key: value})
@@ -331,6 +339,87 @@ class SaleboxProduct:
         if field_modifier is not None:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
+
+
+class SaleboxRelatedProduct:
+    def __init__(self, variant, number_of_items, sequence):
+        self.variant = variant
+        self.number_of_items = number_of_items
+        self.sequence = [['product', 3], ['product', 1]]
+
+    def get_related(self):
+        variant_ids = []
+        product_ids = []
+
+        # loop through options
+        for use_category in [True, False]:
+            for seq in self.sequence:
+                if seq[0] == 'product':
+                    key = 'product__attribute_%s' % seq[1]
+                    value = getattr(self.variant.product, 'attribute_%s' % seq[1]).first()
+                elif seq[0] == 'variant':
+                    key = 'attribute_%s' % seq[1]
+                    value = getattr(self.variant, 'attribute_%s' % seq[1]).first()
+
+                res = self._get_variants(key, value, use_category, product_ids)
+                for r in res:
+                    variant_ids.append(r[0])
+                    product_ids.append(r[1])
+                    if len(variant_ids) == self.number_of_items:
+                        break
+
+                if len(variant_ids) == self.number_of_items:
+                    break
+
+            if len(variant_ids) == self.number_of_items:
+                break
+
+        # not enough variants found? just go random...
+        if len(variant_ids) < self.number_of_items:
+            for use_category in [True, False]:
+                res = self._get_variants(
+                    None,
+                    None,
+                    use_category,
+                    product_ids
+                )
+
+                for r in res:
+                    variant_ids.append(r[0])
+                    product_ids.append(r[1])
+                    if len(variant_ids) == self.number_of_items:
+                        break
+
+                if len(variant_ids) == self.number_of_items:
+                    break
+
+        # return results
+        return ProductVariant \
+                .objects \
+                .filter(id__in=variant_ids) \
+                .select_related('product', 'product__category')
+
+    def _get_variants(self, key, value, use_category, exclude_products):
+        qs = ProductVariant \
+                .objects \
+                .distinct('product__id') \
+                .filter(active_flag=True) \
+                .filter(available_on_ecom=True) \
+                .filter(product__active_flag=True) \
+                .filter(product__category__active_flag=True) \
+                .exclude(id=self.variant.id) \
+                .exclude(product=self.variant.product) \
+                .exclude(product__in=exclude_products)
+
+        if key is not None:
+            qs = qs.filter(**{key: value})
+
+        if use_category is not None:
+            qs = qs.filter(product__category=self.variant.product.category)
+
+        return qs.select_related('product') \
+                 .order_by('product__id') \
+                 .values_list('id', 'product_id')[0:self.number_of_items]
 
 
 def translate_path(path):
