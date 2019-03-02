@@ -52,11 +52,11 @@ class SaleboxProduct:
                     .distinct('product__id') \
                     .values_list('id', flat=True)
 
-            variant_ids = self.retrieve_variant_ids()
+            variant_ids = self._retrieve_variant_ids()
 
             data = {
                 'variant_ids': variant_ids,
-                'qs': self.retrieve_results(variant_ids)
+                'qs': self._retrieve_results(variant_ids)
             }
 
             # TODO: save data to cache
@@ -83,8 +83,57 @@ class SaleboxProduct:
                 'next': self.page_number + 1,
                 'url_prefix': self.pagination_url_prefix
             },
-            'products': self.retrieve_user_interaction(request, data['qs'])
+            'products': self._retrieve_user_interaction(request, data['qs'])
         }
+
+    def get_related(self, request, variant, sequence):
+        variant_ids = []
+        exclude_product_ids = [variant.product.id]
+        number_of_items = self.max_number_of_items or 1
+
+        # loop through options
+        sequence.append(None)
+        for seq in self.sequence:
+            if seq and seq[0] == 'product':
+                key = 'product__attribute_%s' % seq[1]
+                value = getattr(
+                    self.variant.product,
+                    'attribute_%s' % seq[1]
+                ).first()
+            elif seq and seq[0] == 'variant':
+                key = 'attribute_%s' % seq[1]
+                value = getattr(
+                    self.variant,
+                    'attribute_%s' % seq[1]
+                ).first()
+            else:
+                key = None
+                value = None
+
+            for use_category in [True, False]:
+                res = self._retrieve_related(
+                    key,
+                    value,
+                    use_category,
+                    exclude_product_ids
+                )
+                for r in res:
+                    variant_ids.append(r[0])
+                    exclude_product_ids.append(r[1])
+                    if len(variant_ids) == number_of_items:
+                        break
+
+                if len(variant_ids) == number_of_items:
+                    break
+
+            if len(variant_ids) == number_of_items:
+                break
+
+        # return results
+        return self._retrieve_user_interaction(
+            request,
+            self._retrieve_results(variant_ids)
+        )
 
     def get_single(self, request, id, slug):
         self.query = \
@@ -94,107 +143,15 @@ class SaleboxProduct:
                 .values_list('id', flat=True)
 
         # ensure variant exists
-        variant_ids = self.retrieve_variant_ids()
+        variant_ids = self._retrieve_variant_ids()
         if len(variant_ids) == 0:
             raise Http404
 
         # retrieve variant
-        return self.retrieve_user_interaction(
+        return self._retrieve_user_interaction(
             request,
-            self.retrieve_results(variant_ids)
+            self._retrieve_results(variant_ids)
         )[0]
-
-    def retrieve_results(self, variant_ids):
-        qs = []
-        if len(variant_ids) > 0:
-            qs = ProductVariant \
-                    .objects \
-                    .filter(id__in=variant_ids) \
-                    .select_related('product', 'product__category')
-
-            # prefetch attributes
-            if len(self.prefetch_product_attributes) > 0:
-                qs = qs.prefetch_related(*self.prefetch_product_attributes)
-            if len(self.prefetch_variant_attributes) > 0:
-                qs = qs.prefetch_related(*self.prefetch_variant_attributes)
-
-            # price modifier: flat_discount
-            if self.flat_discount > 0:
-                ratio = 1 - (self.flat_discount / 100)
-                qs = qs.annotate(
-                    modified_price=F('price') * ratio
-                )
-
-            # price modifier: flat_member_discount
-            if self.flat_member_discount > 0:
-                ratio = 1 - (self.flat_member_discount / 100)
-                qs = qs.annotate(modified_price=Case(
-                    When(
-                        member_discount_applicable=True,
-                        then=F('price') * ratio
-                    ),
-                    default=F('price')
-                ))
-
-            # add ordering
-            if len(self.order) > 0:
-                if (
-                    self.flat_discount > 0 or
-                    self.flat_member_discount > 0
-                ):
-                    self.order = [
-                        o.replace('sale_price', 'modified_price')
-                        for o in self.order
-                    ]
-                qs = qs.order_by(*self.order)
-
-            # add offset / limit
-            qs = qs[self.offset:self.limit]
-
-            # modify results
-            for o in qs:
-                # flat discount modifiers
-                try:
-                    if o.modified_price:
-                        o.sale_price = o.modified_price
-                        del o.modified_price
-                except:
-                    pass
-
-        return qs
-
-    def retrieve_user_interaction(self, request, variants):
-        # get user ratings
-        rating_dict = {}
-        if self.fetch_user_ratings and request.user.is_authenticated:
-            ratings = ProductVariantRating \
-                        .objects \
-                        .filter(variant__id__in=[pv.id for pv in variants]) \
-                        .filter(user=request.user)
-            for r in ratings:
-                rating_dict[r.variant.id] = r.rating
-
-        # get basket / wishlist flags
-        for pv in variants:
-            try:
-                pv.basket_qty = \
-                    request.session['basket']['basket']['contents'][str(pv.id)]
-            except:
-                pv.basket_qty = 0
-
-            pv.in_wishlist = str(pv.id) in \
-                request.session['basket']['wishlist']['contents']
-
-            if pv.id in rating_dict:
-                pv.user_rating = get_rating_display(rating_dict[pv.id], 1)
-            else:
-                pv.user_rating = None
-
-        return variants
-
-    def retrieve_variant_ids(self):
-        self.set_active_status()
-        return list(self.query[0:self.max_number_of_items])
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
@@ -340,66 +297,7 @@ class SaleboxProduct:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
 
-
-class SaleboxRelatedProduct:
-    def __init__(self, variant, number_of_items, sequence):
-        self.variant = variant
-        self.number_of_items = number_of_items
-        self.sequence = [['product', 3], ['product', 1]]
-
-    def get_related(self):
-        variant_ids = []
-        product_ids = []
-
-        # loop through options
-        for use_category in [True, False]:
-            for seq in self.sequence:
-                if seq[0] == 'product':
-                    key = 'product__attribute_%s' % seq[1]
-                    value = getattr(self.variant.product, 'attribute_%s' % seq[1]).first()
-                elif seq[0] == 'variant':
-                    key = 'attribute_%s' % seq[1]
-                    value = getattr(self.variant, 'attribute_%s' % seq[1]).first()
-
-                res = self._get_variants(key, value, use_category, product_ids)
-                for r in res:
-                    variant_ids.append(r[0])
-                    product_ids.append(r[1])
-                    if len(variant_ids) == self.number_of_items:
-                        break
-
-                if len(variant_ids) == self.number_of_items:
-                    break
-
-            if len(variant_ids) == self.number_of_items:
-                break
-
-        # not enough variants found? just go random...
-        if len(variant_ids) < self.number_of_items:
-            for use_category in [True, False]:
-                res = self._get_variants(
-                    None,
-                    None,
-                    use_category,
-                    product_ids
-                )
-
-                for r in res:
-                    variant_ids.append(r[0])
-                    product_ids.append(r[1])
-                    if len(variant_ids) == self.number_of_items:
-                        break
-
-                if len(variant_ids) == self.number_of_items:
-                    break
-
-        # return results
-        return ProductVariant \
-                .objects \
-                .filter(id__in=variant_ids) \
-                .select_related('product', 'product__category')
-
-    def _get_variants(self, key, value, use_category, exclude_products):
+    def _retrieve_related(self, key, value, use_category, exclude_product_ids):
         qs = ProductVariant \
                 .objects \
                 .distinct('product__id') \
@@ -407,9 +305,7 @@ class SaleboxRelatedProduct:
                 .filter(available_on_ecom=True) \
                 .filter(product__active_flag=True) \
                 .filter(product__category__active_flag=True) \
-                .exclude(id=self.variant.id) \
-                .exclude(product=self.variant.product) \
-                .exclude(product__in=exclude_products)
+                .exclude(product__in=exclude_product_ids)
 
         if key is not None:
             qs = qs.filter(**{key: value})
@@ -420,6 +316,98 @@ class SaleboxRelatedProduct:
         return qs.select_related('product') \
                  .order_by('product__id') \
                  .values_list('id', 'product_id')[0:self.number_of_items]
+
+    def _retrieve_results(self, variant_ids):
+        qs = []
+        if len(variant_ids) > 0:
+            qs = ProductVariant \
+                    .objects \
+                    .filter(id__in=variant_ids) \
+                    .select_related('product', 'product__category')
+
+            # prefetch attributes
+            if len(self.prefetch_product_attributes) > 0:
+                qs = qs.prefetch_related(*self.prefetch_product_attributes)
+            if len(self.prefetch_variant_attributes) > 0:
+                qs = qs.prefetch_related(*self.prefetch_variant_attributes)
+
+            # price modifier: flat_discount
+            if self.flat_discount > 0:
+                ratio = 1 - (self.flat_discount / 100)
+                qs = qs.annotate(
+                    modified_price=F('price') * ratio
+                )
+
+            # price modifier: flat_member_discount
+            if self.flat_member_discount > 0:
+                ratio = 1 - (self.flat_member_discount / 100)
+                qs = qs.annotate(modified_price=Case(
+                    When(
+                        member_discount_applicable=True,
+                        then=F('price') * ratio
+                    ),
+                    default=F('price')
+                ))
+
+            # add ordering
+            if len(self.order) > 0:
+                if (
+                    self.flat_discount > 0 or
+                    self.flat_member_discount > 0
+                ):
+                    self.order = [
+                        o.replace('sale_price', 'modified_price')
+                        for o in self.order
+                    ]
+                qs = qs.order_by(*self.order)
+
+            # add offset / limit
+            qs = qs[self.offset:self.limit]
+
+            # modify results
+            for o in qs:
+                # flat discount modifiers
+                try:
+                    if o.modified_price:
+                        o.sale_price = o.modified_price
+                        del o.modified_price
+                except:
+                    pass
+
+        return qs
+
+    def _retrieve_user_interaction(self, request, variants):
+        # get user ratings
+        rating_dict = {}
+        if self.fetch_user_ratings and request.user.is_authenticated:
+            ratings = ProductVariantRating \
+                        .objects \
+                        .filter(variant__id__in=[pv.id for pv in variants]) \
+                        .filter(user=request.user)
+            for r in ratings:
+                rating_dict[r.variant.id] = r.rating
+
+        # get basket / wishlist flags
+        for pv in variants:
+            try:
+                pv.basket_qty = \
+                    request.session['basket']['basket']['contents'][str(pv.id)]
+            except:
+                pv.basket_qty = 0
+
+            pv.in_wishlist = str(pv.id) in \
+                request.session['basket']['wishlist']['contents']
+
+            if pv.id in rating_dict:
+                pv.user_rating = get_rating_display(rating_dict[pv.id], 1)
+            else:
+                pv.user_rating = None
+
+        return variants
+
+    def _retrieve_variant_ids(self):
+        self.set_active_status()
+        return list(self.query[0:self.max_number_of_items])
 
 
 def translate_path(path):
