@@ -93,29 +93,24 @@ class SaleboxProduct:
 
         # loop through options
         sequence.append(None)
-        for seq in self.sequence:
+        for seq in sequence:
             if seq and seq[0] == 'product':
                 key = 'product__attribute_%s' % seq[1]
-                value = getattr(
-                    self.variant.product,
-                    'attribute_%s' % seq[1]
-                ).first()
+                value = getattr(variant.product, 'attribute_%s' % seq[1]).first()
             elif seq and seq[0] == 'variant':
                 key = 'attribute_%s' % seq[1]
-                value = getattr(
-                    self.variant,
-                    'attribute_%s' % seq[1]
-                ).first()
+                value = getattr(variant, 'attribute_%s' % seq[1]).first()
             else:
                 key = None
                 value = None
 
-            for use_category in [True, False]:
+            for category in [variant.product.category, None]:
                 res = self._retrieve_related(
                     key,
                     value,
-                    use_category,
-                    exclude_product_ids
+                    category,
+                    exclude_product_ids,
+                    number_of_items - len(variant_ids)
                 )
                 for r in res:
                     variant_ids.append(r[0])
@@ -132,7 +127,7 @@ class SaleboxProduct:
         # return results
         return self._retrieve_user_interaction(
             request,
-            self._retrieve_results(variant_ids)
+            self._retrieve_results(variant_ids, True)
         )
 
     def get_single(self, request, id, slug):
@@ -216,6 +211,8 @@ class SaleboxProduct:
         self.order = {
             'bestseller_low_to_high': ['bestseller_rank'],
             'bestseller_high_to_low': ['-bestseller_rank'],
+            'name_low_to_high': ['name'],
+            'name_high_to_low': ['-name'],
             'price_low_to_high': ['sale_price'],
             'price_high_to_low': ['-sale_price'],
             'rating_low_to_high': ['rating_score'],
@@ -297,7 +294,7 @@ class SaleboxProduct:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
 
-    def _retrieve_related(self, key, value, use_category, exclude_product_ids):
+    def _retrieve_related(self, key, value, category, exclude_ids, limit):
         qs = ProductVariant \
                 .objects \
                 .distinct('product__id') \
@@ -305,19 +302,19 @@ class SaleboxProduct:
                 .filter(available_on_ecom=True) \
                 .filter(product__active_flag=True) \
                 .filter(product__category__active_flag=True) \
-                .exclude(product__in=exclude_product_ids)
+                .exclude(product__in=exclude_ids)
 
         if key is not None:
             qs = qs.filter(**{key: value})
 
-        if use_category is not None:
-            qs = qs.filter(product__category=self.variant.product.category)
+        if category is not None:
+            qs = qs.filter(product__category=category)
 
         return qs.select_related('product') \
-                 .order_by('product__id') \
-                 .values_list('id', 'product_id')[0:self.number_of_items]
+                 .order_by('product__id', 'product__name') \
+                 .values_list('id', 'product_id')[0:limit]
 
-    def _retrieve_results(self, variant_ids):
+    def _retrieve_results(self, variant_ids, preserve_order=False):
         qs = []
         if len(variant_ids) > 0:
             qs = ProductVariant \
@@ -350,7 +347,12 @@ class SaleboxProduct:
                 ))
 
             # add ordering
-            if len(self.order) > 0:
+            if preserve_order:
+                preserved = Case(*[
+                    When(pk=pk, then=pos) for pos, pk in enumerate(variant_ids)
+                ])
+                qs = qs.order_by(preserved)
+            elif len(self.order) > 0:
                 if (
                     self.flat_discount > 0 or
                     self.flat_member_discount > 0
