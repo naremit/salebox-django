@@ -645,6 +645,7 @@ class Command(BaseCommand):
                     'color',
                     'date_1',
                     'date_2',
+                    'ecommerce_description',
                     'image',
                     'int_1',
                     'int_2',
