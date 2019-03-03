@@ -61,6 +61,8 @@ class SaleboxMiddleware:
                 request.session['product_list_order'] = request.GET['product_list_order']
                 if re.search(r'\d+\/$', request.path):
                     return redirect(re.sub(r'\d+\/$', '', request.path))
+                else:
+                    return redirect(request.path)
 
         response = self.get_response(request)
         return response
