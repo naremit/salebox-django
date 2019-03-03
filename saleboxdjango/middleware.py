@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -16,7 +17,7 @@ class SaleboxMiddleware:
         if request.user.is_authenticated and not request.user.is_active:
             request.session['basket'] = None
             logout(request)
-            redirect('/')
+            return redirect('/')
 
         # set basket_refresh (update the user's basket every 5 minutes -
         # used to reflect changes they may have made on a different device)
@@ -58,6 +59,8 @@ class SaleboxMiddleware:
             ]
             if request.GET['product_list_order'] in valid_orders:
                 request.session['product_list_order'] = request.GET['product_list_order']
+                if re.search(r'\d+\/$', request.path):
+                    return redirect(re.sub(r'\d+\/$', '', request.path))
 
         response = self.get_response(request)
         return response
