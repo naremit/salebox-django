@@ -17,6 +17,7 @@ class SaleboxProduct:
         # product filters
         self.query = ProductVariant.objects
         self.active_status = active_status
+        self.exclude_product_ids = []
         self.min_price = None
         self.max_price = None
         self.order = []
@@ -36,7 +37,7 @@ class SaleboxProduct:
         self.flat_discount = 0
         self.flat_member_discount = 0
 
-    def get_list(self, request):
+    def get_list(self, request=None):
         # TODO: retrieve from cache
         #
         #
@@ -48,6 +49,7 @@ class SaleboxProduct:
             # which match our criteria
             self.query = \
                 self.query \
+                    .exclude(product__id__in=self.exclude_product_ids) \
                     .order_by('product__id', 'price') \
                     .distinct('product__id') \
                     .values_list('id', flat=True)
@@ -66,6 +68,11 @@ class SaleboxProduct:
         # pagination calculations
         number_of_pages = math.ceil(len(data['variant_ids']) / self.items_per_page)
 
+        if request is None:
+            products = data['qs']
+        else:
+            products = self.retrieve_user_interaction(request, data['qs'])
+
         # create output dict
         return {
             'count': {
@@ -83,7 +90,7 @@ class SaleboxProduct:
                 'next': self.page_number + 1,
                 'url_prefix': self.pagination_url_prefix
             },
-            'products': self._retrieve_user_interaction(request, data['qs'])
+            'products': products
         }
 
     def get_related(self, request, variant, sequence):
@@ -125,7 +132,7 @@ class SaleboxProduct:
                 break
 
         # return results
-        return self._retrieve_user_interaction(
+        return self.retrieve_user_interaction(
             request,
             self._retrieve_results(variant_ids, True)
         )
@@ -143,10 +150,15 @@ class SaleboxProduct:
             raise Http404
 
         # retrieve variant
-        return self._retrieve_user_interaction(
+        return self.retrieve_user_interaction(
             request,
             self._retrieve_results(variant_ids)
         )[0]
+
+    def set_exclude_product_ids(self, id_list):
+        if isinstance(id_list, int):
+            id_list = [id_list]
+        self.exclude_product_ids += id_list
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
@@ -204,6 +216,11 @@ class SaleboxProduct:
 
     def set_min_price(self, minimun):
         self.query = self.query.filter(sale_price__gte=minimum)
+
+    def set_order_custom(self, order):
+        self.order = order
+        if isinstance(self.order, str):
+            self.order = [self.order]
 
     def set_order_preset(self, preset):
         # so... it turns out having multiple ORDER BYs with a LIMIT
@@ -378,7 +395,7 @@ class SaleboxProduct:
 
         return qs
 
-    def _retrieve_user_interaction(self, request, variants):
+    def retrieve_user_interaction(self, request, variants):
         # get user ratings
         rating_dict = {}
         if self.fetch_user_ratings and request.user.is_authenticated:
