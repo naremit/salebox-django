@@ -24,9 +24,20 @@ class SaleboxBasket:
             if int(time.time()) - request.session['saleboxbasket']['created'] > 300:
                 self.data = None
 
+        # if the user is logged in, and their new session key does not
+        # match their old one, they've just logged in: migrate their
+        # anonymous basket to the known user
+        key = request.session.session_key
+        request.session.setdefault('saleboxprevkey', key)
+        if request.user.is_authenticated and request.session['saleboxprevkey'] != key:
+            self._migrate_anonymous_basket(key, request.user)
+            self.data = None
+
         # if no data exists, create it
         if self.data is None:
             self._init_basket(request)
+
+        pprint(self.data)
 
 
     def _init_basket(self, request):
@@ -117,7 +128,10 @@ class SaleboxBasket:
 
 
     def _filter_basket_queryset(self, request, qs):
-        qs = qs.select_related('product')
+        qs = qs.select_related(
+            'variant',
+            'variant__product'
+        )
 
         if request.user.is_authenticated:
             return qs.filter(user=request.user) \
@@ -126,3 +140,16 @@ class SaleboxBasket:
             return qs.filter(user__isnull=True) \
                      .filter(session=request.session.session_key)
 
+
+    def _migrate_anonymous_basket(self, key, user):
+        # get all basket items from previously anonymous visitor
+        basket = BasketWishlist \
+                    .objects \
+                    .filter(user__isnull=True) \
+                    .filter(session=key) \
+
+
+        for b in basket:
+            b.user = user
+            b.session = None
+            b.save()

@@ -1,5 +1,5 @@
 def salebox(request):
     return {
-        'basket': request.session['basket'],
+        'basket': request.session['saleboxbasket'],
         'user': request.user
     }
