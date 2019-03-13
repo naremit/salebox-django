@@ -1,9 +1,16 @@
 {% spaceless %}
-{% if basket_detail.contents %}
+
+<!-- todo: redo to use new SaleboxBasket class -->
+
+{% if data.wishlist.qty > 0 %}
     <table>
         <tbody>
-            {% for b in basket_detail.contents %}
+            {% for b in data.wishlist.order %}
+
             <tr>
+                <td>{{ b }}</td>
+
+                {% comment %}
                 <td style="background: #f8f8f8; color: #ccc; height: 50px; text-align: center; vertical-align: middle; width: 50px;">
                     {% if b.image %}
                         <img src="{{ b.image }}" style="height: 50px; width: 50px;" />
@@ -19,6 +26,7 @@
                 <td style="color: blue; font-size: 12px; text-decoration: underline;">
                     <span onclick="switchBasketWishlist({{ b.variant.id }}, true)">add to basket</span>
                 </td>
+                {% endcomment %}
             </tr>
             {% endfor %}
         </tbody>
@@ -26,4 +34,5 @@
 {% else %}
     <div>Your wishlist is empty</div>
 {% endif %}
+
 {% endspaceless %}

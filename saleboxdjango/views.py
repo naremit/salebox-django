@@ -6,8 +6,9 @@ from django.template.loader import render_to_string
 
 from saleboxdjango.forms import BasketForm, RatingForm, \
     SwitchBasketWishlistForm, WishlistForm
-from saleboxdjango.lib.basketx import SaleboxBasket
-from saleboxdjango.models import ProductVariant, ProductVariantRating, UserAddress
+from saleboxdjango.lib.basket import SaleboxBasket
+from saleboxdjango.models import ProductVariant, ProductVariantRating, \
+    UserAddress
 
 
 def addresslist_ajax_view(request):
