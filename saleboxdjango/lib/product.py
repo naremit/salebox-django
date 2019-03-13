@@ -275,10 +275,6 @@ class SaleboxProduct:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
 
-
-
-        self.query = self.query.filter(qo)
-
     def set_variant_attribute_include(self, attribute_number, value):
         key = 'attribute_%s' % attribute_number
         self.query = self.query.filter(**{key: value})
