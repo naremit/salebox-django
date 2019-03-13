@@ -1,7 +1,7 @@
 {% spaceless %}
 
 {% if data.wishlist.qty > 0 %}
-    <table>
+    <table style="width: 100%">
         <tbody>
             {% for item in data.wishlist.items %}
                 <tr>
@@ -13,11 +13,12 @@
                         {% endif %}
                     </td>
                     <td>{{ item.name }}</td>
+                    <td>{{ item.sale_price_display.formatted_html | safe }}</td>
                     <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
-                    <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                         <span onclick="setWishlist({{ item.id }}, false)">remove</span>
                     </td>
-                    <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                         <span onclick="switchBasketWishlist({{ item.id }}, true)">add to basket</span>
                     </td>
                 </tr>

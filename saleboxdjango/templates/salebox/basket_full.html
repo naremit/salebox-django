@@ -1,7 +1,7 @@
 {% spaceless %}
 
 {% if data.basket.qty > 0 %}
-    <table>
+    <table style="width: 100%">
         <tbody>
             {% for item in data.basket.items %}
                 <tr>
@@ -12,38 +12,36 @@
                             <span>n/a</span>
                         {% endif %}
                     </td>
-                    <td>
-                        x{{ item.qty }}
-
-                        {% comment %}
-                        <select onchange="setBasket({{ item.variant.id }}, this.value, false)">
-                            {% for q in item.quantity_range %}
-                            <option value="{{ q }}"{% if q == item.quantity %} selected{% endif %}>{{ q }}</option>
-                            {% endfor %}
-                        </select>
-                        {% endcomment %}
-                    </td>
                     <td>{{ item.variant.name }}</td>
+                    <td>{{ item.variant.sale_price_display.formatted_html | safe }}</td>
+                    <td>
+                        {% if item.qty > 1 %}
+                            <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'-1' }}, false)">-</button>
+                        {% else %}
+                            <button disabled>-</button>
+                        {% endif %}
+                        <span style="padding: 0 7px;">x{{ item.qty }}</span>
+                        <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'1' }}, false)">+</button>
+                    </td>
+                    <td>{{ item.variant.qty_sale_price.formatted_html | safe }}</td>
                     <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
-                    <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                    <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                         <span onclick="setBasket({{ item.variant.id }}, 0, false)">remove</span>
                     </td>
                     {% if request.user.is_authenticated %}
-                        <td style="color: blue; font-size: 12px; text-decoration: underline;">
+                        <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                             <span onclick="switchBasketWishlist({{ item.variant.id }}, false)">move to wishlist</span>
                         </td>
                     {% endif %}
                 </tr>
             {% endfor %}
         </tbody>
-        {% comment %}
         <tfoot>
             <tr>
                 <th colspan="4"></th>
-                <th style="text-align: right">{{ basket_detail.price.formatted_html | safe }}</th>
+                <th>{{ data.basket.sale_price.formatted_html | safe }}</th>
             </tr>
         </tfoot>
-        {% endcomment %}
     </table>
 
     <br />

@@ -57,11 +57,10 @@ class SaleboxBasket:
         if self.data is None:
             self._init_basket(request)
 
-        # from pprint import pprint
-        # pprint(self.data)
 
     def get_cookie_action(self, request):
         return self.cookie
+
 
     def get_data(self, request, results, variant_id=None):
         results = results.split(',')
@@ -162,8 +161,10 @@ class SaleboxBasket:
 
         return o
 
+
     def get_raw_data(self):
         return self.data
+
 
     def switch_basket_wishlist(self, request, variant, destination):
         if isinstance(variant, int):
@@ -185,6 +186,7 @@ class SaleboxBasket:
 
             # re-populate basket
             self._init_basket(request)
+
 
     def update_basket(self, request, variant, qty, relative):
         if isinstance(variant, int):
@@ -222,6 +224,7 @@ class SaleboxBasket:
         # re-populate basket
         self._init_basket(request)
 
+
     def update_wishlist(self, request, variant, add):
         if isinstance(variant, int):
             variant = ProductVariant.objects.get(id=variant)
@@ -241,6 +244,7 @@ class SaleboxBasket:
         # re-populate basket
         self._init_basket(request)
 
+
     def _add_variant(self, request, variant, qty, basket):
         bwl = BasketWishlist(
             variant=variant,
@@ -252,6 +256,21 @@ class SaleboxBasket:
         else:
             bwl.session = request.session.session_key
         bwl.save()
+
+
+    def _calculate_loyalty(self):
+        for i in self.data['basket']['items']:
+            if i['variant']['loyalty_points'] is not None:
+                self.data['basket']['loyalty'] += i['variant']['loyalty_points'] * i['qty']
+
+
+    def _calculate_price(self):
+        for i in self.data['basket']['items']:
+            i['variant']['qty_price'] = get_price_display(i['variant']['price'] * i['qty'])
+            i['variant']['qty_sale_price'] = get_price_display(i['variant']['sale_price'] * i['qty'])
+            self.data['basket']['orig_price'] += i['variant']['price'] * i['qty']
+            self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
+
 
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
@@ -267,6 +286,7 @@ class SaleboxBasket:
         else:
             return qs.filter(user__isnull=True) \
                      .filter(session=request.session.session_key)
+
 
     def _get_variants(self, request, variant):
         if isinstance(variant, int):
@@ -292,6 +312,7 @@ class SaleboxBasket:
             'basket': basket.first(),
             'wishlist': wishlist.first(),
         }
+
 
     def _init_basket(self, request):
         self.data = {
@@ -416,13 +437,9 @@ class SaleboxBasket:
         if len(delete_ids) > 0:
             BasketWishlist.objects.filter(id__in=delete_ids).delete()
 
-        # calculate basket value
-        #
-        #
-
-        # calculate loyalty points
-        #
-        #
+        # calculate basket value + loyalty points
+        self._calculate_price()
+        self._calculate_loyalty()
 
         # display prices
         for s in ['orig_price', 'sale_price']:
@@ -430,6 +447,7 @@ class SaleboxBasket:
 
         # save to session
         request.session['saleboxbasket'] = self.data
+
 
     def _migrate_anonymous_basket(self, key, user):
         # get all basket items from previously anonymous visitor
