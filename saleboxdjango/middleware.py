@@ -41,6 +41,14 @@ class SaleboxMiddleware:
                 if re.search(r'\d+\/$', request.path):
                     return redirect(re.sub(r'\d+\/$', '', request.path))
 
-        # done
+        # create response
         response = self.get_response(request)
+        if sb.get_cookie_action(request) == 'add':
+            response.set_cookie(
+                'psessionid',
+                value=request.session.session_key,
+                max_age=60 * 60 * 24 * 365
+            )
+        elif sb.get_cookie_action(request) == 'remove':
+            response.delete_cookie('psessionid')
         return response

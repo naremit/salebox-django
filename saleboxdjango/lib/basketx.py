@@ -6,13 +6,39 @@ from saleboxdjango.models import BasketWishlist, ProductVariant
 
 class SaleboxBasket:
     def __init__(self, request):
+        self.cookie = None
         self.data = None
+
+        # if the user is not logged in, store their sessionid in a cookie
+        # so we can use it later to fetch their anonymous basket
+        key = request.session.session_key
+        if key is not None and not request.user.is_authenticated:
+            try:
+                if request.COOKIES['psessionid'] != key:
+                    self.cookie = 'add'
+            except:
+                self.cookie = 'add'
 
         # init a default value if the session variable is not set
         # load the basket into memory if it exists
         request.session.setdefault('saleboxbasket', None)
         if request.session['saleboxbasket'] is not None:
             self.data = request.session['saleboxbasket']
+
+        # if the user is logged in, see if their sessionid has changed.
+        # if so, they've just logged in and we need to migrate their
+        # anonymous basket to their user one
+        if request.user.is_authenticated:
+            try:
+                if request.COOKIES['psessionid'] != key:
+                    self._migrate_anonymous_basket(
+                        request.COOKIES['psessionid'],
+                        request.user
+                    )
+                    self.cookie = 'remove'
+                    self.data = None
+            except:
+                pass
 
         # check the time hasn't expired. if it has, rebuild the
         # basket details. this is to keep shopping baskets in sync
@@ -21,22 +47,15 @@ class SaleboxBasket:
             if int(time.time()) - request.session['saleboxbasket']['created'] > 300:
                 self.data = None
 
-        # if the user is logged in, and their new session key does not
-        # match their old one, they've just logged in: migrate their
-        # anonymous basket to the known user
-        key = request.session.session_key
-        request.session.setdefault('saleboxprevkey', key)
-        if request.user.is_authenticated and request.session['saleboxprevkey'] != key:
-            self._migrate_anonymous_basket(key, request.user)
-            request.session['saleboxprevkey'] = key
-            self.data = None
-
         # if no data exists, create it
         if self.data is None:
             self._init_basket(request)
 
         # from pprint import pprint
         # pprint(self.data)
+
+    def get_cookie_action(self, request):
+        return self.cookie
 
     def switch_basket_wishlist(self, request, variant, destination):
         if isinstance(variant, int):
@@ -81,10 +100,12 @@ class SaleboxBasket:
             # update basket item
             if relative:
                 items['basket'].quantity += int(qty)
-                if items['basket'].quantity > 0:
-                    items['basket'].save()
-                else:
-                    items['basket'].delete()
+            else:
+                items['basket'].quantity = int(qty)
+            if items['basket'].quantity > 0:
+               items['basket'].save()
+            else:
+                items['basket'].delete()
 
             # delete wishlist item if exists
             if items['wishlist'] is not None:
@@ -299,7 +320,6 @@ class SaleboxBasket:
                     .objects \
                     .filter(user__isnull=True) \
                     .filter(session=key) \
-
 
         for b in basket:
             b.user = user
