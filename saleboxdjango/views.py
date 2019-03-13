@@ -62,7 +62,6 @@ def basket_ajax_view(request):
         sb.get_data(
             request,
             results,
-            True,
             form.cleaned_data['variant_id']
         )
     )
@@ -127,10 +126,12 @@ def switch_basket_wishlist_ajax_view(request):
                 form.cleaned_data['destination']
             )
 
-    return JsonResponse({
-        'basket': get_basket_wishlist_html(request, True, 25),
-        'wishlist': get_basket_wishlist_html(request, False),
-    })
+    return JsonResponse(
+        sb.get_data(
+            request,
+            'all'
+        )
+    )
 
 
 def wishlist_ajax_view(request):
@@ -150,7 +151,6 @@ def wishlist_ajax_view(request):
     return JsonResponse(
         sb.get_data(
             request,
-            results,
-            False
+            results
         )
     )

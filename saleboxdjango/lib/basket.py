@@ -36,7 +36,7 @@ class SaleboxBasket:
         # anonymous basket to their user one
         if request.user.is_authenticated:
             try:
-                if request.COOKIES['psessionid'] == key:
+                if request.COOKIES['psessionid'] != key:
                     self._migrate_anonymous_basket(
                         request.COOKIES['psessionid'],
                         request.user
@@ -63,71 +63,102 @@ class SaleboxBasket:
     def get_cookie_action(self, request):
         return self.cookie
 
-    def get_data(self, request, results, basket=True, variant_id=None):
+    def get_data(self, request, results, variant_id=None):
         results = results.split(',')
         o = {}
 
         # construct output
-        if 'html_button' in results and variant_id:
-            if basket:
-                try:
-                    qty = self.data['basket']['lookup'][str(variant_id)]['qty']
-                except:
-                    qty = 0
+        if 'all' in results:
+            results = [
+                'basket_html_button',
+                'basket_html_full',
+                'basket_html_summary',
+                'basket_loyalty',
+                'basket_price',
+                'basket_qty_total',
+                'basket_qty_variant',
+                'wishlist_html_button',
+                'wishlist_html_full',
+                'wishlist_html_summary',
+            ]
 
-                o['html_button'] = render_to_string(
-                    'salebox/product_list_button.html',
-                    {
-                        'pv': {
-                            'id': variant_id,
-                            'basket_qty': qty
-                        },
-                        'request': request
-                    }
-                )
-            else:
-                # todo - add/remove from wishlist button
-                #
-                #
-                pass
+        if 'basket_html_button' in results and variant_id:
+            try:
+                qty = self.data['basket']['lookup'][str(variant_id)]['qty']
+            except:
+                qty = 0
 
-        if 'html_full' in results:
-            template = 'salebox/%s_full.html'
-            return render_to_string(
-                template % ('basket' if basket else 'wishlist'),
+            o['basket_html_button'] = render_to_string(
+                'salebox/product_list_button.html',
                 {
+                    'pv': {
+                        'id': variant_id,
+                        'basket_qty': qty
+                    },
+                    'request': request
+                }
+            )
+
+        if 'basket_html_full' in results:
+            o['basket_html_full'] = render_to_string(
+                'salebox/basket_full.html', {
                     'data': self.data,
                     'request': request
                 }
             )
 
-        if 'html_summary' in results:
-            template = 'salebox/%s_summary.html'
-            return render_to_string(
-                template % ('basket' if basket else 'wishlist'),
-                {
+        if 'basket_html_summary' in results:
+            """
+            TODO
+            o['basket_html_summary'] = render_to_string(
+                'salebox/basket_summary.html', {
                     'data': self.data,
                     'request': request
                 }
             )
+            """
+            pass
 
-        if 'loyalty' in results:
-            o['loyalty'] = self.data['basket']['loyalty']
+        if 'basket_loyalty' in results:
+            o['basket_loyalty'] = self.data['basket']['loyalty']
 
-        if 'price' in results:
-            o['price'] = {
+        if 'basket_price' in results:
+            o['basket_price'] = {
                 'orig_price': self.data['basket']['orig_price'],
                 'sale_price': self.data['basket']['sale_price']
             }
 
-        if 'qty_total' in results:
-            o['qty_total'] = self.data['basket']['qty']
+        if 'basket_qty_total' in results:
+            o['basket_qty_total'] = self.data['basket']['qty']
 
-        if 'qty_variant' in results and variant_id:
-            o['qty_variant'] = len(self.data['basket']['order'])
+        if 'basket_qty_variant' in results and variant_id:
+            o['basket_qty_variant'] = len(self.data['basket']['order'])
 
-        if 'raw' in results:
-            o['raw'] = self.data
+        if 'wishlist_html_button' in results and variant_id:
+            # todo - add/remove from wishlist button
+            #
+            #
+            pass
+
+        if 'wishlist_html_full' in results:
+            o['wishlist_html_full'] = render_to_string(
+                'salebox/wishlist_full.html', {
+                    'data': self.data,
+                    'request': request
+                }
+            )
+
+        if 'wishlist_html_summary' in results:
+            """
+            TODO
+            o['wishlist_html_summary'] = render_to_string(
+                'salebox/wishlist_summary.html', {
+                    'data': self.data,
+                    'request': request
+                }
+            )
+            """
+            pass
 
         return o
 
@@ -270,12 +301,14 @@ class SaleboxBasket:
                 'orig_price': 0,
                 'sale_price': 0,
                 'loyalty': 0,
+                'items': [],
                 'order': [],
                 'lookup': {}
             },
             'wishlist': {
                 'qty': 0,
                 'order': [],
+                'items': [],
                 'lookup': {}
             }
         }
@@ -366,12 +399,18 @@ class SaleboxBasket:
                 else:
                     q.delete()
 
+        # populate the items list
+        for i in self.data['basket']['order']:
+            self.data['basket']['items'].append(self.data['basket']['lookup'][str(i)])
+        for i in self.data['wishlist']['order']:
+            self.data['wishlist']['items'].append(self.data['wishlist']['lookup'][str(i)])
+
         # cleanup
         delete_ids = []
         for d in basket_duplicates:
             for c in basket_duplicates[d]['copies']:
-                basket_duplicates[d]['original'].quantity += c.quantity
                 delete_ids.append(c.id)
+                basket_duplicates[d]['original'].quantity += c.quantity
                 basket_duplicates[d]['original'].save()
 
         if len(delete_ids) > 0:
