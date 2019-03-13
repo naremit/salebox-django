@@ -6,6 +6,7 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 
 from saleboxdjango.lib.basket import update_basket_session
+from saleboxdjango.lib.basketx import SaleboxBasket
 
 
 class SaleboxMiddleware:
@@ -61,6 +62,8 @@ class SaleboxMiddleware:
                 request.session['product_list_order'] = request.GET['product_list_order']
                 if re.search(r'\d+\/$', request.path):
                     return redirect(re.sub(r'\d+\/$', '', request.path))
+
+        bskt = SaleboxBasket(request)
 
         response = self.get_response(request)
         return response
