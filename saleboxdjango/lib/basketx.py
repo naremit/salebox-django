@@ -1,5 +1,7 @@
 import time
 
+from django.template.loader import render_to_string
+
 from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import BasketWishlist, ProductVariant
 
@@ -9,28 +11,32 @@ class SaleboxBasket:
         self.cookie = None
         self.data = None
 
-        # if the user is not logged in, store their sessionid in a cookie
-        # so we can use it later to fetch their anonymous basket
-        key = request.session.session_key
-        if key is not None and not request.user.is_authenticated:
-            try:
-                if request.COOKIES['psessionid'] != key:
-                    self.cookie = 'add'
-            except:
-                self.cookie = 'add'
-
         # init a default value if the session variable is not set
         # load the basket into memory if it exists
         request.session.setdefault('saleboxbasket', None)
         if request.session['saleboxbasket'] is not None:
             self.data = request.session['saleboxbasket']
 
+        # if the user is not logged in, store their sessionid in a cookie
+        # so we can use it later to fetch their anonymous basket
+        key = request.session.session_key
+        if not request.user.is_authenticated:
+            if key is None:
+                # just logged out, clear any lingering data
+                self.data = None
+            else:
+                try:
+                    if request.COOKIES['psessionid'] != key:
+                        self.cookie = 'add'
+                except:
+                    self.cookie = 'add'
+
         # if the user is logged in, see if their sessionid has changed.
         # if so, they've just logged in and we need to migrate their
         # anonymous basket to their user one
         if request.user.is_authenticated:
             try:
-                if request.COOKIES['psessionid'] != key:
+                if request.COOKIES['psessionid'] == key:
                     self._migrate_anonymous_basket(
                         request.COOKIES['psessionid'],
                         request.user
@@ -56,6 +62,71 @@ class SaleboxBasket:
 
     def get_cookie_action(self, request):
         return self.cookie
+
+    def get_data(self, request, results, basket=True, variant_id=None):
+        results = results.split(',')
+        o = {}
+
+        # construct output
+        if 'html_button' in results and variant_id:
+            if basket:
+                try:
+                    qty = self.data['basket']['lookup'][str(variant_id)]['qty']
+                except:
+                    qty = 0
+
+                o['html_button'] = render_to_string(
+                    'salebox/product_list_button.html',
+                    {
+                        'pv': {
+                            'id': variant_id,
+                            'basket_qty': qty
+                        },
+                        'request': request
+                    }
+                )
+            else:
+                # todo - add/remove from wishlist button
+                #
+                #
+                pass
+
+        if 'html_full' in results:
+            template = 'salebox/%s_full.html'
+            return render_to_string(
+                template % ('basket' if basket else 'wishlist'),
+                {
+                    'basket_detail': self.data,
+                    'request': request
+                }
+            )
+
+        if 'html_summary' in results:
+            template = 'salebox/%s_summary.html'
+            return render_to_string(
+                template % ('basket' if basket else 'wishlist'),
+                {
+                    'basket_detail': self.data,
+                    'request': request
+                }
+            )
+
+        if 'loyalty' in results:
+            o['loyalty'] = self.data['basket']['loyalty']
+
+        if 'price' in results:
+            o['price'] = {
+                'orig_price': self.data['basket']['orig_price'],
+                'sale_price': self.data['basket']['sale_price']
+            }
+
+        if 'qty_total' in results:
+            o['qty_total'] = self.data['basket']['qty']
+
+        if 'qty_variant' in results and variant_id:
+            o['qty_variant'] = len(self.data['basket']['order'])
+
+        return o
 
     def switch_basket_wishlist(self, request, variant, destination):
         if isinstance(variant, int):
@@ -151,6 +222,7 @@ class SaleboxBasket:
             'variant__product',
             'variant__product__category',
         )
+        qs = qs.order_by('created')
 
         if request.user.is_authenticated:
             return qs.filter(user=request.user) \

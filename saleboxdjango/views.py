@@ -6,7 +6,6 @@ from django.template.loader import render_to_string
 
 from saleboxdjango.forms import BasketForm, RatingForm, \
     SwitchBasketWishlistForm, WishlistForm
-from saleboxdjango.lib.basket import get_basket_wishlist_results
 from saleboxdjango.lib.basketx import SaleboxBasket
 from saleboxdjango.models import ProductVariant, ProductVariantRating, UserAddress
 
@@ -59,7 +58,7 @@ def basket_ajax_view(request):
             )
 
     return JsonResponse(
-        get_basket_wishlist_results(
+        sb.get_data(
             request,
             results,
             True,
@@ -147,4 +146,10 @@ def wishlist_ajax_view(request):
                 form.cleaned_data['add']
             )
 
-    return JsonResponse(get_basket_wishlist_results(request, results, False))
+    return JsonResponse(
+        sb.get_data(
+            request,
+            results,
+            False
+        )
+    )

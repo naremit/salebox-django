@@ -1,3 +1,4 @@
+"""
 from django.db.models import Sum
 from django.template.loader import render_to_string
 
@@ -17,19 +18,6 @@ def get_basket_wishlist_results(request, results, basket=True, variant_id=None):
     basket_wishlist = get_basket_wishlist(request, basket, default_max_qty)
     results = results.split(',')
     output = {}
-
-    # construct output
-    if 'html_button' in results and variant_id:
-        output['html_button'] = render_to_string(
-            'salebox/product_list_button.html',
-            {
-                'pv': {
-                    'id': variant_id,
-                    'basket_qty': basket_wishlist['qty_variant'].get(variant_id, 0)
-                },
-                'request': request
-            }
-        )
 
     if 'html_full' in results:
         if basket:
@@ -52,18 +40,6 @@ def get_basket_wishlist_results(request, results, basket=True, variant_id=None):
             template,
             basket_wishlist
         )
-
-    if 'loyalty' in results:
-        output['loyalty'] = basket_wishlist['loyalty']
-
-    if 'price' in results:
-        output['price'] = basket_wishlist['price']
-
-    if 'qty_total' in results:
-        output['qty_total'] = basket_wishlist['qty_total']
-
-    if 'qty_variant' in results and variant_id:
-        output['qty_variant'] = basket_wishlist['qty_variant'].get(variant_id, 0)
 
     # return
     return output
@@ -125,12 +101,4 @@ def get_basket_wishlist(request, basket=True, default_max_qty=20):
         'qty_total': qty_total,
         'qty_variant': qty_variant,
     }
-
-
-def basket_auth_filter(request, qs):
-    if request.user.is_authenticated:
-        return qs.filter(user=request.user) \
-                 .filter(session__isnull=True)
-    else:
-        return qs.filter(user__isnull=True) \
-                 .filter(session=request.session.session_key)
+"""
