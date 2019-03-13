@@ -4,9 +4,6 @@ from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import BasketWishlist
 
 
-from pprint import pprint
-
-
 class SaleboxBasket:
     def __init__(self, request):
         self.data = None
@@ -31,13 +28,15 @@ class SaleboxBasket:
         request.session.setdefault('saleboxprevkey', key)
         if request.user.is_authenticated and request.session['saleboxprevkey'] != key:
             self._migrate_anonymous_basket(key, request.user)
+            request.session['saleboxprevkey'] = key
             self.data = None
 
         # if no data exists, create it
         if self.data is None:
             self._init_basket(request)
 
-        pprint(self.data)
+        # from pprint import pprint
+        # pprint(self.data)
 
 
     def _init_basket(self, request):
@@ -81,11 +80,30 @@ class SaleboxBasket:
                 'name': q.variant.name,
                 'plu': q.variant.plu,
                 'price': q.variant.price,
-                'product': q.variant.product.id,
+                'price_display': q.variant.price_display(),
+                'product': {
+                    'category': {
+                        'id': q.variant.product.category.id,
+                        'name': q.variant.product.category.name,
+                        'short_name': q.variant.product.category.short_name,
+                    },
+                    'id': q.variant.product.id,
+                    'image': q.variant.product.image,
+                    'local_image': q.variant.product.local_image,
+                    'name': q.variant.product.name,
+                    'slug': q.variant.product.slug,
+                    'sold_by': q.variant.product.sold_by,
+                    'string_1': q.variant.product.string_1,
+                    'string_2': q.variant.product.string_2,
+                    'string_3': q.variant.product.string_3,
+                    'string_4': q.variant.product.string_4,
+                    'vat_applicable': q.variant.product.vat_applicable,
+                },
                 'rating_score': q.variant.rating_score,
                 'rating_vote_count': q.variant.rating_vote_count,
                 'sale_percent': q.variant.sale_percent,
                 'sale_price': q.variant.sale_price,
+                'sale_price_display': q.variant.sale_price_display(),
                 'shipping_weight': q.variant.shipping_weight,
                 'size_uom': q.variant.size_uom,
                 'sku': q.variant.sku,
@@ -99,8 +117,8 @@ class SaleboxBasket:
             if q.basket_flag:
                 self.data['basket']['qty'] += q.quantity
                 if q.variant.id not in self.data['basket']['order']:
-                    self.data['basket']['order'].append(q.variant.id)
-                    self.data['basket']['lookup'][q.variant.id] = {
+                    self.data['basket']['order'].append(str(q.variant.id))
+                    self.data['basket']['lookup'][str(q.variant.id)] = {
                         'qty': q.quantity,
                         'variant': pv
                     }
@@ -109,7 +127,8 @@ class SaleboxBasket:
             else:
                 if q.variant.id not in self.data['wishlist']['order']:
                     self.data['wishlist']['qty'] += q.quantity
-                    self.data['wishlist']['items'].append(pv)
+                    self.data['wishlist']['order'].append(str(q.variant.id))
+                    self.data['wishlist']['lookup'][str(q.variant.id)] = pv
 
         # calculate basket value
         #
@@ -130,7 +149,8 @@ class SaleboxBasket:
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
             'variant',
-            'variant__product'
+            'variant__product',
+            'variant__product__category',
         )
 
         if request.user.is_authenticated:

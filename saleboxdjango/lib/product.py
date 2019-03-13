@@ -404,14 +404,12 @@ class SaleboxProduct:
 
         # get basket / wishlist flags
         for pv in variants:
-            try:
-                pv.basket_qty = \
-                    request.session['basket']['basket']['contents'][str(pv.id)]
-            except:
+            if str(pv.id) in request.session['saleboxbasket']['basket']['lookup']:
+                pv.basket_qty = request.session['saleboxbasket']['basket']['lookup'][str(pv.id)]['qty']
+            else:
                 pv.basket_qty = 0
 
-            pv.in_wishlist = str(pv.id) in \
-                request.session['basket']['wishlist']['contents']
+            pv.in_wishlist = str(pv.id) in request.session['saleboxbasket']['wishlist']['order']
 
             if pv.id in rating_dict:
                 pv.user_rating = get_rating_display(rating_dict[pv.id], 1)

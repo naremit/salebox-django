@@ -14,37 +14,14 @@ class SaleboxMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # kick out inactive users
+        # kick out inactive (i.e. banned) users
         if request.user.is_authenticated and not request.user.is_active:
             request.session['saleboxbasket'] = None
             logout(request)
             return redirect('/')
 
-        # set basket_refresh (update the user's basket every 5 minutes -
-        # used to reflect changes they may have made on a different device)
-        # now = datetime.datetime.now().timestamp()
-        # request.session.setdefault('basket_refresh', now)
-        # if now - request.session['basket_refresh'] > 300:  # 5 minutes
-        #     request.session['basket_refresh'] = now
-        #     update_basket_session(request)
-
-        # set basket
-        # request.session.setdefault('basket', None)
-        # if request.session['basket'] is None:
-        #     update_basket_session(request)
-
-        # if the user is not logged in, store their session_id in the session
-        # so we can populate their cart on login
-        # if not request.user.is_authenticated:
-        #     key = request.session.session_key
-        #     if key is not None:
-        #         if 'prev_session_key' in request.session:
-        #             if request.session['prev_session_key'] != key:
-        #                 request.session['prev_session_key'] = key
-        #         else:
-        #             request.session['prev_session_key'] = key
-
-        print(request.session.session_key)
+        # init shopping basket
+        basket = SaleboxBasket(request)
 
         # set product_list_order
         request.session.setdefault(
@@ -65,7 +42,6 @@ class SaleboxMiddleware:
                 if re.search(r'\d+\/$', request.path):
                     return redirect(re.sub(r'\d+\/$', '', request.path))
 
-        bskt = SaleboxBasket(request)
-
+        # done
         response = self.get_response(request)
         return response
