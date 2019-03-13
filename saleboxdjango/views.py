@@ -6,8 +6,8 @@ from django.template.loader import render_to_string
 
 from saleboxdjango.forms import BasketForm, RatingForm, \
     SwitchBasketWishlistForm, WishlistForm
-from saleboxdjango.lib.basket import get_basket_wishlist_results, \
-    set_basket, set_wishlist, switch_basket_wishlist
+from saleboxdjango.lib.basket import get_basket_wishlist_results
+from saleboxdjango.lib.basketx import SaleboxBasket
 from saleboxdjango.models import ProductVariant, ProductVariantRating, UserAddress
 
 
@@ -32,7 +32,10 @@ def addresslist_ajax_view(request):
             pass
 
     context = {
-        'addresses': UserAddress.objects.filter(user=request.user).filter(address_type='d')
+        'addresses': UserAddress \
+                        .objects \
+                        .filter(user=request.user) \
+                        .filter(address_type='d')
     }
 
     return JsonResponse({
@@ -41,14 +44,16 @@ def addresslist_ajax_view(request):
 
 
 def basket_ajax_view(request):
+    sb = SaleboxBasket(request)
+
     results = ''
     if request.method == 'POST':
         form = BasketForm(request.POST)
         if form.is_valid():
             results = form.cleaned_data['results']
-            set_basket(
+            sb.update_basket(
                 request,
-                ProductVariant.objects.get(id=form.cleaned_data['variant_id']),
+                form.cleaned_data['variant_id'],
                 form.cleaned_data['quantity'],
                 form.cleaned_data['relative']
             )
@@ -111,12 +116,14 @@ def rating_ajax_view(request):
 
 
 def switch_basket_wishlist_ajax_view(request):
+    sb = SaleboxBasket(request)
+
     if request.method == 'POST':
         form = SwitchBasketWishlistForm(request.POST)
         if form.is_valid():
-            switch_basket_wishlist(
+            sb.switch_basket_wishlist(
                 request,
-                ProductVariant.objects.get(id=form.cleaned_data['variant_id']),
+                form.cleaned_data['variant_id'],
                 form.cleaned_data['destination']
             )
 
@@ -127,14 +134,16 @@ def switch_basket_wishlist_ajax_view(request):
 
 
 def wishlist_ajax_view(request):
+    sb = SaleboxBasket(request)
+
     results = ''
     if request.method == 'POST':
         form = WishlistForm(request.POST)
         if form.is_valid():
             results = form.cleaned_data['results']
-            set_wishlist(
+            sb.update_wishlist(
                 request,
-                ProductVariant.objects.get(id=form.cleaned_data['variant_id']),
+                form.cleaned_data['variant_id'],
                 form.cleaned_data['add']
             )
 

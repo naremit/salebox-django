@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
-from saleboxdjango.lib.basket import update_basket_session
 from saleboxdjango.lib.basketx import SaleboxBasket
 
 
@@ -21,7 +20,7 @@ class SaleboxMiddleware:
             return redirect('/')
 
         # init shopping basket
-        basket = SaleboxBasket(request)
+        sb = SaleboxBasket(request)
 
         # set product_list_order
         request.session.setdefault(
