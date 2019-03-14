@@ -95,15 +95,18 @@ class SaleboxBasket:
                         'basket_qty': qty
                     },
                     'request': request
-                }
+                },
+                request
             )
 
         if 'basket_html_full' in results:
             o['basket_html_full'] = render_to_string(
-                'salebox/basket_full.html', {
+                'salebox/basket_full.html',
+                {
                     'data': self.data,
                     'request': request
-                }
+                },
+                request
             )
 
         if 'basket_html_summary' in results:
@@ -144,7 +147,8 @@ class SaleboxBasket:
                 'salebox/wishlist_full.html', {
                     'data': self.data,
                     'request': request
-                }
+                },
+                request
             )
 
         if 'wishlist_html_summary' in results:
