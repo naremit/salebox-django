@@ -6,12 +6,47 @@ from django.conf import settings
 
 class SaleboxCheckout:
     def __init__(self, request):
+        #self.data = {'basket': []}
+        #self._write_session(request)
+
         self._init_sequence()
         self._init_session(request)
         self._write_session(request)
 
 
-    def page_accessible(self, page_name):
+    def get_checkout_nav(self, curr_page_name):
+        nav = {}
+        for s in self.sequence['order']:
+            nav[s] = {
+                'accessible': self.sequence['lookup'][s]['accessible'],
+                'current': s == curr_page_name
+            }
+        return nav
+
+
+    def get_raw_data(self):
+        return self.data
+
+
+    def get_last_accessible_page(self):
+        for o in reversed(self.sequence['order']):
+            if self.sequence['lookup'][o]['accessible']:
+                return self.sequence['lookup'][o]['path']
+
+        return None
+
+
+    def get_next_page(self, page_name):
+        next = self.sequence['order'].index(page_name) + 1
+        if next < len(self.sequence['order']):
+            return self.sequence['lookup'][
+                self.sequence['order'][next]
+            ]['path']
+        else:
+            return None
+
+
+    def page_redirect(self, page_name):
         if page_name not in self.sequence['order']:
             raise Exception('Unrecognised SaleboxCheckout page_name: ' % page_name)
 
@@ -23,18 +58,34 @@ class SaleboxCheckout:
         # if this page is not marked accessible, i.e. the user is
         # trying to jump steps in the process, redirect them to
         # the 'last known good' page
-        if not self.sequence['lookup'][page_name]['accessible']:
-            for o in reversed(self.sequence['order']):
-                if self.sequence['lookup'][o]['accessible']:
-                    return self.sequence['lookup'][o]['path']
+        if not self.is_page_accessible(page_name):
+            return self.get_last_accessible_page()
 
-        # user has access to this page...
         return None
 
 
-    def set_basket(self, basket):
-        self.data['basket'] = basket
-        self._write_session()
+    def is_page_accessible(self, page_name):
+        try:
+            return self.sequence['lookup'][page_name]['accessible']
+        except:
+            return False
+
+
+    def set_basket(self, basket, request, reset_completed=True, reset_checkout=True):
+        self.data['basket'] = basket.get_raw_data()
+        if reset_completed:
+            self.data['completed'] = []
+        self._write_session(request)
+        return self.sequence['lookup'][
+            self.sequence['order'][0]
+        ]['path']
+
+
+    def set_completed(self, page_name, request):
+        self.data['completed'].append(page_name)
+        self._update_sequence()
+        self._write_session(request)
+        return self.get_next_page(page_name)
 
 
     def _init_sequence(self):
@@ -68,7 +119,12 @@ class SaleboxCheckout:
             if int(time.time()) - tmp['last_seen'] < 60 * 60:  # 1 hr
                 self.data = request.session['saleboxcheckout']
 
-        # update sequence
+        # update data
+        self._update_sequence()
+        self.data['last_seen'] = int(time.time())
+
+
+    def _update_sequence(self):
         for i, o in enumerate(self.sequence['order']):
             if o in self.data['completed']:
                 self.sequence['lookup'][o]['complete'] = True
@@ -79,9 +135,6 @@ class SaleboxCheckout:
                     ]['accessible'] = True
                 except:
                     pass
-
-        # update last_seen value
-        self.data['last_seen'] = int(time.time())
 
 
     def _write_session(self, request):
