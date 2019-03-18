@@ -48,7 +48,7 @@ class SaleboxCheckout:
 
     def page_redirect(self, page_name):
         if page_name not in self.sequence['order']:
-            raise Exception('Unrecognised SaleboxCheckout page_name: ' % page_name)
+            raise Exception('Unrecognised SaleboxCheckout page_name: %s' % page_name)
 
         # if basket empty, redirect to the pre-checkout page, e.g.
         # typically the shopping basket
