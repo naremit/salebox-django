@@ -1,5 +1,7 @@
+import importlib
 import time
 
+from django.conf import settings
 from django.template.loader import render_to_string
 
 from saleboxdjango.lib.common import get_price_display
@@ -263,18 +265,38 @@ class SaleboxBasket:
 
 
     def _calculate_loyalty(self):
+        # pre_calculate_loyalty
+        self._call_external('PRE_CALCULATE_LOYALTY')
+
         for i in self.data['basket']['items']:
             if i['variant']['loyalty_points'] is not None:
                 self.data['basket']['loyalty'] += i['variant']['loyalty_points'] * i['qty']
 
+        # post_calculate_loyalty
+        self._call_external('POST_CALCULATE_LOYALTY')
+
 
     def _calculate_price(self):
+        # pre_calculate_price
+        self._call_external('PRE_CALCULATE_PRICE')
+
         for i in self.data['basket']['items']:
             i['variant']['qty_price'] = get_price_display(i['variant']['price'] * i['qty'])
             i['variant']['qty_sale_price'] = get_price_display(i['variant']['sale_price'] * i['qty'])
             self.data['basket']['orig_price'] += i['variant']['price'] * i['qty']
             self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
 
+        # post_calculate_price
+        self._call_external('POST_CALCULATE_PRICE')
+
+
+    def _call_external(self, name):
+        if settings.SALEBOX['CHECKOUT']:
+            funcstr = settings.SALEBOX['CHECKOUT'].get(name)
+            if funcstr:
+                pkg, attr = funcstr.rsplit('.', 1)
+                func = getattr(importlib.import_module(pkg), attr)
+                self.data = func(self.data)
 
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
