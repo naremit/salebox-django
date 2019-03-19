@@ -1,8 +1,10 @@
+from functools import reduce
 import math
+import operator
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, F, Value, When
+from django.db.models import Case, F, Q, Value, When
 from django.http import Http404
 
 from saleboxdjango.lib.common import fetchsinglevalue, \
@@ -274,6 +276,23 @@ class SaleboxProduct:
         if field_modifier is not None:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
+
+    def set_search(self, s):
+        # create default list
+        qlist = [
+            Q(name__icontains=s),
+            Q(ecommerce_description__icontains=s),
+            Q(product__name__icontains=s),
+        ]
+
+        # add config items
+        config = settings.SALEBOX.get('SEARCH')
+        if config:
+            for qstr in config:
+                qlist.append(Q((qstr, s)))
+
+        # update query
+        self.query = self.query.filter(reduce(operator.or_, qlist))
 
     def set_variant_attribute_include(self, attribute_number, value):
         key = 'attribute_%s' % attribute_number
