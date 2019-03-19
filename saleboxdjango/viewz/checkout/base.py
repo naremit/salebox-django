@@ -42,9 +42,27 @@ class SaleboxCheckoutBaseView(FormView):
         # default dispatch action
         return super().dispatch(request, *args, **kwargs)
 
+
     def form_valid(self, form, request):
+        # add your custom code here
+        # once complete, you will probably want to run...
+        # return super().form_valid(self, form, request)
+        # ...to run the code below
+
+        # set as complete and redirect to the next step
         r = self.sc.set_completed(self.checkout_step, request)
         return redirect(r)
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['checkout'] = {
+            'data': self.sc.get_raw_data(),
+            'nav': self.sc.get_checkout_nav(self.checkout_step),
+            'step': self.checkout_step
+        }
+        return context
+
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()

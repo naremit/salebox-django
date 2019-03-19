@@ -6,6 +6,6 @@ class SaleboxCheckoutShippingAddressForm(forms.Form):
     pass
 
 class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
-    checkout_step = 'address'
+    checkout_step = 'shipping_address'
     form_class = SaleboxCheckoutShippingAddressForm
-    template_name = 'checkout/address.html'  # 'checkout/shipping_address.html'
+    template_name = 'salebox/checkout/shipping_address.html'

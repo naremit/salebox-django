@@ -6,21 +6,33 @@ from django.conf import settings
 
 class SaleboxCheckout:
     def __init__(self, request):
-        #self.data = {'basket': []}
-        #self._write_session(request)
-
         self._init_sequence()
         self._init_session(request)
         self._write_session(request)
 
 
     def get_checkout_nav(self, curr_page_name):
-        nav = {}
+        nav = {
+            'order': [],
+            'lookup': {}
+        }
+
         for s in self.sequence['order']:
-            nav[s] = {
-                'accessible': self.sequence['lookup'][s]['accessible'],
-                'current': s == curr_page_name
+            accessible = self.sequence['lookup'][s]['accessible']
+            current = s == curr_page_name
+
+            nav['lookup'][s] = {
+                'accessible': accessible,
+                'current': current
             }
+
+            nav['order'].append({
+                'accessible': accessible,
+                'current': current,
+                'label': self.sequence['lookup'][s]['label'],
+                'path': self.sequence['lookup'][s]['path'],
+            })
+
         return nav
 
 
@@ -97,6 +109,7 @@ class SaleboxCheckout:
         for i, s in enumerate(settings.SALEBOX['CHECKOUT']['SEQUENCE']):
             self.sequence['order'].append(s[0])
             self.sequence['lookup'][s[0]] = {
+                'label': s[2] if len(s) == 3 else s[0],
                 'path': s[1],
                 'position': i,
                 'complete': False,
@@ -142,31 +155,3 @@ class SaleboxCheckout:
             request.session['saleboxcheckout'] = None
         else:
             request.session['saleboxcheckout'] = self.data
-
-
-
-
-
-
-"""
-init...
-
-- take the checkout sequence from settings:
-  - CHECKOUT_INIT_URL: /basket/  <-- url to redirect to if we don't have a checkout dict
-  - CHECKOUT_SEQUENCE: [
-      code: e.g. shipping_method
-      url: /checkout/shipping/
-      complete: False  <-- you can only see a this page if it is the first page, or the one before it is marked complete
-  ]
-
-- is there a checkout dict in the session?
-  - is it old? delete it
-  - is it fresh? import it
-
-
-- dict {
-    last_seen: 1132131312,
-    basket: {...},
-    completed: []
-}
-"""

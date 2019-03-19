@@ -1,0 +1,26 @@
+{% extends "salebox/checkout/_base.html" %}
+
+{% block checkout %}
+    <form method="post">
+        {% csrf_token %}
+
+        <p>Pick your delivery address:</p>
+        <p>Address #1: <input type="radio" name="delivery_address" checked /></p>
+        <p>Address #2: <input type="radio" name="delivery_address" /></p>
+        <p>Address #3: <input type="radio" name="delivery_address" /></p>
+        <hr />
+
+        <p>Do you want a tax invoice?</p>
+        <button class="btn btn-primary btn-sm" onclick="$('#form_tax_invoice').show(); $('#tax_invoice_reqd').val(true); return false;">Yes</button>
+        <button class="btn btn-secondary btn-sm" onclick="$('#form_tax_invoice').hide(); $('#tax_invoice_reqd').val(false); return false;">No</button>
+        <input type="hidden" id="tax_invoice_reqd" name="tax_invoice_reqd" value="false" />
+        <div id="form_tax_invoice" style="display: none;">
+            <p>Address #1: <input type="radio" name="invoice_address" checked /></p>
+            <p>Address #2: <input type="radio" name="invoice_address" /></p>
+            <p>Address #3: <input type="radio" name="invoice_address" /></p>
+        </div>
+
+        <hr />
+        <button class="btn btn-primary">Next</button>
+    </form>
+{% endblock %}
