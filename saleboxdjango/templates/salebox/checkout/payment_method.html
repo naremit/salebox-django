@@ -4,9 +4,9 @@
     <form method="post">
         {% csrf_token %}
 
-        <p>Pick your shipping method:</p>
-        <p>Option #1: <input type="radio" name="shipping_method" checked /></p>
-        <p>Option #2: <input type="radio" name="shipping_method" /></p>
+        <p>Pick your payment method:</p>
+        <p>Credit or Debit Card: <input type="radio" name="payment_method" checked /></p>
+        <p>Counter Service: <input type="radio" name="payment_method" /></p>
         <hr />
         <button class="btn btn-primary">Next</button>
     </form>

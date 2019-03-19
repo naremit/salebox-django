@@ -4,9 +4,8 @@
     <form method="post">
         {% csrf_token %}
 
-        <p>Pick your shipping method:</p>
-        <p>Option #1: <input type="radio" name="shipping_method" checked /></p>
-        <p>Option #2: <input type="radio" name="shipping_method" /></p>
+        <p>Confirm all is OK...</p>
+        <p>Total price <strong>{{ checkout.data.basket.basket.sale_price.formatted }}</strong></p>
         <hr />
         <button class="btn btn-primary">Next</button>
     </form>

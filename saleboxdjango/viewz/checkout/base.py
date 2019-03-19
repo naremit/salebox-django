@@ -8,6 +8,7 @@ from saleboxdjango.lib.checkout import SaleboxCheckout
 class SaleboxCheckoutBaseView(FormView):
     checkout_step = None
 
+
     def get_conf(self, name, default):
         return settings.SALEBOX['CHECKOUT'].get(name, default)
 
