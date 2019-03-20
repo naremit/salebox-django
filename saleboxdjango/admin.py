@@ -72,7 +72,7 @@ class ProductVariantRatingAdmin(admin.ModelAdmin):
 
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (
-        'address_type',
+        'address_group',
         'user',
         'full_name',
         'address_1',
@@ -81,7 +81,7 @@ class UserAddressAdmin(admin.ModelAdmin):
         'country',
         'postcode'
     )
-    list_filter = ('address_type',)
+    list_filter = ('address_group',)
 
 
 admin.site.register(Attribute, AttributeAdmin)

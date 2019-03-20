@@ -5,24 +5,14 @@ from saleboxdjango.models import UserAddress
 
 
 class SaleboxAddress:
-    def __init__(self, user, address_type='d'):
+    def __init__(self, user, address_group='default'):
         self.query = UserAddress \
                         .objects \
                         .filter(user=user) \
-                        .filter(address_type=address_type)
+                        .filter(address_group=address_group)
 
     def get_list(self, selected_id=None):
         addresses = self.query.clone()
-
-        # remove duplicate defaults
-        # should never be needed, but here as a safety measure
-        default_count = 0
-        for a in addresses:
-            if a.default:
-                default_count += 1
-                if default_count > 1:
-                    a.default = False
-                    a.save()
 
         # add "selected" attribute to all addresses
         if len(addresses) > 0:
@@ -37,24 +27,19 @@ class SaleboxAddress:
                 for a in addresses:
                     if a.default:
                         a.selected = True
-                        selected_set = True
                         break
-
-            if not selected_set:
-                a[0].default = True
-                a[0].save()
-                a[0].selected = True
 
         return addresses
 
-    def get_selected(self, selected_id):
-        addresses = self.get_list()
-        for a in addresses:
-            if a.id == selected_id:
-                return a
+    def get_single_by_default(self):
+        return self.query.clone().get(default=True)
+
+    def get_single_by_id(self, id):
+        return self.query.clone().get(id=selected_id)
 
     def remove_address(self, id):
-        address = self.query.clone().filter(id=id).delete()
+        address = self.query.clone().get(id=id)
+        address.delete()
 
     def render_partial(
             self,
@@ -72,25 +57,7 @@ class SaleboxAddress:
         )
 
     def set_default(id):
-        addresses = self.query.clone()
-
-        # check selected id exists in queryset
-        default_exists = False
-        for a in addresses:
-            if a.id == id:
-                default_exists = True
-                break
-
-        # update records
-        if default_exists:
-            for a in addresses:
-                if a.id == id:
-                    if a.default != True:
-                        a.default = True
-                        a.save()
-                else:
-                    if a.default != False:
-                        a.default = False
-                        a.save()
-
+        address = self.get_single_by_id(id)
+        address.default = True
+        address.save()
 
