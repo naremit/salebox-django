@@ -145,6 +145,18 @@ class DiscountRuleset(models.Model):
         pass
 
 
+class LastUpdate(models.Model):
+    code = models.CharField(max_length=36)
+    value = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        ordering = ['code']
+        verbose_name = 'Last Update'
+
+
 class MemberGroup(models.Model):
     name = models.CharField(max_length=50)
     flat_discount_percentage = models.FloatField(default=0)
@@ -499,18 +511,6 @@ class ProductVariantRating(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.variant.update_rating()
-
-
-class LastUpdate(models.Model):
-    code = models.CharField(max_length=36)
-    value = models.FloatField(default=0.0)
-
-    def __str__(self):
-        return self.code
-
-    class Meta:
-        ordering = ['code']
-        verbose_name = 'Last Update'
 
 
 class UserAddress(models.Model):
