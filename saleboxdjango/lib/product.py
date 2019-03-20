@@ -22,6 +22,7 @@ class SaleboxProduct:
         self.exclude_product_ids = []
         self.min_price = None
         self.max_price = None
+        self.max_result_count = None
         self.order = []
         self.prefetch_product_attributes = []
         self.prefetch_variant_attributes = []
@@ -31,7 +32,6 @@ class SaleboxProduct:
         self.page_number = 1
         self.limit = 50
         self.items_per_page = 50
-        self.max_number_of_items = None
         self.pagination_url_prefix = ''
 
         # misc
@@ -98,7 +98,7 @@ class SaleboxProduct:
     def get_related(self, request, variant, sequence):
         variant_ids = []
         exclude_product_ids = [variant.product.id]
-        number_of_items = self.max_number_of_items or 1
+        number_of_items = self.max_result_count or 1
 
         # loop through options
         sequence.append(None)
@@ -210,8 +210,8 @@ class SaleboxProduct:
     def set_flat_member_discount(self, percent):
         self.flat_member_discount = percent
 
-    def set_max_number_of_items(self, i):
-        self.max_number_of_items = i
+    def set_max_result_count(self, i):
+        self.max_result_count = i
 
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
@@ -439,7 +439,7 @@ class SaleboxProduct:
 
     def _retrieve_variant_ids(self):
         self.set_active_status()
-        return list(self.query[0:self.max_number_of_items])
+        return list(self.query[:self.max_result_count])
 
 
 def translate_path(path):
