@@ -58,6 +58,7 @@ class SaleboxAddress:
 
     def set_default(id):
         address = self.get_single_by_id(id)
-        address.default = True
-        address.save()
+        if not address.default:
+            address.default = True
+            address.save()
 
