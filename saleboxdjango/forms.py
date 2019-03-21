@@ -1,6 +1,15 @@
 from django import forms
 
 
+class SaleboxForm(forms.Form):
+    redirect = forms.CharField(required=False)
+    results = forms.CharField(required=False)
+    state = forms.CharField(required=False)
+
+class SaleboxAddressSetDefaultForm(SaleboxForm):
+    id = forms.IntegerField()
+
+
 class BasketForm(forms.Form):
     variant_id = forms.IntegerField()
     quantity = forms.IntegerField()

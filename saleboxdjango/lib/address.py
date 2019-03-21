@@ -12,18 +12,18 @@ class SaleboxAddress:
                         .filter(address_group=address_group)
 
     def get_list(self, selected_id=None):
-        addresses = self.query.clone()
+        addresses = self.query.all()
 
         # add "selected" attribute to all addresses
         if len(addresses) > 0:
-            selected_set = False
+            has_selected = False
             for a in addresses:
                 a.selected = False
                 if a.id == selected_id:
                     a.selected = True
-                    selected_set = True
+                    has_selected = True
 
-            if not selected_set:
+            if not has_selected:
                 for a in addresses:
                     if a.default:
                         a.selected = True
@@ -32,13 +32,13 @@ class SaleboxAddress:
         return addresses
 
     def get_single_by_default(self):
-        return self.query.clone().get(default=True)
+        return self.query.all().get(default=True)
 
     def get_single_by_id(self, id):
-        return self.query.clone().get(id=selected_id)
+        return self.query.all().get(id=id)
 
     def remove_address(self, id):
-        address = self.query.clone().get(id=id)
+        address = self.query.all().get(id=id)
         address.delete()
 
     def render_partial(
@@ -56,7 +56,7 @@ class SaleboxAddress:
             }
         )
 
-    def set_default(id):
+    def set_default(self, id):
         address = self.get_single_by_id(id)
         if not address.default:
             address.default = True
