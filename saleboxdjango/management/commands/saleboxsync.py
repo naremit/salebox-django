@@ -99,6 +99,20 @@ class Command(BaseCommand):
                                 sync_from_dict
                             )
 
+                        elif value['code'] == 'country_state_translation':
+                            self.sync_country_state_translation(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
+                        elif value['code'] == 'country_translation':
+                            self.sync_country_translation(
+                                value['data'],
+                                value['lu'],
+                                sync_from_dict
+                            )
+
                         elif value['code'] == 'discount_seasonal_group':
                             self.sync_discount_seasonal_group(
                                 value['data'],
@@ -252,6 +266,8 @@ class Command(BaseCommand):
             'attribute_item',
             'country',
             'country_state',
+            'country_state_translation',
+            'country_translation',
             # 'discount_seasonal_group',
             # 'discount_seasonal_ruleset',
             'member',
@@ -361,6 +377,48 @@ class Command(BaseCommand):
             )
 
             print('%s x CountryState' % len(data))
+        except:
+            pass
+
+    def sync_country_state_translation(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                o, created = CountryStateTranslation.objects.get_or_create(id=d['id'])
+                o.language = d['language']
+                o.state = CountryState.objects.get(id=d['state'])
+                o.value = d['value']
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'country_state_translation',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x CountryStateTranslation' % len(data))
+        except:
+            pass
+
+    def sync_country_translation(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                o, created = CountryTranslation.objects.get_or_create(id=d['id'])
+                o.language = d['language']
+                o.country = Country.objects.get(id=d['country'])
+                o.value = d['value']
+                o.save()
+
+            # update sync_from
+            self.set_sync_from_dict(
+                'country_translation',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x CountryTranslation' % len(data))
         except:
             pass
 
