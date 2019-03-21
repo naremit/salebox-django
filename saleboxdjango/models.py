@@ -588,5 +588,5 @@ class UserAddress(models.Model):
                         a.save()
 
             if default_count == 0:
-                a[0].default = True
-                a[0].save()
+                addresses[0].default = True
+                addresses[0].save()

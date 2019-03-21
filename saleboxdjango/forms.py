@@ -1,12 +1,12 @@
 from django import forms
 
 
-class SaleboxForm(forms.Form):
+class SaleboxBaseForm(forms.Form):
     redirect = forms.CharField(required=False)
     results = forms.CharField(required=False)
     state = forms.CharField(required=False)
 
-class SaleboxAddressAddForm(SaleboxForm):
+class SaleboxAddressAddForm(SaleboxBaseForm):
     address_group = forms.CharField(required=False)
     set_default = forms.BooleanField(required=False)
     full_name = forms.CharField(max_length=150)
@@ -19,12 +19,10 @@ class SaleboxAddressAddForm(SaleboxForm):
     country = forms.IntegerField(required=False)
     postcode = forms.CharField(max_length=12, required=False)
 
-
-class SaleboxAddressIDForm(SaleboxForm):
+class SaleboxAddressIDForm(SaleboxBaseForm):
     id = forms.IntegerField()
 
-
-
+# ------------------
 
 class BasketForm(forms.Form):
     variant_id = forms.IntegerField()

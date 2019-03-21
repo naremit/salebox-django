@@ -11,6 +11,9 @@ class SaleboxAddress:
                         .filter(user=user) \
                         .filter(address_group=address_group)
 
+    def get_count(self):
+        return self.query.all().count()
+
     def get_list(self, selected_id=None):
         addresses = self.query.all()
 
