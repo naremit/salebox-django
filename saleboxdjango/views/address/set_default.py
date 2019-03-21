@@ -1,10 +1,10 @@
 from saleboxdjango.views.address.base import SaleboxAddressView
-from saleboxdjango.forms import SaleboxAddressSetDefaultForm
+from saleboxdjango.forms import SaleboxAddressIDForm
 
 
 class SaleboxAddressSetDefaultView(SaleboxAddressView):
     action = 'address-set-default'
-    form = SaleboxAddressSetDefaultForm
+    form = SaleboxAddressIDForm
 
     def form_valid(self, request):
         try:

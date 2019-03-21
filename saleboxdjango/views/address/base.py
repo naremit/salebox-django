@@ -7,13 +7,15 @@ from saleboxdjango.lib.address import SaleboxAddress
 
 
 class SaleboxAddressView(LoginRequiredMixin, View):
-    redirect = None
-    state = None
-    results_csv = ''
-    results = {}
-    form = None
-    status = None
-    action = None
+    form = None  # django form
+    action = None  # name of action performed
+    status = None  # action outcome
+
+    redirect = None  # url to redirect to (if applicable)
+    state = None  # optional extra string data, passed thru
+    results_csv = ''  # csv of requested results (if applicable)
+    results = {}  # dict of results to return
+
 
     def get(self, request):
         return JsonResponse({})

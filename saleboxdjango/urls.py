@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .views.address.remove import SaleboxAddressRemoveView
 from .views.address.set_default import SaleboxAddressSetDefaultView
 
 from saleboxdjango.views.address.address import addresslist_ajax_view
@@ -9,6 +10,7 @@ from saleboxdjango.views.image import image_view
 from saleboxdjango.views.rating import rating_ajax_view
 
 urlpatterns = [
+    path('address/remove/', SaleboxAddressRemoveView.as_view()),
     path('address/set-default/', SaleboxAddressSetDefaultView.as_view()),
 
     path('delivery-address-list/', addresslist_ajax_view),
