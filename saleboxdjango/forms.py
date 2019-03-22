@@ -8,7 +8,7 @@ class SaleboxBaseForm(forms.Form):
 
 class SaleboxAddressAddForm(SaleboxBaseForm):
     address_group = forms.CharField(required=False)
-    set_default = forms.BooleanField(required=False)
+    default = forms.BooleanField(required=False)
     full_name = forms.CharField(max_length=150)
     address_1 = forms.CharField(max_length=150)
     address_2 = forms.CharField(max_length=150)

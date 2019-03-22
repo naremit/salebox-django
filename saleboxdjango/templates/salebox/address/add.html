@@ -1,0 +1,47 @@
+{% spaceless %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="form_name" value="{{ form_name }}">
+    <input type="hidden" name="state" value="{{ state }}">
+
+    <div>
+        <label>Full name:</label>
+        <input name="full_name" required>
+    </div>
+    <div>
+        <label>Address #1:</label>
+        <input name="address_1" required>
+    </div>
+    <div>
+        <label>Address #2:</label>
+        <input name="address_2" required>
+    </div>
+    <div>
+        <label>Address #3:</label>
+        <input name="address_3">
+    </div>
+    <div>
+        <label>Address #4:</label>
+        <input name="address_4">
+    </div>
+    <div>
+        <label>Address #5:</label>
+        <input name="address_5">
+    </div>
+    <div>
+        <label>Country:</label>
+        <select name="country">
+            <option value=""></option>
+            {% for c in countries %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label>Postcode:</label>
+        <input name="postcode" required><br />
+    </div>
+    <label>Use as default address? <input type="checkbox" checked name="default"></label><br />
+    <input type="submit"  value="Add address">
+</form>
+{% endspaceless %}
