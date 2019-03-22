@@ -32,8 +32,16 @@ class SaleboxAddress:
             if request.method == 'POST' and request.POST.get('form_name') == form_name:
                 form = form_class(request.POST)
                 if form.is_valid():
+                    country = None
+                    country_state = None
                     if form.cleaned_data['country'] is not None:
-                        country = Country.objects.get(id=form.cleaned_data['country'])
+                        country = Country \
+                                    .objects \
+                                    .get(id=form.cleaned_data['country'])
+                    if form.cleaned_data['country_state'] is not None:
+                        country_state = CountryState \
+                                            .objects \
+                                            .get(id=form.cleaned_data['country_state'])
 
                     status = 'success'
                     address = UserAddress(
@@ -46,7 +54,7 @@ class SaleboxAddress:
                         address_3=form.cleaned_data['address_3'],
                         address_4=form.cleaned_data['address_4'],
                         address_5=form.cleaned_data['address_5'],
-                        country_state=form.cleaned_data['country_state'],
+                        country_state=country_state,
                         country=country,
                         postcode=form.cleaned_data['postcode'].upper()
                     )
@@ -68,6 +76,7 @@ class SaleboxAddress:
                     'form': form,
                     'form_name': form_name,
                     'state': state,
+                    'states': self._get_states(lang),
                 },
                 request=request
             ),
@@ -114,7 +123,6 @@ class SaleboxAddress:
 
                 if tmp is not None and len(tmp) > 0:
                     a.address_list.append(tmp)
-            print(a.address_list)
 
         return addresses
 
@@ -184,3 +192,55 @@ class SaleboxAddress:
 
         return countries
 
+    def _get_state(self, state, lang):
+        if state is None:
+            return None
+        elif lang is not None:
+            i18n = CountryStateTranslation \
+                    .objects \
+                    .filter(language=lang) \
+                    .filter(state=state) \
+                    .first()
+            if i18n is not None:
+                return i18n.value
+
+        return state.name
+
+    def _get_states(self, lang):
+        states_list = list(
+            CountryState
+                .objects
+                .all()
+                .values('id', 'country__id', 'name')
+        )
+
+        # create a lookup
+        lookup = {}
+        for s in states_list:
+            lookup[s['id']] = {
+                'country': s['country__id'],
+                'name': s['name']
+            }
+
+        # translate if req'd
+        if lang is not None:
+            i18n = CountryStateTranslation.objects.all().values('state__id', 'value')
+            for i in i18n:
+                lookup[i['state__id']]['name'] = i['value']
+
+        # create dict of states per country
+        countries = {}
+        for key in lookup:
+            if lookup[key]['country'] not in countries:
+                countries[lookup[key]['country']] = []
+            countries[lookup[key]['country']].append({
+                'id': key,
+                'name': lookup[key]['name']
+            })
+
+        # sort each country
+        if lang is not None:
+            for c in countries:
+                countries[c] = sorted(countries[c], key=lambda k: k['name'])
+
+        return countries
