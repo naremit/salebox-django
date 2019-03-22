@@ -1,5 +1,8 @@
+import json
+
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
 
 from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.models import Country, CountryState, CountryTranslation, \
@@ -66,17 +69,30 @@ class SaleboxAddress:
         else:
             status = 'unauthenticated'
 
+        # dropdown lists
+        dropdown_countries = self._get_countries(lang)
+        dropdown_states = self._get_states(lang)
+        current_states = []
+        if form['country'].value() in dropdown_states:
+            current_states = dropdown_states[form['country'].value()]
+        states_dict = json.dumps(dropdown_states, ensure_ascii=False) \
+                        .replace('"id": ', 'i:') \
+                        .replace(', "name": ', ',s:') \
+                        .replace('}, {', '},{')
+
         return (
             status,
             address,
             render_to_string(
                 template,
                 context={
-                    'countries': self._get_countries(lang),
+                    'current_states': current_states,
+                    'dropdown_countries': dropdown_countries,
                     'form': form,
+                    'form_id': 'salebox_%s' % get_random_string(),
                     'form_name': form_name,
                     'state': state,
-                    'states': self._get_states(lang),
+                    'states_dict': states_dict
                 },
                 request=request
             ),
@@ -89,7 +105,7 @@ class SaleboxAddress:
     def get_list(
             self,
             selected_id=None,
-            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country,postcode',
+            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country',
             lang=None
         ):
         addresses = self.query.all()

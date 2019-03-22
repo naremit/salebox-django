@@ -30,7 +30,7 @@ var salebox = {
                 // show states
                 html = ['<option value=""></option>'];
                 for (var i in saleboxCountryState[countryId]) {
-                    html.push('<option value="' + saleboxCountryState[countryId][i]['id'] + '">' + saleboxCountryState[countryId][i]['name'] + '</option>');
+                    html.push('<option value="' + saleboxCountryState[countryId][i]['i'] + '">' + saleboxCountryState[countryId][i]['s'] + '</option>');
                 }
                 $(stateInput).html(html.join(''));
                 $(stateInput).parent().removeClass('d-none');
