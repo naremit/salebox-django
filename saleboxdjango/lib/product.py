@@ -90,7 +90,8 @@ class SaleboxProduct:
                 'previous': self.page_number - 1,
                 'has_next': self.page_number < number_of_pages,
                 'next': self.page_number + 1,
-                'url_prefix': self.pagination_url_prefix
+                'url_prefix': self.pagination_url_prefix,
+                'valid': self.page_number > 0 and self.page_number <= number_of_pages
             },
             'products': products
         }
