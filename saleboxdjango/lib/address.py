@@ -9,7 +9,8 @@ class SaleboxAddress:
         self.query = UserAddress \
                         .objects \
                         .filter(user=user) \
-                        .filter(address_group=address_group)
+                        .filter(address_group=address_group) \
+                        .select_related('country', 'country_state')
 
     def get_count(self):
         return self.query.all().count()
@@ -32,6 +33,14 @@ class SaleboxAddress:
                         a.selected = True
                         break
 
+        # make a list of the non-null address lines
+        for a in addresses:
+            a.address_list = []
+            for i in range(1, 6):
+                tmp = getattr(a, 'address_%s' % i, None)
+                if tmp:
+                    a.address_list.append(tmp)
+
         return addresses
 
     def get_single_by_default(self):
@@ -48,7 +57,7 @@ class SaleboxAddress:
             self,
             show_checkbox,
             selected_id=None,
-            template='salebox/address/list_partial.html'
+            template='salebox/address/list.html'
         ):
 
         return render_to_string(

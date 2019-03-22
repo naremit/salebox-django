@@ -10,7 +10,7 @@
                 <td>
                     <strong>{{ a.full_name }}</strong>
                     <br />
-                    {{ a.get_address_html | safe }}
+                    {{ a.address_list | safe }}
                 </td>
                 <td>
                     {% if not a.default %}

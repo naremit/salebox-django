@@ -1,0 +1,36 @@
+{% spaceless %}
+{% if addresses %}
+    {% for a in addresses %}
+        <div style="line-height: 1.4; padding: 5px 0;">
+            <div>
+                <strong>{{ a.id }} {{ a.full_name }}</strong>
+            </div>
+            <div>
+                {% for al in a.address_list %}
+                    <span>{{ al }}, </span>
+                {% endfor %}
+                {% if a.country_state %}
+                    <span>{{ a.country_state.name }},</span>
+                {% endif %}
+                <span>{{ a.country.name }}</span>
+                {% if a.postcode %}
+                    <span>, {{ a.postcode }}</span>
+                {% endif %}
+            </div>
+            <div style="font-size: 13px;">
+                {% if a.default %}
+                    <span>Default</span>
+                {% else %}
+                    <span onclick="salebox.redirect.address.setDefault({{ a.id }})">Make default</span>
+                {% endif %}
+                {% if addresses|length > 1 %}
+                    <span> &nbsp;|&nbsp; </span>
+                    <span onclick="salebox.redirect.address.remove({{ a.id }})">Remove</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <span>No addresses found</span>
+{% endif %}
+{% endspaceless %}

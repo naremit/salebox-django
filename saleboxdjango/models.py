@@ -563,7 +563,7 @@ class UserAddress(models.Model):
 
     def delete(self, *args, **kwargs):
         user = self.user
-        address_type = self.address_group
+        address_group = self.address_group
         super().delete(*args, **kwargs)
         self.ensure_one_default_exists(user, address_group)
 
