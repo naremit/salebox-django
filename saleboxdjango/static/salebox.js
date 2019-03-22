@@ -15,11 +15,31 @@ var salebox = {
                     'redirect': redirectUrl,
                     'state': state
                 });
-            }
+            },
         },
     },
 
     utils: {
+        addressCountryStates: function(formId) {
+            var form = $('#' + formId);
+            var countryId = $(form).find('select[name=country]').val();
+            var stateInput = $(form).find('select[name=country_state]');
+            $(stateInput).val('');
+
+            if (countryId in saleboxCountryState) {
+                // show states
+                html = ['<option value=""></option>'];
+                for (var i in saleboxCountryState[countryId]) {
+                    html.push('<option value="' + saleboxCountryState[countryId][i]['id'] + '">' + saleboxCountryState[countryId][i]['name'] + '</option>');
+                }
+                $(stateInput).html(html.join(''));
+                $(stateInput).parent().removeClass('d-none');
+            } else {
+                // hide states
+                $(stateInput).parent().addClass('d-none');
+                $(stateInput).html('');
+            }
+        },
         post: function(action, dict) {
             // default redirect, i.e. back to this page
             if (!(dict.redirect)) {

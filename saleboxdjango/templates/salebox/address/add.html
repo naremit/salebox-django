@@ -1,5 +1,5 @@
 {% spaceless %}
-<form method="post">
+<form method="post" id="abc">
     {% csrf_token %}
     <input type="hidden" name="form_name" value="{{ form_name }}">
     <input type="hidden" name="state" value="{{ state }}">
@@ -28,9 +28,14 @@
         <label>Address #5:</label>
         <input name="address_5">
     </div>
+    <div class="d-none">
+        <label>State:</label>
+        <select name="country_state">
+        </select>
+    </div>
     <div>
         <label>Country:</label>
-        <select name="country">
+        <select name="country" onchange="salebox.utils.addressCountryStates('abc')">
             <option value=""></option>
             {% for c in countries %}
                 <option value="{{ c.id }}"{% if c.id == form.country.value %} selected{% endif %}>{{ c.name }}</option>
@@ -44,4 +49,5 @@
     <label>Use as default address? <input type="checkbox" checked name="default"></label><br />
     <input type="submit"  value="Add address">
 </form>
+<script>var saleboxCountryState={{ states|safe }};</script>
 {% endspaceless %}

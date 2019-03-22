@@ -117,7 +117,7 @@ class SaleboxAddress:
                 if csv == 'country':
                     tmp = self._get_country(a.country, lang)
                 elif csv == 'country_state':
-                    tmp = None
+                    tmp = self._get_state(a.country_state, lang)
                 else:
                     tmp = getattr(a, csv, None)
 
