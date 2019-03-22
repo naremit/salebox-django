@@ -1,6 +1,7 @@
 import datetime
 import os
 import requests
+import time
 from pprint import pprint
 
 from django.conf import settings
@@ -20,6 +21,7 @@ class Command(BaseCommand):
             try:
                 cache.set('saleboxsync', 1, 60)
                 do_sync = self.do_sync()
+                time.sleep(2)
             except:
                 do_sync = False
 

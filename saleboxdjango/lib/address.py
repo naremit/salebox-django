@@ -32,6 +32,9 @@ class SaleboxAddress:
             if request.method == 'POST' and request.POST.get('form_name') == form_name:
                 form = form_class(request.POST)
                 if form.is_valid():
+                    if form.cleaned_data['country'] is not None:
+                        country = Country.objects.get(id=form.cleaned_data['country'])
+
                     status = 'success'
                     address = UserAddress(
                         user=request.user,
@@ -44,12 +47,14 @@ class SaleboxAddress:
                         address_4=form.cleaned_data['address_4'],
                         address_5=form.cleaned_data['address_5'],
                         country_state=form.cleaned_data['country_state'],
-                        country=form.cleaned_data['country'],
-                        postcode=form.cleaned_data['postcode']
+                        country=country,
+                        postcode=form.cleaned_data['postcode'].upper()
                     )
                     address.save()
                 else:
                     status = 'error'
+            else:
+                form.fields['country'].initial = default_country_id
         else:
             status = 'unauthenticated'
 
@@ -72,7 +77,12 @@ class SaleboxAddress:
     def get_count(self):
         return self.query.all().count()
 
-    def get_list(self, selected_id=None):
+    def get_list(
+            self,
+            selected_id=None,
+            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country,postcode',
+            lang=None
+        ):
         addresses = self.query.all()
 
         # add "selected" attribute to all addresses
@@ -91,12 +101,20 @@ class SaleboxAddress:
                         break
 
         # make a list of the non-null address lines
+        csv_vars = csv_vars.split(',')
         for a in addresses:
             a.address_list = []
-            for i in range(1, 6):
-                tmp = getattr(a, 'address_%s' % i, None)
-                if tmp:
+            for csv in csv_vars:
+                if csv == 'country':
+                    tmp = self._get_country(a.country, lang)
+                elif csv == 'country_state':
+                    tmp = None
+                else:
+                    tmp = getattr(a, csv, None)
+
+                if tmp is not None and len(tmp) > 0:
                     a.address_list.append(tmp)
+            print(a.address_list)
 
         return addresses
 
@@ -112,15 +130,15 @@ class SaleboxAddress:
 
     def render_list(
             self,
-            show_checkbox,
-            selected_id=None,
+            addresses,
+            show_checkbox=False,
             template='salebox/address/list.html'
         ):
 
         return render_to_string(
             template,
             {
-                'addresses': self.get_list(selected_id),
+                'addresses': addresses,
                 'show_checkbox': show_checkbox
             }
         )
@@ -130,6 +148,20 @@ class SaleboxAddress:
         if not address.default:
             address.default = True
             address.save()
+
+    def _get_country(self, country, lang):
+        if country is None:
+            return None
+        elif lang is not None:
+            i18n = CountryTranslation \
+                    .objects \
+                    .filter(language=lang) \
+                    .filter(country=country) \
+                    .first()
+            if i18n is not None:
+                return i18n.value
+
+        return country.name
 
     def _get_countries(self, lang):
         countries = list(Country.objects.all().values('id', 'name'))
