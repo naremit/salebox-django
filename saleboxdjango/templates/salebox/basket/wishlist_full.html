@@ -19,7 +19,7 @@
                         <span onclick="setWishlist({{ item.id }}, false)">remove</span>
                     </td>
                     <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                        <span onclick="switchBasketWishlist({{ item.id }}, true)">add to basket</span>
+                        <span onclick="migrateBasketWishlist({{ item.id }}, true)">add to basket</span>
                     </td>
                 </tr>
             {% endfor %}

@@ -53,6 +53,19 @@ var salebox = {
             );
         },
 
+        migrateAjax: function(variantId, toBasket, results, callback, fail) {
+            salebox.utils.ajax(
+                '/salebox/basket/migrate/',
+                {
+                    variant_id: variantId,
+                    to_basket: toBasket,
+                    results: results
+                },
+                callback,
+                fail
+            );
+        },
+
         wishlistAjax: function(variantId, add, results, callback, fail) {
             salebox.utils.ajax(
                 '/salebox/basket/wishlist/',

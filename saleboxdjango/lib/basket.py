@@ -103,7 +103,7 @@ class SaleboxBasket:
 
         if 'basket_html_full' in results:
             o['basket_html_full'] = render_to_string(
-                'salebox/basket_full.html',
+                'salebox/basket/basket_full.html',
                 {
                     'data': self.data,
                     'request': request
@@ -112,16 +112,14 @@ class SaleboxBasket:
             )
 
         if 'basket_html_summary' in results:
-            """
-            TODO
             o['basket_html_summary'] = render_to_string(
-                'salebox/basket_summary.html', {
+                'salebox/basket/basket_summary.html',
+                {
                     'data': self.data,
                     'request': request
-                }
+                },
+                request
             )
-            """
-            pass
 
         if 'basket_loyalty' in results:
             o['basket_loyalty'] = self.data['basket']['loyalty']
@@ -155,7 +153,7 @@ class SaleboxBasket:
 
         if 'wishlist_html_full' in results:
             o['wishlist_html_full'] = render_to_string(
-                'salebox/wishlist_full.html', {
+                'salebox/basket/wishlist_full.html', {
                     'data': self.data,
                     'request': request
                 },
@@ -163,16 +161,13 @@ class SaleboxBasket:
             )
 
         if 'wishlist_html_summary' in results:
-            """
-            TODO
-            o['wishlist_html_summary'] = render_to_string(
-                'salebox/wishlist_summary.html', {
+            o['wishlist_html_full'] = render_to_string(
+                'salebox/basket/wishlist_summary.html', {
                     'data': self.data,
                     'request': request
-                }
+                },
+                request
             )
-            """
-            pass
 
         return o
 
@@ -181,26 +176,28 @@ class SaleboxBasket:
         return self.data
 
 
-    def switch_basket_wishlist(self, request, variant, destination):
+    def migrate_basket_wishlist(self, request, variant, to_basket):
         if isinstance(variant, int):
             variant = ProductVariant.objects.get(id=variant)
 
-        if destination in ['basket', 'wishlist']:
-            bwl = self._filter_basket_queryset(
-                request,
-                BasketWishlist \
-                    .objects \
-                    .filter(variant=variant) \
-                    .filter(basket_flag=(destination == 'wishlist'))
-            )
+        bwl = self._filter_basket_queryset(
+            request,
+            BasketWishlist \
+                .objects \
+                .filter(variant=variant) \
+                .exclude(basket_flag=to_basket)
+        )
 
-            for b in bwl:
-                b.basket_flag = (destination == 'basket')
-                b.quantity = 1
-                b.save()
+        print(to_basket)
+        print(bwl)
 
-            # re-populate basket
-            self._init_basket(request)
+        for b in bwl:
+            b.basket_flag = to_basket
+            b.quantity = 1
+            b.save()
+
+        # re-populate basket
+        self._init_basket(request)
 
 
     def update_basket(self, request, variant, qty, relative):
@@ -306,6 +303,7 @@ class SaleboxBasket:
                 pkg, attr = funcstr.rsplit('.', 1)
                 func = getattr(importlib.import_module(pkg), attr)
                 self.data = func(self.data)
+
 
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
