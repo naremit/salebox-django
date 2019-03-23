@@ -39,8 +39,8 @@ var salebox = {
     },
 
     basket: {
-        basket: function(variantId, qty, relative, results, success, fail) {
-            $.post(
+        basketAjax: function(variantId, qty, relative, results, callback, fail) {
+            salebox.utils.ajax(
                 '/salebox/basket/basket/',
                 {
                     variant_id: variantId,
@@ -48,15 +48,35 @@ var salebox = {
                     relative: relative,
                     results: results
                 },
-                function(data) {
-                    success(data);
-                }
+                callback,
+                fail
+            );
+        },
+
+        wishlistAjax: function(variantId, add, results, callback, fail) {
+            salebox.utils.ajax(
+                '/salebox/basket/wishlist/',
+                {
+                    variant_id: variantId,
+                    add: add,
+                    results: results
+                },
+                callback,
+                fail
             );
         }
     },
 
     utils: {
-        getCsrf: function() {
+        ajax: function(url, data, callback, fail) {
+            $.post(url, data).done(function(data) {
+                callback(data);
+            }).fail(function() {
+                fail();
+            });
+        },
+
+        getCSRF: function() {
             return $('[name=csrfmiddlewaretoken]').eq(0).val();
         },
 
@@ -67,7 +87,7 @@ var salebox = {
             }
 
             // add csrf token
-            dict.csrfmiddlewaretoken = $("[name=csrfmiddlewaretoken]").val();
+            dict.csrfmiddlewaretoken = salebox.utils.getCSRF();
 
             // construct html
             var form = ['<form action="' + action + '" method="post">'];
@@ -93,7 +113,7 @@ $(function() {
             if (!this.crossDomain) {
                 xhr.setRequestHeader(
                     'X-CSRFToken',
-                    salebox.utils.getCsrf()
+                    salebox.utils.getCSRF()
                 );
             }
         }

@@ -158,6 +158,33 @@ class SaleboxProduct:
             self._retrieve_results(variant_ids)
         )[0]
 
+    def retrieve_user_interaction(self, request, variants):
+        # get user ratings
+        rating_dict = {}
+        if self.fetch_user_ratings and request.user.is_authenticated:
+            ratings = ProductVariantRating \
+                        .objects \
+                        .filter(variant__id__in=[pv.id for pv in variants]) \
+                        .filter(user=request.user)
+            for r in ratings:
+                rating_dict[r.variant.id] = r.rating
+
+        # get basket / wishlist flags
+        for pv in variants:
+            if str(pv.id) in request.session['saleboxbasket']['basket']['lookup']:
+                pv.basket_qty = request.session['saleboxbasket']['basket']['lookup'][str(pv.id)]['qty']
+            else:
+                pv.basket_qty = 0
+
+            pv.in_wishlist = str(pv.id) in request.session['saleboxbasket']['wishlist']['order']
+
+            if pv.id in rating_dict:
+                pv.user_rating = get_rating_display(rating_dict[pv.id], 1)
+            else:
+                pv.user_rating = None
+
+        return variants
+
     def set_exclude_product_ids(self, id_list):
         if isinstance(id_list, int):
             id_list = [id_list]
@@ -410,33 +437,6 @@ class SaleboxProduct:
                     pass
 
         return qs
-
-    def retrieve_user_interaction(self, request, variants):
-        # get user ratings
-        rating_dict = {}
-        if self.fetch_user_ratings and request.user.is_authenticated:
-            ratings = ProductVariantRating \
-                        .objects \
-                        .filter(variant__id__in=[pv.id for pv in variants]) \
-                        .filter(user=request.user)
-            for r in ratings:
-                rating_dict[r.variant.id] = r.rating
-
-        # get basket / wishlist flags
-        for pv in variants:
-            if str(pv.id) in request.session['saleboxbasket']['basket']['lookup']:
-                pv.basket_qty = request.session['saleboxbasket']['basket']['lookup'][str(pv.id)]['qty']
-            else:
-                pv.basket_qty = 0
-
-            pv.in_wishlist = str(pv.id) in request.session['saleboxbasket']['wishlist']['order']
-
-            if pv.id in rating_dict:
-                pv.user_rating = get_rating_display(rating_dict[pv.id], 1)
-            else:
-                pv.user_rating = None
-
-        return variants
 
     def _retrieve_variant_ids(self):
         self.set_active_status()

@@ -1,0 +1,12 @@
+{% spaceless %}
+<div class="product-basketbtn">
+    {% if pv.in_wishlist %}
+        <button class="product-basketbtn-empty" onclick="setWishlist({{ pv.id }}, false, this.parentNode)" onmouseover="$(this).text('Remove')" onmouseout="$(this).text('In wishlist')">In wishlist</button>
+    {% else %}
+        <button class="product-basketbtn-empty" onclick="setWishlist({{ pv.id }}, true, this.parentNode)">Add to wishlist</button>
+    {% endif %}
+    <div class="product-basketbtn-loading">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+</div>
+{% endspaceless %}

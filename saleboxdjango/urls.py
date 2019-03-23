@@ -6,7 +6,7 @@ from .views.address.set_default import SaleboxAddressSetDefaultView
 
 from .views.basket.basket import SaleboxBasketBasketView
 # from .views.basket.migrate import SaleboxBasketMigrateView
-# from .views.basket.wishlist import SaleboxBasketWishlistView
+from .views.basket.wishlist import SaleboxBasketWishlistView
 
 #from saleboxdjango.views.basket import basket_ajax_view, \
 #    switch_basket_wishlist_ajax_view, wishlist_ajax_view
@@ -20,7 +20,7 @@ urlpatterns = [
 
     path('basket/basket/', SaleboxBasketBasketView.as_view()),
     # path('basket/migrate/', SaleboxBasketMigrateView.as_view()),
-    # path('basket/wishlist/', SaleboxBasketWishlistView.as_view()),
+    path('basket/wishlist/', SaleboxBasketWishlistView.as_view()),
 
     # path('basket/', basket_ajax_view),
     # path('switch-basket-wishlist/', switch_basket_wishlist_ajax_view),

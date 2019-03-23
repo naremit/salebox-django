@@ -90,7 +90,7 @@ class SaleboxBasket:
                 qty = 0
 
             o['basket_html_button'] = render_to_string(
-                'salebox/product_list_button.html',
+                'salebox/basket/button_basket.html',
                 {
                     'pv': {
                         'id': variant_id,
@@ -139,10 +139,19 @@ class SaleboxBasket:
             o['basket_qty_variant'] = len(self.data['basket']['order'])
 
         if 'wishlist_html_button' in results and variant_id:
-            # todo - add/remove from wishlist button
-            #
-            #
-            pass
+            in_wishlist = str(variant_id) in self.data['wishlist']['lookup']
+
+            o['wishlist_html_button'] = render_to_string(
+                'salebox/basket/button_wishlist.html',
+                {
+                    'pv': {
+                        'id': variant_id,
+                        'in_wishlist': in_wishlist
+                    },
+                    'request': request
+                },
+                request
+            )
 
         if 'wishlist_html_full' in results:
             o['wishlist_html_full'] = render_to_string(
@@ -255,7 +264,7 @@ class SaleboxBasket:
         bwl = BasketWishlist(
             variant=variant,
             quantity=int(qty),
-            basket_flag=True,
+            basket_flag=basket,
         )
         if request.user.is_authenticated:
             bwl.user = request.user
