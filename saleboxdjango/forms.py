@@ -6,6 +6,8 @@ class SaleboxBaseForm(forms.Form):
     results = forms.CharField(required=False)
     state = forms.CharField(required=False)
 
+#
+
 class SaleboxAddressAddForm(SaleboxBaseForm):
     address_group = forms.CharField(required=False)
     default = forms.BooleanField(required=False)
@@ -22,26 +24,24 @@ class SaleboxAddressAddForm(SaleboxBaseForm):
 class SaleboxAddressIDForm(SaleboxBaseForm):
     id = forms.IntegerField()
 
-# ------------------
+#
 
-class BasketForm(forms.Form):
+class SaleboxBasketBasketForm(SaleboxBaseForm):
     variant_id = forms.IntegerField()
     quantity = forms.IntegerField()
     relative = forms.BooleanField(required=False)
-    results = forms.CharField(required=False)
 
+class SaleboxBasketWishlistForm(SaleboxBaseForm):
+    variant_id = forms.IntegerField()
+    add = forms.BooleanField(required=False)
+
+class SaleboxBasketMigrateForm(SaleboxBaseForm):
+    variant_id = forms.IntegerField()
+    destination = forms.CharField()
+
+#
 
 class RatingForm(forms.Form):
     variant_id = forms.IntegerField()
     rating = forms.IntegerField(min_value=-1, max_value=100)
 
-
-class SwitchBasketWishlistForm(forms.Form):
-    variant_id = forms.IntegerField()
-    destination = forms.CharField()
-
-
-class WishlistForm(forms.Form):
-    variant_id = forms.IntegerField()
-    add = forms.BooleanField(required=False)
-    results = forms.CharField(required=False)

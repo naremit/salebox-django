@@ -39,7 +39,7 @@
     </div>
     <div class="form-group">
         <label for="{{ form_id }}_country">Country:</label>
-        <select name="country" onchange="salebox.utils.addressCountryStates('{{ form_id }}')" class="form-control" id="{{ form_id }}_country">
+        <select name="country" onchange="salebox.address.countryStateDropdown('{{ form_id }}')" class="form-control" id="{{ form_id }}_country">
             <option value=""></option>
             {% for c in dropdown_countries %}
                 <option value="{{ c.id }}"{% if c.id == form.country.value %} selected{% endif %}>{{ c.name }}</option>
