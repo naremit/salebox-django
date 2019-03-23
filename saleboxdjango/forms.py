@@ -38,7 +38,9 @@ class SaleboxBasketMigrateForm(SaleboxBaseForm):
     to_basket = forms.BooleanField(required=False)
 
 # rating
-class RatingForm(forms.Form):
+class SaleboxRatingAddForm(SaleboxBaseForm):
     variant_id = forms.IntegerField()
-    rating = forms.IntegerField(min_value=-1, max_value=100)
+    rating = forms.IntegerField(min_value=0, max_value=100)
 
+class SaleboxRatingRemoveForm(SaleboxBaseForm):
+    variant_id = forms.IntegerField()

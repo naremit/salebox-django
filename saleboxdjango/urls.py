@@ -14,7 +14,9 @@ from .views.basket.wishlist import SaleboxBasketWishlistView
 from saleboxdjango.views.image import image_view
 
 # rating
-from saleboxdjango.views.rating import rating_ajax_view
+from .views.rating.add import SaleboxRatingAddView
+from .views.rating.remove import SaleboxRatingRemoveView
+
 
 urlpatterns = [
     # address
@@ -31,5 +33,6 @@ urlpatterns = [
     path('img/<slug:imgtype>/<slug:dir>/<int:id>.<slug:hash>.<slug:suffix>', image_view),
 
     # rating
-    path('rating/', rating_ajax_view),
+    path('rating/add/', SaleboxRatingAddView.as_view()),
+    path('rating/remove/', SaleboxRatingRemoveView.as_view()),
 ]

@@ -80,6 +80,33 @@ var salebox = {
         }
     },
 
+    rating: {
+        addAjax: function(variantId, rating, results, callback, fail) {
+            salebox.utils.ajax(
+                '/salebox/rating/add/',
+                {
+                    variant_id: variantId,
+                    rating: rating,
+                    results: results
+                },
+                callback,
+                fail
+            );
+        },
+
+        removeAjax: function(variantId, results, callback, fail) {
+            salebox.utils.ajax(
+                '/salebox/rating/remove/',
+                {
+                    variant_id: variantId,
+                    results: results
+                },
+                callback,
+                fail
+            );
+        },
+    },
+
     utils: {
         ajax: function(url, data, callback, fail) {
             $.post(url, data).done(function(data) {
