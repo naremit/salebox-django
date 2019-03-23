@@ -40,11 +40,11 @@ def get_price_display(price):
 
 
 def get_rating_display(score, vote_count):
-        if vote_count > 0:
-            return {
-                '100': score,
-                '5': round(score / 20),
-                '10': round(score / 10)
-            }
-        else:
-            return {'100': 0, '5': 0, '10': 0}
+    if vote_count > 0:
+        return {
+            '100': score,
+            '5': round(score / 20),
+            '10': round(score / 10)
+        }
+    else:
+        return {'100': 0, '5': 0, '10': 0}

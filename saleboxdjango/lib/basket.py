@@ -59,10 +59,8 @@ class SaleboxBasket:
         if self.data is None:
             self._init_basket(request)
 
-
     def get_cookie_action(self, request):
         return self.cookie
-
 
     def get_data(self, request, results, variant_id=None):
         results = results.split(',')
@@ -171,10 +169,8 @@ class SaleboxBasket:
 
         return o
 
-
     def get_raw_data(self):
         return self.data
-
 
     def migrate_basket_wishlist(self, request, variant, to_basket):
         if isinstance(variant, int):
@@ -198,7 +194,6 @@ class SaleboxBasket:
 
         # re-populate basket
         self._init_basket(request)
-
 
     def update_basket(self, request, variant, qty, relative):
         if isinstance(variant, int):
@@ -236,7 +231,6 @@ class SaleboxBasket:
         # re-populate basket
         self._init_basket(request)
 
-
     def update_wishlist(self, request, variant, add):
         if isinstance(variant, int):
             variant = ProductVariant.objects.get(id=variant)
@@ -256,7 +250,6 @@ class SaleboxBasket:
         # re-populate basket
         self._init_basket(request)
 
-
     def _add_variant(self, request, variant, qty, basket):
         bwl = BasketWishlist(
             variant=variant,
@@ -269,7 +262,6 @@ class SaleboxBasket:
             bwl.session = request.session.session_key
         bwl.save()
 
-
     def _calculate_loyalty(self):
         # pre_calculate_loyalty
         self._call_external('PRE_CALCULATE_LOYALTY')
@@ -280,7 +272,6 @@ class SaleboxBasket:
 
         # post_calculate_loyalty
         self._call_external('POST_CALCULATE_LOYALTY')
-
 
     def _calculate_price(self):
         # pre_calculate_price
@@ -295,7 +286,6 @@ class SaleboxBasket:
         # post_calculate_price
         self._call_external('POST_CALCULATE_PRICE')
 
-
     def _call_external(self, name):
         if settings.SALEBOX['CHECKOUT']:
             funcstr = settings.SALEBOX['CHECKOUT'].get(name)
@@ -303,7 +293,6 @@ class SaleboxBasket:
                 pkg, attr = funcstr.rsplit('.', 1)
                 func = getattr(importlib.import_module(pkg), attr)
                 self.data = func(self.data)
-
 
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
@@ -319,7 +308,6 @@ class SaleboxBasket:
         else:
             return qs.filter(user__isnull=True) \
                      .filter(session=request.session.session_key)
-
 
     def _get_variants(self, request, variant):
         if isinstance(variant, int):
@@ -345,7 +333,6 @@ class SaleboxBasket:
             'basket': basket.first(),
             'wishlist': wishlist.first(),
         }
-
 
     def _init_basket(self, request):
         self.data = {
@@ -480,7 +467,6 @@ class SaleboxBasket:
 
         # save to session
         request.session['saleboxbasket'] = self.data
-
 
     def _migrate_anonymous_basket(self, key, user):
         # get all basket items from previously anonymous visitor
