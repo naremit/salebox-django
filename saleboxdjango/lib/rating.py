@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.http import JsonResponse
 
 from saleboxdjango.models import ProductVariant, ProductVariantRating
@@ -45,52 +45,16 @@ class SaleboxRating:
         return o
 
     def get_global_product_rating(self):
-        variant_ids = ProductVariant \
-                        .objects \
-                        .filter(product=self.variant.product) \
-                        .values_list('id', flat=True)
-
-        print(variant_ids)
-
-        rating = 0
-        count = ProductVariantRating \
-                    .objects \
-                    .filter(variant__in=variant_ids) \
-                    .count()
-
-        print(count)
-
-        if count > 0:
-            print('here')
-            print(
-                ProductVariantRating.objects.filter(variant__in=variant_ids).aggregate(Avg('rating_score')))
-
-            print('ehere')
-            #rating = ProductVariantRating \
-            #            .objects \
-            #            .filter(variant__in=variant_ids) \
-            #            .aggregate(Avg('rating_score'))
-
-        print(rating)
-
+        count = self.variant.product.rating_vote_count
+        rating = self.variant.product.rating_score
         return {
             'count': count,
             'rating': rating_display(rating, count)
         }
 
     def get_global_variant_rating(self):
-        rating = 0
-        count = ProductVariantRating \
-                    .objects \
-                    .filter(variant=variant) \
-                    .count()
-
-        if count > 0:
-            rating = ProductVariantRating \
-                        .objects \
-                        .filter(variant=self.variant) \
-                        .aggregate(rating=Avg('rating_score'))[0].rating
-
+        count = self.variant.rating_vote_count
+        rating = self.variant.rating_score
         return {
             'count': count,
             'rating': rating_display(rating, count)
@@ -102,7 +66,7 @@ class SaleboxRating:
                 return ProductVariantRating \
                         .objects \
                         .filter(variant=self.variant) \
-                        .filter(user=self.user)[0].rating_score
+                        .filter(user=self.user)[0].rating
             except:
                 pass
 
