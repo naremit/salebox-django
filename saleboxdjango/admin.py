@@ -2,6 +2,11 @@ from django.contrib import admin
 from saleboxdjango.models import *
 
 
+class CheckoutStoreUpdateInline(admin.TabularInline):
+    model = CheckoutStoreUpdate
+    extra = 0
+
+
 class DiscountRulesetInline(admin.TabularInline):
     model = DiscountRuleset
     exclude = ['product_variant']

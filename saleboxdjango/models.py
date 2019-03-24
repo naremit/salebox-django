@@ -9,6 +9,14 @@ from django.db.models import Avg
 from mptt.models import MPTTModel, TreeForeignKey
 from saleboxdjango.lib.common import get_price_display, get_rating_display
 
+CHECKOUT_STATUS_CHOICES = (
+    (10, 'New: pending send to gateway'),
+    (20, 'Pending: Awaiting gateway response'),
+    (30, 'Success: pending POST to Salebox'),
+    (31, 'Success: successfully POSTed to Salebox'),
+    (40, 'Rejected: gateway rejected payment'),
+    (50, 'Timeout: gateway did not respond in an acceptable time period')
+)
 
 class Attribute(models.Model):
     code = models.CharField(max_length=20)
@@ -52,6 +60,21 @@ class BasketWishlist(models.Model):
     weight = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+
+class CheckoutStore(models.Model):
+    code = models.CharField(max_length=32)
+    visible_code = models.CharField(max_length=14)  # time.time to 2 decimals + 2 alpha
+    payment_method = models.CharField(max_length=12)
+    status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
+    data = JSONField()
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now_add=True)
+
+class CheckoutStoreUpdate(models.Model):
+    store = models.ForeignKey(CheckoutStore, on_delete=models.CASCADE)
+    status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
+    data = JSONField()
+    created = models.DateTimeField(auto_now_add=True)
 
 class Country(models.Model):
     code_2 = models.CharField(max_length=2, blank=True, null=True)
