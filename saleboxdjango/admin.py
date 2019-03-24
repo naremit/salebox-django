@@ -6,50 +6,63 @@ class CheckoutStoreUpdateInline(admin.TabularInline):
     model = CheckoutStoreUpdate
     extra = 0
 
+
 class DiscountRulesetInline(admin.TabularInline):
     model = DiscountRuleset
     exclude = ['product_variant']
     extra = 0
 
+
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('code',)
+
 
 class AttributeItemAdmin(admin.ModelAdmin):
     list_display = ('value', 'slug', 'attribute')
     list_filter = ('attribute',)
 
+
 class BasketWishlistAdmin(admin.ModelAdmin):
     list_display = ('user', 'session', 'variant', 'quantity', 'weight', 'basket_flag')
     list_filter = ('user', 'session', 'basket_flag')
+
 
 class CheckoutStoreAdmin(admin.ModelAdmin):
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'payment_method')
 
+
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('code_2', 'code_3', 'name')
 
+
 class CountryStateAdmin(admin.ModelAdmin):
     list_display = ('country', 'code_2', 'name')
+
 
 class DiscountGroupAdmin(admin.ModelAdmin):
     inlines = [DiscountRulesetInline]
     list_display = ('name', 'group_type')
     list_filter = ('group_type',)
 
+
 class LastUpdateAdmin(admin.ModelAdmin):
     list_display = ('code', 'value')
 
+
 class MemberGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'flat_discount_percentage')
+
 
 class MemberAdmin(admin.ModelAdmin):
     list_display = ('guid', 'name_first', 'name_last', 'group')
     list_filter = ('group',)
     readonly_fields = ('parent',)
 
+
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug_path')
+
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'sold_by', 'slug')
@@ -61,9 +74,11 @@ class ProductVariantAdmin(admin.ModelAdmin):
     list_display = ('product', 'name', 'price', 'slug')
     list_filter = ('product__category',)
 
+
 class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_display = ('user', 'variant', 'rating', 'created')
     list_filter = ('user',)
+
 
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (

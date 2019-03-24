@@ -85,7 +85,6 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
                     selected_shipping_address_id = a.id
                     break
 
-
         # init empty invoice address form
         add_status, add_address, add_invoice_form, add_state = sa.add_form(
             self.request,
@@ -128,8 +127,7 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         # the invoice_address_id is required if invoice_required == True
         form = self.get_form()
         if form.is_valid():
-            if form.cleaned_data['invoice_required'] and \
-                form.cleaned_data['invoice_address_id'] is None:
+            if form.cleaned_data['invoice_required'] and form.cleaned_data['invoice_address_id'] is None:
                 return self.form_invalid(form)
 
             return self.form_valid(form)

@@ -1,6 +1,7 @@
 from saleboxdjango.views.rating.base import SaleboxRatingView
 from saleboxdjango.forms import SaleboxRatingRemoveForm
 
+
 class SaleboxRatingRemoveView(SaleboxRatingView):
     action = 'rating-remove'
     form = SaleboxRatingRemoveForm

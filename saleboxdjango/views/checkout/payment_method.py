@@ -5,6 +5,7 @@ from .base import SaleboxCheckoutBaseView
 class SaleboxCheckoutPaymentMethodForm(forms.Form):
     pass
 
+
 class SaleboxCheckoutPaymentMethodView(SaleboxCheckoutBaseView):
     checkout_step = 'payment_method'
     form_class = SaleboxCheckoutPaymentMethodForm

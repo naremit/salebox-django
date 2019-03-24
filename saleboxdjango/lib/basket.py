@@ -178,14 +178,11 @@ class SaleboxBasket:
 
         bwl = self._filter_basket_queryset(
             request,
-            BasketWishlist \
-                .objects \
-                .filter(variant=variant) \
+            BasketWishlist
+                .objects
+                .filter(variant=variant)
                 .exclude(basket_flag=to_basket)
         )
-
-        print(to_basket)
-        print(bwl)
 
         for b in bwl:
             b.basket_flag = to_basket
@@ -315,17 +312,17 @@ class SaleboxBasket:
 
         basket = self._filter_basket_queryset(
             request,
-            BasketWishlist \
-                .objects \
-                .filter(basket_flag=True) \
+            BasketWishlist
+                .objects
+                .filter(basket_flag=True)
                 .filter(variant=variant)
         )
 
         wishlist = self._filter_basket_queryset(
             request,
-            BasketWishlist \
-                .objects \
-                .filter(basket_flag=False) \
+            BasketWishlist
+                .objects
+                .filter(basket_flag=False)
                 .filter(variant=variant)
         )
 

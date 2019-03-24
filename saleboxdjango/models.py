@@ -18,6 +18,7 @@ CHECKOUT_STATUS_CHOICES = (
     (50, 'Timeout: gateway did not respond in an acceptable time period')
 )
 
+
 class Attribute(models.Model):
     code = models.CharField(max_length=20)
     created = models.DateTimeField(auto_now_add=True)
@@ -32,6 +33,7 @@ class Attribute(models.Model):
 
     def delete(self):
         pass
+
 
 class AttributeItem(models.Model):
     attribute = models.ForeignKey(Attribute, blank=True, null=True, on_delete=models.CASCADE)
@@ -51,6 +53,7 @@ class AttributeItem(models.Model):
     def delete(self):
         pass
 
+
 class BasketWishlist(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
     session = models.CharField(max_length=32, blank=True, null=True)
@@ -61,6 +64,7 @@ class BasketWishlist(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
+
 class CheckoutStore(models.Model):
     code = models.CharField(max_length=32)
     visible_code = models.CharField(max_length=14, unique=True)  # time.time to 2 decimals + 2 alpha
@@ -70,11 +74,13 @@ class CheckoutStore(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now_add=True)
 
+
 class CheckoutStoreUpdate(models.Model):
     store = models.ForeignKey(CheckoutStore, on_delete=models.CASCADE)
     status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
     data = JSONField()
     created = models.DateTimeField(auto_now_add=True)
+
 
 class Country(models.Model):
     code_2 = models.CharField(max_length=2, blank=True, null=True)
@@ -91,6 +97,7 @@ class Country(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Countries'
 
+
 class CountryState(models.Model):
     country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
     code_2 = models.CharField(max_length=2, blank=True, null=True)
@@ -105,6 +112,7 @@ class CountryState(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Country States'
 
+
 class CountryStateTranslation(models.Model):
     language = models.CharField(max_length=7)
     state = models.ForeignKey(CountryState, blank=True, null=True, on_delete=models.CASCADE)
@@ -116,6 +124,7 @@ class CountryStateTranslation(models.Model):
         ordering = ['language', 'state']
         verbose_name = 'Country State Translations'
 
+
 class CountryTranslation(models.Model):
     language = models.CharField(max_length=7)
     country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
@@ -126,6 +135,7 @@ class CountryTranslation(models.Model):
     class Meta:
         ordering = ['language', 'country']
         verbose_name = 'Country Translations'
+
 
 class DiscountGroup(models.Model):
     GROUP_TYPE_CHOICES = (
@@ -159,6 +169,7 @@ class DiscountGroup(models.Model):
     def delete(self):
         pass
 
+
 class DiscountRuleset(models.Model):
     TYPE_CHOICES = (
         ('flat_percent', 'Flat Percentage'),
@@ -184,6 +195,7 @@ class DiscountRuleset(models.Model):
     def delete(self):
         pass
 
+
 class LastUpdate(models.Model):
     code = models.CharField(max_length=36)
     value = models.FloatField(default=0.0)
@@ -194,6 +206,7 @@ class LastUpdate(models.Model):
     class Meta:
         ordering = ['code']
         verbose_name = 'Last Update'
+
 
 class MemberGroup(models.Model):
     name = models.CharField(max_length=50)
@@ -213,6 +226,7 @@ class MemberGroup(models.Model):
 
     def delete(self):
         pass
+
 
 class Member(models.Model):
     TITLE_CHOICES = (
@@ -283,6 +297,7 @@ class Member(models.Model):
     def delete(self):
         pass
 
+
 class ProductCategory(MPTTModel):
     short_name = models.CharField(max_length=30)
     name = models.CharField(max_length=100)
@@ -318,6 +333,7 @@ class ProductCategory(MPTTModel):
             if node.slug_path != slug_path:
                 ProductCategory.objects.filter(id=node.id).update(slug_path=slug_path)
         cache.delete('category_tree')
+
 
 class Product(models.Model):
     SOLD_BY_CHOICES = (
@@ -386,6 +402,7 @@ class Product(models.Model):
                                     .aggregate(rating=Avg('rating'))['rating']
 
         self.save()
+
 
 class ProductVariant(models.Model):
     SHELF_EXPIRY_CHOICES = (
@@ -457,7 +474,6 @@ class ProductVariant(models.Model):
     rating_score = models.IntegerField(default=0)
     rating_vote_count = models.IntegerField(default=0)
 
-
     def __str__(self):
         return self.name or ''
 
@@ -515,6 +531,7 @@ class ProductVariant(models.Model):
         self.save()
         self.product.update_rating()
 
+
 class ProductVariantImage(models.Model):
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     img = models.CharField(max_length=100, default='')
@@ -535,6 +552,7 @@ class ProductVariantImage(models.Model):
         super(ProductVariantImage, self).save(*args, **kwargs)
         self.variant.save()
 
+
 class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -553,6 +571,7 @@ class ProductVariantRating(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.variant.update_rating()
+
 
 class UserAddress(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

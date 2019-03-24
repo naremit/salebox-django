@@ -5,6 +5,7 @@ from .base import SaleboxCheckoutBaseView
 class SaleboxCheckoutGatewayForm(forms.Form):
     pass
 
+
 class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
     http_method_names = ['get', 'post']
 

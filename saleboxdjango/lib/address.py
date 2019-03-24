@@ -179,7 +179,7 @@ class SaleboxAddress:
 
         return render_to_string(
             template,
-            { 'addresses': addresses }
+            {'addresses': addresses}
         )
 
     def render_list_radio(

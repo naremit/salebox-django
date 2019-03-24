@@ -1,6 +1,7 @@
 from saleboxdjango.forms import SaleboxRatingAddForm
 from saleboxdjango.views.rating.base import SaleboxRatingView
 
+
 class SaleboxRatingAddView(SaleboxRatingView):
     action = 'rating-add'
     form = SaleboxRatingAddForm

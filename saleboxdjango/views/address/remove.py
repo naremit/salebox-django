@@ -12,4 +12,3 @@ class SaleboxAddressRemoveView(SaleboxAddressView):
             self.status = 'success'
         except:
             self.status = 'fail'
-
