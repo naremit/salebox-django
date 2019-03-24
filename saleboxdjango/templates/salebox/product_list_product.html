@@ -17,7 +17,7 @@
     <div class="price">{{ pv.sale_price_display.formatted_html|safe }}</div>
 
     {% if pv.rating_display.10 is not None %}
-        {% include "salebox/rating.html" with readonly=True rating=pv.rating_display.10 %}
+        {% include "salebox/utils/rating.html" with readonly=True rating=pv.rating_display.10 %}
     {% endif %}
 
     {% include 'salebox/basket/button_basket.html' %}
