@@ -11,7 +11,7 @@ from .views.basket.migrate import SaleboxBasketMigrateView
 from .views.basket.wishlist import SaleboxBasketWishlistView
 
 # image
-from saleboxdjango.views.image import image_view
+from saleboxdjango.views.image.image import salebox_image_view
 
 # rating
 from .views.rating.add import SaleboxRatingAddView
