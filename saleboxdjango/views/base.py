@@ -6,6 +6,7 @@ from saleboxdjango.lib.address import SaleboxAddress
 
 
 class SaleboxBaseView(View):
+    user_must_be_authenticated = True
     http_method_names = ['post']
 
     form = None  # django form
@@ -40,7 +41,7 @@ class SaleboxBaseView(View):
         pass
 
     def post(self, request):
-        if not request.user.is_authenticated:
+        if self.user_must_be_authenticated and not request.user.is_authenticated:
             return JsonResponse({'error': 'unauthenticated'})
 
         self.form = self.form(request.POST)

@@ -63,7 +63,7 @@ class BasketWishlist(models.Model):
 
 class CheckoutStore(models.Model):
     code = models.CharField(max_length=32)
-    visible_code = models.CharField(max_length=14)  # time.time to 2 decimals + 2 alpha
+    visible_code = models.CharField(max_length=14, unique=True)  # time.time to 2 decimals + 2 alpha
     payment_method = models.CharField(max_length=12)
     status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
     data = JSONField()
