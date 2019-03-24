@@ -1,5 +1,5 @@
 import time
-from pprint import pprint
+# from pprint import pprint
 
 from django.conf import settings
 
@@ -162,9 +162,6 @@ class SaleboxCheckout:
         # update data
         self._update_sequence()
         self.data['last_seen'] = int(time.time())
-
-        #import pprint
-        #pprint.pprint(self.data)
 
     def _update_sequence(self):
         for i, o in enumerate(self.sequence['order']):

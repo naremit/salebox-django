@@ -99,19 +99,26 @@ class SaleboxAddress:
             state
         )
 
-    def get_address_string(self, address):
+    def get_address_as_list(self, address, csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country+postcode'):
         output = []
-
+        csv_vars = csv_vars.split(',')
         for csv in csv_vars:
             if csv == 'country':
-                tmp = self._get_country(a.country)
+                tmp = self._get_country(address.country)
+            elif csv == 'country+postcode':
+                tmp = [self._get_country(address.country)]
+                if address.postcode:
+                    tmp.append(address.postcode)
+                tmp = ' '.join(tmp)
             elif csv == 'country_state':
-                tmp = self._get_state(a.country_state)
+                tmp = self._get_state(address.country_state)
             else:
-                tmp = getattr(a, csv, None)
+                tmp = getattr(address, csv, None)
 
             if tmp is not None and len(tmp) > 0:
-                a.address_list.append(tmp)
+                output.append(tmp)
+
+        return output
 
     def get_count(self):
         return self.query.all().count()
@@ -119,9 +126,13 @@ class SaleboxAddress:
     def get_list(
             self,
             selected_id=None,
-            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country'
+            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country+postcode'
         ):
+
+        # get addresses
         addresses = self.query.all()
+        for a in addresses:
+            a.address_list = self.get_address_as_list(a, csv_vars)
 
         # add "selected" attribute to all addresses
         if len(addresses) > 0:
@@ -138,28 +149,17 @@ class SaleboxAddress:
                         a.selected = True
                         break
 
-        # make a list of the non-null address lines
-        csv_vars = csv_vars.split(',')
-        for a in addresses:
-            a.address_list = []
-            for csv in csv_vars:
-                if csv == 'country':
-                    tmp = self._get_country(a.country)
-                elif csv == 'country_state':
-                    tmp = self._get_state(a.country_state)
-                else:
-                    tmp = getattr(a, csv, None)
-
-                if tmp is not None and len(tmp) > 0:
-                    a.address_list.append(tmp)
-
         return addresses
 
-    def get_single_by_default(self):
-        return self.query.all().get(default=True)
+    def get_single_by_default(self, csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country+postcode'):
+        a = self.query.all().get(default=True)
+        a.address_list = self.get_address_as_list(a, csv_vars)
+        return a
 
-    def get_single_by_id(self, id):
-        return self.query.all().get(id=id)
+    def get_single_by_id(self, id, csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country+postcode'):
+        a = self.query.all().get(id=id)
+        a.address_list = self.get_address_as_list(a, csv_vars)
+        return a
 
     def remove_address(self, id):
         address = self.query.all().get(id=id)

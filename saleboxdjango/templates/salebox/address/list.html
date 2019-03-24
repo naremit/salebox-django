@@ -9,9 +9,6 @@
                 {% for al in a.address_list %}
                     <span style="display:inline-block; white-space: nowrap;">{{ al }}{% if not forloop.last %},&nbsp;{% endif %}</span>
                 {% endfor %}
-                {% if a.postcode %}
-                    <span style="display:inline-block; white-space: nowrap;">&nbsp;{{ a.postcode }}</span>
-                {% endif %}
             </div>
             <div style="font-size: 13px;">
                 {% if a.default %}

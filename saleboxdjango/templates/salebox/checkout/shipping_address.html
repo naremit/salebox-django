@@ -4,8 +4,15 @@
     <form method="post">
         {% csrf_token %}
 
-        <p>Pick your delivery address:</p>
-        {{ address_list | safe }}
+        {% if has_addresses %}
+            <p>Pick your delivery address:</p>
+            {{ address_list | safe }}
+            <p>Or, enter a new address:</p>
+            {{ add_form | safe }}
+        {% else %}
+            <p>Enter your delivery address:</p>
+            {{ add_form | safe }}
+        {% endif %}
         <hr />
 
         {% comment %}
