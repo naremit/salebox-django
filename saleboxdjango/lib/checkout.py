@@ -95,10 +95,17 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
-    def set_shipping_address(self, required, address_id, address, meta, request):
+    def set_invoice_address(self, required, address_id, address_str, meta, request):
+        self.data['invoice_address']['required'] = required
+        self.data['invoice_address']['address_id'] = address_id
+        self.data['invoice_address']['address_str'] = address
+        self.data['invoice_address']['meta'] = meta
+        self._write_session(request)
+
+    def set_shipping_address(self, required, address_id, address_str, meta, request):
         self.data['shipping_address']['required'] = required
         self.data['shipping_address']['address_id'] = address_id
-        self.data['shipping_address']['address'] = address
+        self.data['shipping_address']['address_str'] = address
         self.data['shipping_address']['meta'] = meta
         self._write_session(request)
 
@@ -110,7 +117,7 @@ class SaleboxCheckout:
             'invoice_address': {
                 'required': None,
                 'address_id': None,
-                'address': None,
+                'address_str': None,
                 'meta': None
             },
             'last_seen': int(time.time()),
@@ -150,11 +157,11 @@ class SaleboxCheckout:
             }
 
     def _init_session(self, request):
+        self._init_data()
+
         # attempt to import data from the session
         request.session.setdefault('saleboxcheckout', None)
-        if request.session['saleboxcheckout'] is None:
-            self._init_data()
-        else:
+        if request.session['saleboxcheckout'] is not None:
             tmp = request.session['saleboxcheckout']
             if int(time.time()) - tmp['last_seen'] < 60 * 60:  # 1 hr
                 self.data = request.session['saleboxcheckout']

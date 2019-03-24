@@ -5,16 +5,18 @@ from saleboxdjango.lib.address import SaleboxAddress
 from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
 
 
-class SaleboxCheckoutShippingAddressForm(forms.Form):
+class SaleboxCheckoutShippingInvoiceAddressForm(forms.Form):
     shipping_address_id = forms.IntegerField()
+    invoice_required = forms.BooleanField(required=False)
+    invoice_address_id = forms.IntegerField(required=False)
 
 
-class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
+class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
     language = None
     default_country_id = None
-    checkout_step = 'shipping_address'
-    form_class = SaleboxCheckoutShippingAddressForm
-    template_name = 'salebox/checkout/shipping_address.html'
+    checkout_step = 'shipping_invoice_address'
+    form_class = SaleboxCheckoutShippingInvoiceAddressForm
+    template_name = 'salebox/checkout/shipping_invoice_address.html'
 
     def check_add_form(self, request):
         # add a new address if it has been posted in
@@ -28,11 +30,24 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
         # continue as normal
         if add_status == 'success':
             add_address = sa.get_single_by_id(add_address.id)
-            self.set_shipping_address(add_address)
+            if add_state == 'shipping':
+                self.set_shipping_address(add_address)
+            else:
+                self.set_invoice_address(add_address)
             return self.sc.set_completed(self.checkout_step, request)
         else:
-            self.add_form = add_form
             self.add_status = add_status
+            add_status, add_address, self.add_shipping_form, add_state = sa.add_form(
+                request,
+                state='shipping',
+                default_country_id=self.default_country_id
+            )
+            add_status, add_address, self.add_invoice_form, add_state = sa.add_form(
+                request,
+                state='invoice',
+                default_country_id=self.default_country_id
+            )
+
             return None
 
     def form_valid_pre_redirect(self, form):
@@ -71,7 +86,30 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
         r = self.check_add_form(request)
         if r is not None:
             return redirect(r)
-        return super().post(self, request, *args, **kwargs)
+
+        # this form needs an extra step:
+        # the invoice_address_id is required if invoice_required == True
+        form = self.get_form()
+        if form.is_valid():
+            if form.cleaned_data['invoice_required'] and \
+                form.cleaned_data['invoice_address_id'] is None:
+                return self.form_invalid(form)
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def set_invoice_address(self, address):
+        self.sc.set_shipping_address(
+            True,
+            address.id,
+            '%s, %s' % (
+                address.full_name,
+                ', '.join(address.address_list)
+            ),
+            None,
+            self.request
+        )
 
     def set_shipping_address(self, address):
         self.sc.set_shipping_address(
