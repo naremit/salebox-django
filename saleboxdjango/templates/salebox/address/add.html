@@ -50,10 +50,15 @@
         <label for="{{ form_id }}_postcode">Postcode:</label>
         <input name="postcode" required class="form-control" id="{{ form_id }}_postcode">
     </div>
-    <div class="form-check">
-        <input class="form-check-input" type="checkbox" checked name="default" id="{{ form_id }}_default">
-        <label class="form-check-label" for="{{ form_id }}_default">Use as default address?</label>
-    </div>
+    {{ show_set_as_default }}
+    {% if show_set_as_default %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" checked name="default" id="{{ form_id }}_default">
+            <label class="form-check-label" for="{{ form_id }}_default">Use as default address?</label>
+        </div>
+    {% else %}
+        <input type="hidden" name="default" value="0">
+    {% endif %}
     <input type="submit"  value="Add address">
 </form>
 <script>var saleboxCountryState={{ states_dict|safe }};</script>

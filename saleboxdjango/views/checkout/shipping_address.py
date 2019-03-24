@@ -57,6 +57,7 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
                     break
 
         # add to context
+        context['has_addresses'] = len(addresses) > 0
         context['add_form'] = self.add_form
         context['add_status'] = self.add_status
         context['address_list'] = sa.render_list_radio(
@@ -64,7 +65,6 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
             field_name='shipping_address_id',
             selected_id=selected_address_id
         )
-        context['has_addresses'] = len(addresses) > 0
         return context
 
     def post(self, request, *args, **kwargs):

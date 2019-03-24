@@ -44,6 +44,9 @@ class SaleboxCheckout:
 
         return None
 
+    def get_current_page_path(self, path_name):
+        return self.sequence['lookup'][path_name]['path']
+
     def get_next_page(self, page_name):
         next = self.sequence['order'].index(page_name) + 1
         if next < len(self.sequence['order']):
@@ -98,14 +101,14 @@ class SaleboxCheckout:
     def set_invoice_address(self, required, address_id, address_str, meta, request):
         self.data['invoice_address']['required'] = required
         self.data['invoice_address']['address_id'] = address_id
-        self.data['invoice_address']['address_str'] = address
+        self.data['invoice_address']['address_str'] = address_str
         self.data['invoice_address']['meta'] = meta
         self._write_session(request)
 
     def set_shipping_address(self, required, address_id, address_str, meta, request):
         self.data['shipping_address']['required'] = required
         self.data['shipping_address']['address_id'] = address_id
-        self.data['shipping_address']['address_str'] = address
+        self.data['shipping_address']['address_str'] = address_str
         self.data['shipping_address']['meta'] = meta
         self._write_session(request)
 

@@ -3,18 +3,18 @@
 {% block checkout %}
 
     {% if has_addresses %}
-        <form method="post" id="shipping_address_1">
+        <form method="post" id="shipping_address_choose">
             {% csrf_token %}
             <p>Pick your delivery address:</p>
             {{ address_list | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_1').hide(); $('#shipping_address_2').show();">enter a new address</a></p>
+            <p>Or, <a href="#" onclick="$('#shipping_address_choose').hide(); $('#shipping_address_add').show();">enter a new address</a></p>
             <button class="btn btn-primary">Next</button>
         </form>
 
-        <div id="shipping_address_2" style="display: none">
+        <div id="shipping_address_add" style="display: none">
             <p>Enter a new delivery address:</p>
             {{ add_form | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_2').hide(); $('#shipping_address_1').show();">use an existing address</a></p>
+            <p>Or, <a href="#" onclick="$('#shipping_address_add').hide(); $('#shipping_address_choose').show();">use an existing address</a></p>
         </div>
     {% else %}
         <p>Enter your delivery address:</p>

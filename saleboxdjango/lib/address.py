@@ -23,6 +23,7 @@ class SaleboxAddress:
             request,
             state=None,
             default_country_id=None,
+            show_set_as_default=True,
             form_name='salebox_address_add',
             form_class=SaleboxAddressAddForm,
             template='salebox/address/add.html'
@@ -34,7 +35,10 @@ class SaleboxAddress:
         if request.user.is_authenticated:
             if request.method == 'POST' and request.POST.get('form_name') == form_name:
                 form = form_class(request.POST)
+
                 if form.is_valid():
+                    state = form.cleaned_data['state']
+
                     country = None
                     country_state = None
                     if form.cleaned_data['country'] is not None:
@@ -46,7 +50,6 @@ class SaleboxAddress:
                                             .objects \
                                             .get(id=form.cleaned_data['country_state'])
 
-                    status = 'success'
                     address = UserAddress(
                         user=request.user,
                         default=form.cleaned_data['default'],
@@ -62,6 +65,8 @@ class SaleboxAddress:
                         postcode=form.cleaned_data['postcode'].upper()
                     )
                     address.save()
+
+                    status = 'success'
                 else:
                     status = 'error'
             else:
@@ -91,6 +96,7 @@ class SaleboxAddress:
                     'form': form,
                     'form_id': 'salebox_%s' % get_random_string(),
                     'form_name': form_name,
+                    'show_set_as_default': show_set_as_default,
                     'state': state,
                     'states_dict': states_dict
                 },
