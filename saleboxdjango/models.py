@@ -345,16 +345,23 @@ class Product(models.Model):
         pass
 
     def update_rating(self):
-        self.rating_score = \
-            ProductVariant \
-                .objects \
-                .filter(product=self) \
-                .aggregate(rating=Avg('rating_score'))['rating']
-        self.rating_vote_count = \
-            ProductVariant \
-                .objects \
-                .filter(product=self) \
-                .count()
+        variant_ids = ProductVariant \
+                        .objects \
+                        .filter(product=self) \
+                        .values_list('id', flat=True)
+
+        self.rating_score = 0
+        self.rating_vote_count = ProductVariantRating \
+                                    .objects \
+                                    .filter(variant__in=variant_ids) \
+                                    .count()
+
+        if self.rating_vote_count > 0:
+            self.rating_score = ProductVariantRating \
+                                    .objects \
+                                    .filter(variant__in=variant_ids) \
+                                    .aggregate(rating=Avg('rating'))['rating']
+
         self.save()
 
 class ProductVariant(models.Model):
@@ -467,18 +474,21 @@ class ProductVariant(models.Model):
         # save
         super(ProductVariant, self).save(*args, **kwargs)
 
-
     def update_rating(self):
-        self.rating_score = \
-            ProductVariantRating \
-                .objects \
-                .filter(variant=self) \
-                .aggregate(rating=Avg('rating'))['rating'] or 0
+        self.rating_score = 0
         self.rating_vote_count = \
             ProductVariantRating \
                 .objects \
                 .filter(variant=self) \
                 .count()
+
+        if self.rating_vote_count > 0:
+            self.rating_score = \
+                ProductVariantRating \
+                    .objects \
+                    .filter(variant=self) \
+                    .aggregate(rating=Avg('rating'))['rating']
+
         self.save()
         self.product.update_rating()
 
@@ -515,7 +525,7 @@ class ProductVariantRating(models.Model):
     def delete(self, *args, **kwargs):
         variant = self.variant
         super().delete(*args, **kwargs)
-        self.variant.update_rating()
+        variant.update_rating()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

@@ -1,7 +1,8 @@
 from django.db.models import Avg, Sum
 from django.http import JsonResponse
 
-from saleboxdjango.models import ProductVariant, ProductVariantRating
+from saleboxdjango.models import Product, ProductVariant, \
+    ProductVariantRating
 from saleboxdjango.lib.common import get_rating_display
 
 
@@ -45,30 +46,25 @@ class SaleboxRating:
         return o
 
     def get_global_product_rating(self):
-        count = self.variant.product.rating_vote_count
-        rating = self.variant.product.rating_score
-        return {
-            'count': count,
-            'rating': rating_display(rating, count)
-        }
+        p = Product.objects.get(id=self.variant.product.id)
+        return self.return_rating(p.rating_vote_count, p.rating_score)
 
     def get_global_variant_rating(self):
-        count = self.variant.rating_vote_count
-        rating = self.variant.rating_score
-        return {
-            'count': count,
-            'rating': rating_display(rating, count)
-        }
+        pv = ProductVariant.objects.get(id=self.variant.id)
+        return self.return_rating(pv.rating_vote_count, pv.rating_score)
 
     def get_user_variant_rating(self):
         if self.user is not None:
-            try:
-                return ProductVariantRating \
+            pvr = ProductVariantRating \
                         .objects \
                         .filter(variant=self.variant) \
-                        .filter(user=self.user)[0].rating
-            except:
-                pass
+                        .filter(user=self.user) \
+                        .first()
+
+            if pvr is None:
+                return self.return_rating(0, 0)
+            else:
+                return self.return_rating(1, pvr.rating)
 
         return None
 
@@ -81,6 +77,12 @@ class SaleboxRating:
 
             for pv in pvs:
                 pv.delete()
+
+    def return_rating(self, count, rating):
+        return {
+            'count': count,
+            'rating': get_rating_display(rating, count)
+        }
 
     def set_variant(self, variant_id):
         self.variant_id = variant_id
