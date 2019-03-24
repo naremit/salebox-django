@@ -30,7 +30,7 @@ urlpatterns = [
     path('basket/wishlist/', SaleboxBasketWishlistView.as_view()),
 
     # image
-    path('img/<slug:imgtype>/<slug:dir>/<int:id>.<slug:hash>.<slug:suffix>', image_view),
+    path('img/<slug:imgtype>/<slug:dir>/<int:id>.<slug:hash>.<slug:suffix>', salebox_image_view),
 
     # rating
     path('rating/add/', SaleboxRatingAddView.as_view()),

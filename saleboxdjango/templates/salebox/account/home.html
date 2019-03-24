@@ -1,0 +1,9 @@
+<h1>My account</h1>
+<p>Welcome, {{ request.user.email }}</p>
+
+<h3>Shopping</h3>
+<ul>
+    <li><a href="/basket/">My basket ({{ basket.basket.qty }})</a></li>
+    <li><a href="/wishlist/">My wishlist ({{ basket.wishlist.qty }})</a></li>
+    <li><a href="/my-account/address/">My addresses ({{ delivery_address_count }})</a></li>
+</ul>
