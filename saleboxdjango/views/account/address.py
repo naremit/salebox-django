@@ -25,12 +25,11 @@ class SaleboxAccountAddressView(TemplateView):
         context = self.get_context_data(**kwargs)
 
         # init address class
-        sa = SaleboxAddress(request.user)
+        sa = SaleboxAddress(request.user, lang=self.language)
 
         # add address if one POSTed in
         add_status, add_address, add_form, add_state = sa.add_form(
             request,
-            lang=self.language,
             default_country_id=self.default_country_id
         )
 
@@ -39,6 +38,6 @@ class SaleboxAccountAddressView(TemplateView):
             return redirect(request.get_full_path())
 
         # update context
-        context['addresses'] = sa.render_list(sa.get_list(lang=self.language))
+        context['addresses'] = sa.render_list(sa.get_list())
         context['add_form'] = add_form
         return self.render_to_response(context)

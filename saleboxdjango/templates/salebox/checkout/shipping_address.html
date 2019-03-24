@@ -5,11 +5,10 @@
         {% csrf_token %}
 
         <p>Pick your delivery address:</p>
-        <p>Address #1: <input type="radio" name="delivery_address" checked /></p>
-        <p>Address #2: <input type="radio" name="delivery_address" /></p>
-        <p>Address #3: <input type="radio" name="delivery_address" /></p>
+        {{ address_list | safe }}
         <hr />
 
+        {% comment %}
         <p>Do you want a tax invoice?</p>
         <button class="btn btn-primary btn-sm" onclick="$('#form_tax_invoice').show(); $('#tax_invoice_reqd').val(true); return false;">Yes</button>
         <button class="btn btn-secondary btn-sm" onclick="$('#form_tax_invoice').hide(); $('#tax_invoice_reqd').val(false); return false;">No</button>
@@ -19,8 +18,8 @@
             <p>Address #2: <input type="radio" name="invoice_address" /></p>
             <p>Address #3: <input type="radio" name="invoice_address" /></p>
         </div>
+        {% endcomment %}
 
-        <hr />
         <button class="btn btn-primary">Next</button>
     </form>
 {% endblock %}

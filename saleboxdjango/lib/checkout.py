@@ -10,7 +10,6 @@ class SaleboxCheckout:
         self._init_session(request)
         self._write_session(request)
 
-
     def get_checkout_nav(self, curr_page_name):
         nav = {
             'order': [],
@@ -35,10 +34,8 @@ class SaleboxCheckout:
 
         return nav
 
-
     def get_raw_data(self):
         return self.data
-
 
     def get_last_accessible_page(self):
         for o in reversed(self.sequence['order']):
@@ -46,7 +43,6 @@ class SaleboxCheckout:
                 return self.sequence['lookup'][o]['path']
 
         return None
-
 
     def get_next_page(self, page_name):
         next = self.sequence['order'].index(page_name) + 1
@@ -56,7 +52,6 @@ class SaleboxCheckout:
             ]['path']
         else:
             return None
-
 
     def page_redirect(self, page_name):
         if page_name not in self.sequence['order']:
@@ -75,23 +70,24 @@ class SaleboxCheckout:
 
         return None
 
-
     def is_page_accessible(self, page_name):
         try:
             return self.sequence['lookup'][page_name]['accessible']
         except:
             return False
 
-
     def set_basket(self, basket, request, reset_completed=True, reset_checkout=True):
-        self.data['basket'] = basket.get_raw_data()
+        if reset_checkout:
+            self._init_data()
         if reset_completed:
             self.data['completed'] = []
-        self._write_session(request)
-        return self.sequence['lookup'][
-            self.sequence['order'][0]
-        ]['path']
 
+        # populate data object
+        self.data['basket'] = basket.get_raw_data()
+        self._write_session(request)
+
+        # return url to redirect to
+        return self.sequence['lookup'][self.sequence['order'][0]]['path']
 
     def set_completed(self, page_name, request):
         self.data['completed'].append(page_name)
@@ -99,6 +95,43 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
+    def set_shipping_address(self, required, address_id, address, meta, request):
+        self.data['shipping_address']['required'] = required
+        self.data['shipping_address']['address_id'] = address_id
+        self.data['shipping_address']['address'] = address
+        self.data['shipping_address']['meta'] = meta
+        self._write_session(request)
+
+    def _init_data(self):
+        self.data = {
+            'basket': {},
+            'completed': [],
+            'data': {},
+            'invoice_address': {
+                'required': None,
+                'address_id': None,
+                'address': None,
+                'meta': None
+            },
+            'last_seen': int(time.time()),
+            'payment_method': {
+                'selected_id': None,
+                'meta': None,
+                'options': []
+            },
+            'shipping_address': {
+                'required': None,
+                'address_id': None,
+                'address': None,
+                'meta': None
+            },
+            'shipping_method': {
+                'method_id': None,
+                'method_price': None,
+                'method_vat': None,
+                'meta': None
+            }
+        }
 
     def _init_sequence(self):
         self.sequence = {
@@ -116,18 +149,12 @@ class SaleboxCheckout:
                 'accessible': i == 0
             }
 
-
     def _init_session(self, request):
-        # create empty values
-        self.data = {
-            'basket': {},
-            'completed': [],
-            'data': {},
-        }
-        request.session.setdefault('saleboxcheckout', None)
-
         # attempt to import data from the session
-        if request.session['saleboxcheckout'] is not None:
+        request.session.setdefault('saleboxcheckout', None)
+        if request.session['saleboxcheckout'] is None:
+            self._init_data()
+        else:
             tmp = request.session['saleboxcheckout']
             if int(time.time()) - tmp['last_seen'] < 60 * 60:  # 1 hr
                 self.data = request.session['saleboxcheckout']
@@ -136,6 +163,8 @@ class SaleboxCheckout:
         self._update_sequence()
         self.data['last_seen'] = int(time.time())
 
+        #import pprint
+        #pprint.pprint(self.data)
 
     def _update_sequence(self):
         for i, o in enumerate(self.sequence['order']):
@@ -148,7 +177,6 @@ class SaleboxCheckout:
                     ]['accessible'] = True
                 except:
                     pass
-
 
     def _write_session(self, request):
         if len(self.data['basket']) == 0:

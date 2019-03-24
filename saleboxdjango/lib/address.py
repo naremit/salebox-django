@@ -10,7 +10,8 @@ from saleboxdjango.models import Country, CountryState, CountryTranslation, \
 
 
 class SaleboxAddress:
-    def __init__(self, user, address_group='default'):
+    def __init__(self, user, address_group='default', lang=None):
+        self.language = lang
         self.query = UserAddress \
                         .objects \
                         .filter(user=user) \
@@ -21,7 +22,6 @@ class SaleboxAddress:
             self,
             request,
             state=None,
-            lang=None,
             default_country_id=None,
             form_name='salebox_address_add',
             form_class=SaleboxAddressAddForm,
@@ -70,8 +70,8 @@ class SaleboxAddress:
             status = 'unauthenticated'
 
         # dropdown lists
-        dropdown_countries = self._get_countries(lang)
-        dropdown_states = self._get_states(lang)
+        dropdown_countries = self._get_countries()
+        dropdown_states = self._get_states()
         current_states = []
         if form['country'].value() in dropdown_states:
             current_states = dropdown_states[form['country'].value()]
@@ -99,14 +99,27 @@ class SaleboxAddress:
             state
         )
 
+    def get_address_string(self, address):
+        output = []
+
+        for csv in csv_vars:
+            if csv == 'country':
+                tmp = self._get_country(a.country)
+            elif csv == 'country_state':
+                tmp = self._get_state(a.country_state)
+            else:
+                tmp = getattr(a, csv, None)
+
+            if tmp is not None and len(tmp) > 0:
+                a.address_list.append(tmp)
+
     def get_count(self):
         return self.query.all().count()
 
     def get_list(
             self,
             selected_id=None,
-            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country',
-            lang=None
+            csv_vars='address_1,address_2,address_3,address_4,address_5,country_state,country'
         ):
         addresses = self.query.all()
 
@@ -131,9 +144,9 @@ class SaleboxAddress:
             a.address_list = []
             for csv in csv_vars:
                 if csv == 'country':
-                    tmp = self._get_country(a.country, lang)
+                    tmp = self._get_country(a.country)
                 elif csv == 'country_state':
-                    tmp = self._get_state(a.country_state, lang)
+                    tmp = self._get_state(a.country_state)
                 else:
                     tmp = getattr(a, csv, None)
 
@@ -155,15 +168,28 @@ class SaleboxAddress:
     def render_list(
             self,
             addresses,
-            show_checkbox=False,
             template='salebox/address/list.html'
+        ):
+
+        return render_to_string(
+            template,
+            { 'addresses': addresses }
+        )
+
+    def render_list_radio(
+            self,
+            addresses,
+            field_name='address',
+            selected_id=None,
+            template='salebox/address/list_radio.html'
         ):
 
         return render_to_string(
             template,
             {
                 'addresses': addresses,
-                'show_checkbox': show_checkbox
+                'field_name': field_name,
+                'selected_id': selected_id
             }
         )
 
@@ -173,13 +199,13 @@ class SaleboxAddress:
             address.default = True
             address.save()
 
-    def _get_country(self, country, lang):
+    def _get_country(self, country):
         if country is None:
             return None
-        elif lang is not None:
+        elif self.language is not None:
             i18n = CountryTranslation \
                     .objects \
-                    .filter(language=lang) \
+                    .filter(language=self.language) \
                     .filter(country=country) \
                     .first()
             if i18n is not None:
@@ -187,14 +213,17 @@ class SaleboxAddress:
 
         return country.name
 
-    def _get_countries(self, lang):
+    def _get_countries(self):
         countries = list(Country.objects.all().values('id', 'name'))
 
         # translate if req'd
-        if lang is not None:
+        if self.language is not None:
             # get translations from database
             lookup = {}
-            i18n = CountryTranslation.objects.all().values('country__id', 'value')
+            i18n = CountryTranslation \
+                    .objects \
+                    .filter(language=self.language) \
+                    .values('country__id', 'value')
             for c in i18n:
                 lookup[c['country__id']] = c['value']
 
@@ -208,13 +237,13 @@ class SaleboxAddress:
 
         return countries
 
-    def _get_state(self, state, lang):
+    def _get_state(self, state):
         if state is None:
             return None
-        elif lang is not None:
+        elif self.language is not None:
             i18n = CountryStateTranslation \
                     .objects \
-                    .filter(language=lang) \
+                    .filter(language=self.language) \
                     .filter(state=state) \
                     .first()
             if i18n is not None:
@@ -222,7 +251,7 @@ class SaleboxAddress:
 
         return state.name
 
-    def _get_states(self, lang):
+    def _get_states(self):
         states_list = list(
             CountryState
                 .objects
@@ -239,8 +268,11 @@ class SaleboxAddress:
             }
 
         # translate if req'd
-        if lang is not None:
-            i18n = CountryStateTranslation.objects.all().values('state__id', 'value')
+        if self.language is not None:
+            i18n = CountryStateTranslation \
+                        .objects \
+                        .filter(language=self.language) \
+                        .values('state__id', 'value')
             for i in i18n:
                 lookup[i['state__id']]['name'] = i['value']
 
@@ -255,7 +287,7 @@ class SaleboxAddress:
             })
 
         # sort each country
-        if lang is not None:
+        if self.language is not None:
             for c in countries:
                 countries[c] = sorted(countries[c], key=lambda k: k['name'])
 

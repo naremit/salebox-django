@@ -8,10 +8,8 @@ from saleboxdjango.lib.checkout import SaleboxCheckout
 class SaleboxCheckoutBaseView(FormView):
     checkout_step = None
 
-
     def get_conf(self, name, default):
         return settings.SALEBOX['CHECKOUT'].get(name, default)
-
 
     def dispatch(self, request, *args, **kwargs):
         # friendlier error messages
@@ -40,20 +38,30 @@ class SaleboxCheckoutBaseView(FormView):
         if r is not None:
             return redirect(r)
 
+        # store the request in the object
+        self.request = request
+
         # default dispatch action
         return super().dispatch(request, *args, **kwargs)
 
-
-    def form_valid(self, form, request):
-        # add your custom code here
-        # once complete, you will probably want to run...
-        # return super().form_valid(self, form, request)
-        # ...to run the code below
+    def form_valid(self, form):
+        self.form_valid_pre_redirect(form)
 
         # set as complete and redirect to the next step
-        r = self.sc.set_completed(self.checkout_step, request)
+        r = self.sc.set_completed(self.checkout_step, self.request)
         return redirect(r)
 
+    def form_valid_pre_redirect(self, form):
+        # add you own code here
+        #
+        #
+        pass
+
+    def get_additional_context_data(self, context):
+        # add your custom code here, e.g.
+        # context['foo'] = 'bar
+        # then just return it..
+        return context
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,12 +70,5 @@ class SaleboxCheckoutBaseView(FormView):
             'nav': self.sc.get_checkout_nav(self.checkout_step),
             'step': self.checkout_step
         }
-        return context
+        return self.get_additional_context_data(context)
 
-
-    def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form, request)
-        else:
-            return self.form_invalid(form)
