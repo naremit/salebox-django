@@ -4,12 +4,16 @@ from setuptools import find_packages
 
 setup(
     name='salebox-django',
-    version='0.0.35',
+    version='0.0.36',
     author=u'Jon Combe',
     author_email='jon@getsalebox.com',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['django-mptt', 'django-opposable-thumbs', 'requests'],
+    install_requires=[
+        'django-mptt',
+        'django-opposable-thumbs',
+        'requests'
+    ],
     url='https://getsalebox.com',
     license='BSD licence, see LICENCE file',
     description='Django ecommerce powered by Salebox',
