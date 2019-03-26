@@ -256,14 +256,14 @@ class SaleboxProduct:
         # so... it turns out having multiple ORDER BYs with a LIMIT
         # clause slows things down a lot.
         self.order = {
-            'bestseller_low_to_high': ['bestseller_rank', 'name'],
-            'bestseller_high_to_low': ['-bestseller_rank', 'name'],
-            'name_low_to_high': ['name'],
-            'name_high_to_low': ['-name'],
-            'price_low_to_high': ['sale_price', 'name'],
-            'price_high_to_low': ['-sale_price', 'name'],
-            'rating_low_to_high': ['rating_score', 'name'],
-            'rating_high_to_low': ['-rating_score', 'name'],
+            'bestseller_low_to_high': ['bestseller_rank', 'name_sorted'],
+            'bestseller_high_to_low': ['-bestseller_rank', 'name_sorted'],
+            'name_low_to_high': ['name_sorted'],
+            'name_high_to_low': ['-name_sorted'],
+            'price_low_to_high': ['sale_price', 'name_sorted'],
+            'price_high_to_low': ['-sale_price', 'name_sorted'],
+            'rating_low_to_high': ['rating_score', 'name_sorted'],
+            'rating_high_to_low': ['-rating_score', 'name_sorted'],
         }[preset]
 
     def set_pagination(self, page_number, items_per_page, url_prefix):

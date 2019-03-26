@@ -473,6 +473,7 @@ class ProductVariant(models.Model):
     # local values
     rating_score = models.IntegerField(default=0)
     rating_vote_count = models.IntegerField(default=0)
+    name_sorted = models.IntegerField(default=0, db_index=True)
 
     def __str__(self):
         return self.name or ''
@@ -480,12 +481,12 @@ class ProductVariant(models.Model):
     class Meta:
         ordering = ['id']
         indexes = (
-            models.Index(fields=('bestseller_rank', 'name')),
-            models.Index(fields=('-bestseller_rank', 'name')),
-            models.Index(fields=('sale_price', 'name')),
-            models.Index(fields=('-sale_price', 'name')),
-            models.Index(fields=('rating_score', 'name')),
-            models.Index(fields=('-rating_score', 'name')),
+            models.Index(fields=('bestseller_rank', 'name_sorted')),
+            models.Index(fields=('-bestseller_rank', 'name_sorted')),
+            models.Index(fields=('sale_price', 'name_sorted')),
+            models.Index(fields=('-sale_price', 'name_sorted')),
+            models.Index(fields=('rating_score', 'name_sorted')),
+            models.Index(fields=('-rating_score', 'name_sorted')),
         )
         verbose_name = 'Product Variant'
 

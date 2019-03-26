@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now
 
+from saleboxdjango.lib.common import update_natural_sort
 from saleboxdjango.models import *
 
 
@@ -21,7 +22,12 @@ class Command(BaseCommand):
             try:
                 cache.set('saleboxsync', 1, 60)
                 do_sync = self.do_sync()
-                time.sleep(2)
+
+                if do_sync:
+                    print()
+                    print('sleeping...')
+                    print()
+                    time.sleep(3)
             except:
                 do_sync = False
 
@@ -747,6 +753,10 @@ class Command(BaseCommand):
                 sync_from_dict,
                 api_lu
             )
+
+            # update the natural sort value
+            if len(data) > 0:
+                update_natural_sort(ProductVariant, 'name', 'name_sorted')
 
             print('%s x ProductVariant' % len(data))
         except:
