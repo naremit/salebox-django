@@ -479,7 +479,17 @@ class ProductVariant(models.Model):
 
     class Meta:
         ordering = ['id']
+        indexes = (
+            models.Index(fields=('bestseller_rank', 'name')),
+            models.Index(fields=('-bestseller_rank', 'name')),
+            models.Index(fields=('sale_price', 'name')),
+            models.Index(fields=('-sale_price', 'name')),
+            models.Index(fields=('rating_score', 'name')),
+            models.Index(fields=('-rating_score', 'name')),
+        )
         verbose_name = 'Product Variant'
+
+        # CREATE INDEX <name_of_index> ON saleboxdjango_productvariant (col_a ASC, col_b DESC)
 
     def delete(self):
         pass
