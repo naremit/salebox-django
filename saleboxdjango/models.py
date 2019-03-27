@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
 from django.db import models
@@ -68,6 +69,7 @@ class BasketWishlist(models.Model):
 class CheckoutStore(models.Model):
     code = models.CharField(max_length=32)
     visible_code = models.CharField(max_length=14, unique=True)  # time.time to 2 decimals + 2 alpha
+    user = models.IntegerField(blank=True, null=True)
     payment_method = models.CharField(max_length=12)
     status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
     data = JSONField()
@@ -249,6 +251,12 @@ class Member(models.Model):
     group = models.ForeignKey(MemberGroup, null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey('Member', null=True, blank=True, on_delete=models.CASCADE)
     guid = models.CharField(max_length=25, db_index=True)
+    salebox_member_id = models.UUIDField(
+        blank=True,
+        db_index=True,
+        editable=True,
+        null=True
+    )
     gender = models.CharField(max_length=1, blank=True, null=True, choices=GENDER_CHOICES)
     title = models.IntegerField(blank=True, null=True, choices=TITLE_CHOICES)
     name_first = models.CharField(max_length=20, blank=True, null=True)
@@ -582,6 +590,28 @@ class ProductVariantRating(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.variant.update_rating()
+
+
+class SaleboxUser(AbstractUser):
+    salebox_member_id = models.UUIDField(
+        blank=True,
+        db_index=True,
+        editable=True,
+        null=True
+    )
+    salebox_push_required = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    def get_member(self):
+        if self.salebox_member_id is None:
+            return None
+
+        return Member \
+                .objects \
+                .filter(salebox_member_id=self.salebox_member_id) \
+                .first()
 
 
 class UserAddress(models.Model):

@@ -511,6 +511,7 @@ class Command(BaseCommand):
                     'phone_1',
                     'phone_2',
                     'postcode',
+                    'salebox_member_id',
                     'status',
                     'string_1',
                     'string_2',
