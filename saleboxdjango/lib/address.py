@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
@@ -205,6 +206,12 @@ class SaleboxAddress:
             address.default = True
             address.save()
 
+    def _get_allowed_countries(self):
+        try:
+            return settings.SALEBOX['MISC']['ALLOWED_COUNTRIES']
+        except:
+            return []
+
     def _get_country(self, country):
         if country is None:
             return None
@@ -220,7 +227,11 @@ class SaleboxAddress:
         return country.name
 
     def _get_countries(self):
-        countries = list(Country.objects.all().values('id', 'name'))
+        countries = Country.objects.all()
+        allowed_countries = self._get_allowed_countries()
+        if len(allowed_countries) > 0:
+            countries = countries.filter(id__in=allowed_countries)
+        countries = list(countries.values('id', 'name'))
 
         # translate if req'd
         if self.language is not None:
@@ -258,12 +269,11 @@ class SaleboxAddress:
         return state.name
 
     def _get_states(self):
-        states_list = list(
-            CountryState
-                .objects
-                .all()
-                .values('id', 'country__id', 'name')
-        )
+        states_list = CountryState.objects.all()
+        allowed_countries = self._get_allowed_countries()
+        if len(allowed_countries) > 0:
+            states_list = states_list.filter(country__id__in=allowed_countries)
+        states_list = list(states_list.values('id', 'country__id', 'name'))
 
         # create a lookup
         lookup = {}
