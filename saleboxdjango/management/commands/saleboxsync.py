@@ -28,27 +28,33 @@ class Command(BaseCommand):
         self.timer_set('saleboxsync_sync_start', time.time())
         user_equals_member = settings.SALEBOX['MEMBER']['USER_EQUALS_MEMBER']
         if user_equals_member != 'MANUAL':
-            # ALWAYS = every website user should be a salebox member
+            # 'ALWAYS': every website user should be a salebox member
             if user_equals_member == 'ALWAYS':
                 user_ids = get_user_model() \
                             .objects \
                             .filter(salebox_member_id__isnull=True) \
                             .values_list('id', flat=True)
 
-            # PURCHASE = every website user that makes a purchase should
+            # 'PURCHASE': every website user that makes a purchase should
             # be a salebox member
             elif user_equals_member == 'PURCHASE':
-                user_ids = []
-                css = CheckoutStore.objects.filter(status__lte=30)
-                for cs in css:
-                    user = get_user_model().objects.get(id=cs.user)
-                    if user.salebox_member_id is None:
-                        user_ids.append(user.id)
+                user_ids = CheckoutStore \
+                            .objects \
+                            .filter(status__lte=30) \
+                            .filter(user__isnull=False) \
+                            .values_list('user', flat=True)
+                if len(user_ids) > 0:
+                    user_ids = get_user_model() \
+                                .objects \
+                                .filter(id__in=user_ids) \
+                                .filter(salebox_member_id__isnull=True) \
+                                .values_list('id', flat=True)
 
             # give those users a salebox_member_id and set sync flag = True
-            users = get_user_model().objects.filter(id__in=user_ids)
-            for u in users:
-                u.create_salebox_member_id()
+            if len(user_ids) > 0:
+                users = get_user_model().objects.filter(id__in=user_ids)
+                for u in users:
+                    u.create_salebox_member_id()
 
         # step #2: push members
         # find members:
