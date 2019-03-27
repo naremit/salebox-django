@@ -604,6 +604,12 @@ class SaleboxUser(AbstractUser):
     class Meta:
         abstract = True
 
+    def create_salebox_member_id(self):
+        if self.salebox_member_id is None:
+            self.salebox_member_id = str(uuid.uuid4())
+            self.salebox_push_required = True
+            self.save()
+
     def get_member(self):
         if self.salebox_member_id is None:
             return None

@@ -5,6 +5,7 @@ import time
 from pprint import pprint
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now
@@ -15,27 +16,81 @@ from saleboxdjango.models import *
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        do_sync = cache.get('saleboxsync') is None
+        now = time.time()
 
-        # sync data
-        while do_sync:
-            try:
-                cache.set('saleboxsync', 1, 60)
-                do_sync = self.do_sync()
+        # bail out in sync already running
+        sync_start = int(self.timer_get('saleboxsync_sync_start', 0.0))
+        if (time.time() - sync_start) < 120:
+            print('sync in progress: bailing out!')
+            return
 
-                if do_sync:
+        # step #1: if a user needs to be converted to a member, queue it
+        self.timer_set('saleboxsync_sync_start', time.time())
+        user_equals_member = settings.SALEBOX['MEMBER']['USER_EQUALS_MEMBER']
+        if user_equals_member != 'MANUAL':
+            # ALWAYS = every website user should be a salebox member
+            if user_equals_member == 'ALWAYS':
+                user_ids = get_user_model() \
+                            .objects \
+                            .filter(salebox_member_id__isnull=True) \
+                            .values_list('id', flat=True)
+
+            # PURCHASE = every website user that makes a purchase should
+            # be a salebox member
+            elif user_equals_member == 'PURCHASE':
+                user_ids = []
+                css = CheckoutStore.objects.filter(status__lte=30)
+                for cs in css:
+                    user = get_user_model().objects.get(id=cs.user)
+                    if user.salebox_member_id is None:
+                        user_ids.append(user.id)
+
+            # give those users a salebox_member_id and set sync flag = True
+            users = get_user_model().objects.filter(id__in=user_ids)
+            for u in users:
+                u.create_salebox_member_id()
+
+        # step #2: push members
+        # find members:
+        #     for member in members:
+        #         self.timer_set('saleboxsync_sync_start', time.time())
+        #
+        #
+
+        # step #3: pull data
+        # members must be up-to-date before POSTing transactions
+        pull_start = int(self.timer_get('saleboxsync_pull_start', 0.0))
+        if (time.time() - pull_start) > 599:
+            while True:
+                self.timer_set('saleboxsync_sync_start', time.time())
+                self.timer_set('saleboxsync_pull_start', time.time())
+                pull_result = self.pull()
+                if pull_result:
                     print()
                     print('sleeping...')
                     print()
                     time.sleep(3)
-            except:
-                do_sync = False
+                else:
+                    break
 
-        # sync images
-        self.get_images()
-        cache.delete('saleboxsync')
+            # pull images
+            print()
+            print('Downloading images...')
+            print()
+            self.pull_images()
 
-    def do_sync(self):
+        # step 4: POST transactions
+        # for t in transactions:
+        #     self.timer_set('saleboxsync_sync_start', time.time())
+        #
+        #
+        #
+
+        # finished: reset the clock
+        self.timer_set('saleboxsync_sync_start', 0.0)
+        print('Finished in %.3fs' % (time.time() - now))
+
+    def pull(self):
         post = {
             'pos': settings.SALEBOX['API']['KEY'],
             'license': settings.SALEBOX['API']['LICENSE'],
@@ -44,7 +99,7 @@ class Command(BaseCommand):
         }
 
         # populate last updates
-        sync_from_dict = self.get_sync_from_dict()
+        sync_from_dict = self.pull_get_sync_from_dict()
         for code in sync_from_dict:
             post['lu_%s' % code] = sync_from_dict[code]
 
@@ -80,98 +135,98 @@ class Command(BaseCommand):
                 if response['status'] == 'OK':
                     for i, value in enumerate(response['sync']):
                         if value['code'] == 'attribute':
-                            self.sync_attribute(
+                            self.pull_model_attribute(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'attribute_item':
-                            self.sync_attribute_item(
+                            self.pull_model_attribute_item(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'country':
-                            self.sync_country(
+                            self.pull_model_country(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'country_state':
-                            self.sync_country_state(
+                            self.pull_model_country_state(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'country_state_translation':
-                            self.sync_country_state_translation(
+                            self.pull_model_country_state_translation(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'country_translation':
-                            self.sync_country_translation(
+                            self.pull_model_country_translation(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'discount_seasonal_group':
-                            self.sync_discount_seasonal_group(
+                            self.pull_model_discount_seasonal_group(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'discount_seasonal_ruleset':
-                            self.sync_discount_seasonal_ruleset(
+                            self.pull_model_discount_seasonal_ruleset(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'member':
-                            self.sync_member(
+                            self.pull_model_member(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'member_group':
-                            self.sync_member_group(
+                            self.pull_model_member_group(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'product':
-                            self.sync_product(
+                            self.pull_model_product(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'product_category':
-                            self.sync_product_category(
+                            self.pull_model_product_category(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'product_variant':
-                            self.sync_product_variant(
+                            self.pull_model_product_variant(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
                             )
 
                         elif value['code'] == 'product_variant_image':
-                            self.sync_product_variant_image(
+                            self.pull_model_product_variant_image(
                                 value['data'],
                                 value['lu'],
                                 sync_from_dict
@@ -186,81 +241,7 @@ class Command(BaseCommand):
             print('Something went wrong')
             return False
 
-    def get_image(self, id, urlpath, dir):
-        cache.set('saleboxsync', 1, 60)
-
-        # ensure target dir exists
-        target_dir = '%s/salebox/%s' % (settings.MEDIA_ROOT, dir)
-        try:
-            os.makedirs(target_dir)
-        except:
-            pass
-
-        # fetch image
-        try:
-            url = '%s/%s' % (settings.SALEBOX['API']['URL'], urlpath)
-            suffix = urlpath.split('.')[-1]
-            filename = '%s.%s.%s' % (id, urlpath.split('/')[-1][0:6], suffix)
-            target = '%s/%s' % (target_dir, filename)
-            r = requests.get(url)
-            if r.status_code == 200:
-                open(target, 'wb').write(r.content)
-                return filename, True
-        except:
-            pass
-
-        return None, False
-
-    def get_images(self):
-        # product category
-        imgs = ProductCategory \
-                .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
-        for img in imgs:
-            path, success = self.get_image(img.id, img.image[1:], 'pospc')
-            if success:
-                img.local_image = path
-                img.save()
-
-        # product
-        imgs = Product \
-                .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
-        for img in imgs:
-            path, success = self.get_image(img.id, img.image[1:], 'posp')
-            if success:
-                img.local_image = path
-                img.save()
-
-        # product variant
-        imgs = ProductVariant \
-                .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
-        for img in imgs:
-            path, success = self.get_image(img.id, img.image[1:], 'pospv')
-            if success:
-                img.local_image = path
-                img.save()
-
-        # product variant image
-        imgs = ProductVariantImage \
-                .objects \
-                .exclude(img__isnull=True) \
-                .filter(local_img__isnull=True) \
-                .filter(active_flag=True)
-        for img in imgs:
-            path, success = self.get_image(img.id, img.img, 'pvi')
-            if success:
-                img.local_img = path
-                img.save()
-
-    def get_sync_from_dict(self):
+    def pull_get_sync_from_dict(self):
         lus = LastUpdate.objects.all()
 
         # populate dict
@@ -291,21 +272,82 @@ class Command(BaseCommand):
 
         return lu
 
-    def set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
-        if increment:
-            if now().timestamp() - api_lu > 60:
-                if api_lu == 0:
-                    api_lu = 1.0
-                else:
-                    api_lu += 0.00001
+    def pull_image(self, id, urlpath, dir):
+        self.timer_set('saleboxsync_sync_start', time.time())
+        self.timer_set('saleboxsync_pull_start', time.time())
 
-        if api_lu > sync_from_dict[code]:
-            lu = LastUpdate.objects.get(code=code)
-            lu.value = float(api_lu)
-            lu.save()
-            cache.clear()  # TODO, this probable wants to be a setting, and better still, have a list of cache keys to void, rather than all
+        # ensure target dir exists
+        target_dir = '%s/salebox/%s' % (settings.MEDIA_ROOT, dir)
+        try:
+            os.makedirs(target_dir)
+        except:
+            pass
 
-    def sync_attribute(self, data, api_lu, sync_from_dict):
+        # fetch image
+        try:
+            url = '%s/%s' % (settings.SALEBOX['API']['URL'], urlpath)
+            suffix = urlpath.split('.')[-1]
+            filename = '%s.%s.%s' % (id, urlpath.split('/')[-1][0:6], suffix)
+            target = '%s/%s' % (target_dir, filename)
+            r = requests.get(url)
+            if r.status_code == 200:
+                open(target, 'wb').write(r.content)
+                return filename, True
+        except:
+            pass
+
+        return None, False
+
+    def pull_images(self):
+        # product category
+        imgs = ProductCategory \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.pull_image(img.id, img.image[1:], 'pospc')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product
+        imgs = Product \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.pull_image(img.id, img.image[1:], 'posp')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product variant
+        imgs = ProductVariant \
+                .objects \
+                .exclude(image__isnull=True) \
+                .filter(local_image__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.pull_image(img.id, img.image[1:], 'pospv')
+            if success:
+                img.local_image = path
+                img.save()
+
+        # product variant image
+        imgs = ProductVariantImage \
+                .objects \
+                .exclude(img__isnull=True) \
+                .filter(local_img__isnull=True) \
+                .filter(active_flag=True)
+        for img in imgs:
+            path, success = self.pull_image(img.id, img.img, 'pvi')
+            if success:
+                img.local_img = path
+                img.save()
+
+    def pull_model_attribute(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = Attribute.objects.get_or_create(id=d['id'])
@@ -313,7 +355,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'attribute',
                 len(data) < 100,
                 sync_from_dict,
@@ -324,7 +366,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_attribute_item(self, data, api_lu, sync_from_dict):
+    def pull_model_attribute_item(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = AttributeItem.objects.get_or_create(id=d['id'])
@@ -334,7 +376,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'attribute_item',
                 len(data) < 100,
                 sync_from_dict,
@@ -345,7 +387,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_country(self, data, api_lu, sync_from_dict):
+    def pull_model_country(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = Country.objects.get_or_create(id=d['id'])
@@ -356,7 +398,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'country',
                 len(data) < 100,
                 sync_from_dict,
@@ -367,7 +409,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_country_state(self, data, api_lu, sync_from_dict):
+    def pull_model_country_state(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = CountryState.objects.get_or_create(id=d['id'])
@@ -377,7 +419,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'country_state',
                 len(data) < 100,
                 sync_from_dict,
@@ -388,7 +430,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_country_state_translation(self, data, api_lu, sync_from_dict):
+    def pull_model_country_state_translation(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = CountryStateTranslation.objects.get_or_create(id=d['id'])
@@ -398,7 +440,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'country_state_translation',
                 len(data) < 100,
                 sync_from_dict,
@@ -409,7 +451,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_country_translation(self, data, api_lu, sync_from_dict):
+    def pull_model_country_translation(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = CountryTranslation.objects.get_or_create(id=d['id'])
@@ -419,7 +461,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'country_translation',
                 len(data) < 100,
                 sync_from_dict,
@@ -430,14 +472,14 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_discount_seasonal_group(self, data, api_lu, sync_from_dict):
+    def pull_model_discount_seasonal_group(self, data, api_lu, sync_from_dict):
         # for d in data
         #
         #
 
         # update sync_from
         """
-        self.set_sync_from_dict(
+        self.pull_set_sync_from_dict(
             'discount_seasonal_group',
             len(data) < 100,
             sync_from_dict,
@@ -445,14 +487,14 @@ class Command(BaseCommand):
         )
         """
 
-    def sync_discount_seasonal_ruleset(self, data, api_lu, sync_from_dict):
+    def pull_model_discount_seasonal_ruleset(self, data, api_lu, sync_from_dict):
         # for d in data
         #
         #
 
         # update sync_from
         """
-        self.set_sync_from_dict(
+        self.pull_set_sync_from_dict(
             'discount_seasonal_ruleset',
             len(data) < 100,
             sync_from_dict,
@@ -460,7 +502,7 @@ class Command(BaseCommand):
         )
         """
 
-    def sync_member(self, data, api_lu, sync_from_dict):
+    def pull_model_member(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 # retrieve lookups
@@ -534,7 +576,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'member',
                 len(data) < 100,
                 sync_from_dict,
@@ -545,7 +587,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_member_group(self, data, api_lu, sync_from_dict):
+    def pull_model_member_group(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 o, created = MemberGroup.objects.get_or_create(id=d['id'])
@@ -557,7 +599,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'member_group',
                 len(data) < 100,
                 sync_from_dict,
@@ -568,7 +610,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_product(self, data, api_lu, sync_from_dict):
+    def pull_model_product(self, data, api_lu, sync_from_dict):
         def sync_attributes(product, attribute_number, id_list):
             attributes_changed = False
             attribute_m2m = getattr(product, 'attribute_%s' % attribute_number)
@@ -620,7 +662,7 @@ class Command(BaseCommand):
                     sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'product',
                 len(data) < 100,
                 sync_from_dict,
@@ -631,7 +673,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_product_category(self, data, api_lu, sync_from_dict):
+    def pull_model_product_category(self, data, api_lu, sync_from_dict):
         try:
             # pass #1: save with parent = None to avoid mptt errors
             for d in data:
@@ -662,7 +704,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'product_category',
                 True,
                 sync_from_dict,
@@ -673,7 +715,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_product_variant(self, data, api_lu, sync_from_dict):
+    def pull_model_product_variant(self, data, api_lu, sync_from_dict):
         def sync_attributes(variant, attribute_number, id_list):
             attributes_changed = False
             attribute_m2m = getattr(variant, 'attribute_%s' % attribute_number)
@@ -748,7 +790,7 @@ class Command(BaseCommand):
                     sync_attributes(o, i, d['attribute_%s' % i])
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'product_variant',
                 len(data) < 100,
                 sync_from_dict,
@@ -763,7 +805,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def sync_product_variant_image(self, data, api_lu, sync_from_dict):
+    def pull_model_product_variant_image(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
                 # create object
@@ -787,7 +829,7 @@ class Command(BaseCommand):
                 o.save()
 
             # update sync_from
-            self.set_sync_from_dict(
+            self.pull_set_sync_from_dict(
                 'product_variant_image',
                 len(data) < 100,
                 sync_from_dict,
@@ -798,3 +840,30 @@ class Command(BaseCommand):
         except:
             pass
 
+    def pull_set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
+        if increment:
+            if now().timestamp() - api_lu > 60:
+                if api_lu == 0:
+                    api_lu = 1.0
+                else:
+                    api_lu += 0.00001
+
+        if api_lu > sync_from_dict[code]:
+            lu = LastUpdate.objects.get(code=code)
+            lu.value = float(api_lu)
+            lu.save()
+            cache.clear()  # TODO, this probably wants to be a setting, and
+                           # better still, have a list of cache keys to
+                           # void, rather than all
+
+    def timer_get(self, code, default_value):
+        try:
+            return LastUpdate.objects.get(code=code).value
+        except:
+            LastUpdate(code=code, value=default_value).save()
+            return default_value
+
+    def timer_set(self, code, value):
+        o = LastUpdate.objects.get(code=code)
+        o.value = value
+        o.save()
