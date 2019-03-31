@@ -10,7 +10,6 @@ class SaleboxCheckoutShippingAddressForm(forms.Form):
 
 
 class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
-    language = None
     default_country_id = None
     checkout_step = 'shipping_address'
     form_class = SaleboxCheckoutShippingAddressForm
@@ -18,7 +17,7 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
 
     def check_add_form(self, request):
         # add a new address if it has been posted in
-        sa = SaleboxAddress(self.request.user, lang=self.language)
+        sa = SaleboxAddress(self.request.user)
         add_status, add_address, add_form, add_state = sa.add_form(
             request,
             default_country_id=self.default_country_id
@@ -45,7 +44,7 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
         return super().get(self, request, *args, **kwargs)
 
     def get_additional_context_data(self, context):
-        sa = SaleboxAddress(self.request.user, lang=self.language)
+        sa = SaleboxAddress(self.request.user)
         addresses = sa.get_list()
 
         # get selected address from checkout dict, else use the default

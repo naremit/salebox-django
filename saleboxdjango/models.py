@@ -633,6 +633,11 @@ class UserAddress(models.Model):
     country_state = models.ForeignKey(CountryState, blank=True, null=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
     postcode = models.CharField(max_length=12, blank=True, null=True)
+    phone_1 = models.CharField(max_length=20, blank=True, null=True)
+    phone_2 = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    string_1 = models.CharField(max_length=255, blank=True, null=True)
+    string_2 = models.CharField(max_length=255, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 

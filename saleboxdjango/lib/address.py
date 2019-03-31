@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
+from django.utils.translation import get_language
 
 from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.models import Country, CountryState, CountryTranslation, \
@@ -11,8 +12,7 @@ from saleboxdjango.models import Country, CountryState, CountryTranslation, \
 
 
 class SaleboxAddress:
-    def __init__(self, user, address_group='default', lang=None):
-        self.language = lang
+    def __init__(self, user, address_group='default'):
         self.query = UserAddress \
                         .objects \
                         .filter(user=user) \
@@ -213,12 +213,14 @@ class SaleboxAddress:
             return []
 
     def _get_country(self, country):
+        lang = get_language()
+
         if country is None:
             return None
-        elif self.language is not None:
+        elif not lang.startswith('en'):
             i18n = CountryTranslation \
                     .objects \
-                    .filter(language=self.language) \
+                    .filter(language=lang) \
                     .filter(country=country) \
                     .first()
             if i18n is not None:
@@ -227,6 +229,8 @@ class SaleboxAddress:
         return country.name
 
     def _get_countries(self):
+        lang = get_language()
+
         countries = Country.objects.all()
         allowed_countries = self._get_allowed_countries()
         if len(allowed_countries) > 0:
@@ -234,12 +238,12 @@ class SaleboxAddress:
         countries = list(countries.values('id', 'name'))
 
         # translate if req'd
-        if self.language is not None:
+        if not lang.startswith('en'):
             # get translations from database
             lookup = {}
             i18n = CountryTranslation \
                     .objects \
-                    .filter(language=self.language) \
+                    .filter(language=lang) \
                     .values('country__id', 'value')
             for c in i18n:
                 lookup[c['country__id']] = c['value']
@@ -255,12 +259,14 @@ class SaleboxAddress:
         return countries
 
     def _get_state(self, state):
+        lang = get_language()
+
         if state is None:
             return None
-        elif self.language is not None:
+        elif not lang.startswith('en'):
             i18n = CountryStateTranslation \
                     .objects \
-                    .filter(language=self.language) \
+                    .filter(language=lang) \
                     .filter(state=state) \
                     .first()
             if i18n is not None:
@@ -269,6 +275,8 @@ class SaleboxAddress:
         return state.name
 
     def _get_states(self):
+        lang = get_language()
+
         states_list = CountryState.objects.all()
         allowed_countries = self._get_allowed_countries()
         if len(allowed_countries) > 0:
@@ -284,10 +292,10 @@ class SaleboxAddress:
             }
 
         # translate if req'd
-        if self.language is not None:
+        if not lang.startswith('en'):
             i18n = CountryStateTranslation \
                         .objects \
-                        .filter(language=self.language) \
+                        .filter(language=lang) \
                         .values('state__id', 'value')
             for i in i18n:
                 lookup[i['state__id']]['name'] = i['value']
@@ -303,7 +311,7 @@ class SaleboxAddress:
             })
 
         # sort each country
-        if self.language is not None:
+        if not lang.startswith('en'):
             for c in countries:
                 countries[c] = sorted(countries[c], key=lambda k: k['name'])
 
