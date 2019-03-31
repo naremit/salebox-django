@@ -459,6 +459,9 @@ class SaleboxBasket:
         self._calculate_loyalty(request)
 
         # display prices
+        for item in self.data['basket']['items']:
+            for s in ['price', 'sale_price']:
+                item['variant']['%s_display' % s] = get_price_display(item['variant'][s])
         for s in ['orig_price', 'sale_price']:
             self.data['basket'][s] = get_price_display(self.data['basket'][s])
 
