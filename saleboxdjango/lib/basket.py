@@ -259,20 +259,20 @@ class SaleboxBasket:
             bwl.session = request.session.session_key
         bwl.save()
 
-    def _calculate_loyalty(self):
+    def _calculate_loyalty(self, request):
         # pre_calculate_loyalty
-        self._call_external('PRE_CALCULATE_LOYALTY')
+        self._call_external('PRE_CALCULATE_LOYALTY', request)
 
         for i in self.data['basket']['items']:
             if i['variant']['loyalty_points'] is not None:
                 self.data['basket']['loyalty'] += i['variant']['loyalty_points'] * i['qty']
 
         # post_calculate_loyalty
-        self._call_external('POST_CALCULATE_LOYALTY')
+        self._call_external('POST_CALCULATE_LOYALTY', request)
 
-    def _calculate_price(self):
+    def _calculate_price(self, request):
         # pre_calculate_price
-        self._call_external('PRE_CALCULATE_PRICE')
+        self._call_external('PRE_CALCULATE_PRICE', request)
 
         for i in self.data['basket']['items']:
             i['variant']['qty_price'] = get_price_display(i['variant']['price'] * i['qty'])
@@ -281,15 +281,15 @@ class SaleboxBasket:
             self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
 
         # post_calculate_price
-        self._call_external('POST_CALCULATE_PRICE')
+        self._call_external('POST_CALCULATE_PRICE', request)
 
-    def _call_external(self, name):
+    def _call_external(self, name, request):
         if settings.SALEBOX['CHECKOUT']:
             funcstr = settings.SALEBOX['CHECKOUT'].get(name)
             if funcstr:
                 pkg, attr = funcstr.rsplit('.', 1)
                 func = getattr(importlib.import_module(pkg), attr)
-                self.data = func(self.data)
+                self.data = func(self.data, request)
 
     def _filter_basket_queryset(self, request, qs):
         qs = qs.select_related(
@@ -455,8 +455,8 @@ class SaleboxBasket:
             BasketWishlist.objects.filter(id__in=delete_ids).delete()
 
         # calculate basket value + loyalty points
-        self._calculate_price()
-        self._calculate_loyalty()
+        self._calculate_price(request)
+        self._calculate_loyalty(request)
 
         # display prices
         for s in ['orig_price', 'sale_price']:
