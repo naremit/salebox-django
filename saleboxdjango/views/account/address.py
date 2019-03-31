@@ -8,7 +8,6 @@ from saleboxdjango.lib.address import SaleboxAddress
 
 class SaleboxAccountAddressView(TemplateView):
     default_country_id = None
-    language = None
     template_name = 'salebox/account/address.html'
 
     @method_decorator(login_required)
@@ -25,7 +24,7 @@ class SaleboxAccountAddressView(TemplateView):
         context = self.get_context_data(**kwargs)
 
         # init address class
-        sa = SaleboxAddress(request.user, lang=self.language)
+        sa = SaleboxAddress(request.user)
 
         # add address if one POSTed in
         add_status, add_address, add_form, add_state = sa.add_form(
