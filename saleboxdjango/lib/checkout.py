@@ -165,8 +165,6 @@ class SaleboxCheckout:
                 'accessible': i == 0
             }
 
-        print(self.sequence)
-
     def _init_session(self, request):
         self._init_data()
 
