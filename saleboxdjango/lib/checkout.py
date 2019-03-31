@@ -2,6 +2,7 @@ import time
 # from pprint import pprint
 
 from django.conf import settings
+from django.utils.translation import get_language
 
 
 class SaleboxCheckout:
@@ -149,15 +150,22 @@ class SaleboxCheckout:
             'lookup': {}
         }
 
+        # use language url prefix? e.g. /en/checkout/address
+        url_prefix = ''
+        if settings.SALEBOX['CHECKOUT'].get('URL_LANGUAGE_PREFIX', False):
+            url_prefix = '/%s' % get_language()
+
         for i, s in enumerate(settings.SALEBOX['CHECKOUT']['SEQUENCE']):
             self.sequence['order'].append(s[0])
             self.sequence['lookup'][s[0]] = {
                 'label': s[2] if len(s) == 3 else s[0],
-                'path': s[1],
+                'path': '%s%s' % (url_prefix, s[1]),
                 'position': i,
                 'complete': False,
                 'accessible': i == 0
             }
+
+        print(self.sequence)
 
     def _init_session(self, request):
         self._init_data()
