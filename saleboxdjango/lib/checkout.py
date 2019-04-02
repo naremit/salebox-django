@@ -14,22 +14,46 @@ class SaleboxCheckout:
     def get_checkout_nav(self, curr_page_name):
         nav = {
             'order': [],
-            'lookup': {}
+            'lookup': {},
+            'previous': None,
+            'next': None
         }
 
-        for s in self.sequence['order']:
+        for pos, s in enumerate(self.sequence['order']):
             accessible = self.sequence['lookup'][s]['accessible']
             current = s == curr_page_name
 
+            # set previous / next item helpers
+            if current:
+                if pos > 0:
+                    tmp = self.sequence['order'][pos - 1]
+                    nav['previous'] = {
+                        'accessible': self.sequence['lookup'][tmp]['accessible'],
+                        'label': self.sequence['lookup'][tmp]['label'],
+                        'page_name': tmp,
+                        'path': self.sequence['lookup'][tmp]['path'],
+                    }
+                if pos < len(self.sequence['order']) - 1:
+                    tmp = self.sequence['order'][pos + 1]
+                    nav['next'] = {
+                        'accessible': self.sequence['lookup'][tmp]['accessible'],
+                        'label': self.sequence['lookup'][tmp]['label'],
+                        'page_name': tmp,
+                        'path': self.sequence['lookup'][tmp]['path'],
+                    }
+
+            # set lookup
             nav['lookup'][s] = {
                 'accessible': accessible,
-                'current': current
+                'current': current,
             }
 
+            # set order
             nav['order'].append({
                 'accessible': accessible,
                 'current': current,
                 'label': self.sequence['lookup'][s]['label'],
+                'page_name': s,
                 'path': self.sequence['lookup'][s]['path'],
             })
 
