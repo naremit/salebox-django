@@ -57,6 +57,16 @@ class SaleboxCheckout:
                 'path': self.sequence['lookup'][s]['path'],
             })
 
+        for pos, n in enumerate(nav['order']):
+            try:
+                nav['order'][pos]['previous_accessible'] = nav['order'][pos - 1]['accessible']
+            except:
+                nav['order'][pos]['previous_accessible'] = False
+            try:
+                nav['order'][pos]['next_accessible'] = nav['order'][pos + 1]['accessible']
+            except:
+                nav['order'][pos]['next_accessible'] = False
+
         return nav
 
     def get_raw_data(self):
