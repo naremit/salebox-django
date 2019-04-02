@@ -49,18 +49,25 @@ class SaleboxCheckoutBaseView(FormView):
 
         # set as complete and redirect to the next step
         r = self.sc.set_completed(self.checkout_step, self.request)
-        return redirect(r)
+        print(r)
+        if r is None:
+            raise Exception('There is no next checkout step to redirect to...')
+        else:
+            return redirect(r)
 
     def form_valid_pre_redirect(self, form):
         # add you own code here
+        # self.request is available
         #
         #
         pass
 
     def get_additional_context_data(self, context):
-        # add your custom code here, e.g.
-        # context['foo'] = 'bar
-        # then just return it..
+        # add your custom code here, e.g...
+        #     context['foo'] = 'bar'
+        # ...then just return it
+        # self.request is available
+        #
         return context
 
     def get_context_data(self, **kwargs):

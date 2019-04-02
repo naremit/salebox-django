@@ -1,10 +1,4 @@
-{% for n in checkout.nav.order %}
-    <div>
-    {% if n.current %}<strong>{% endif %}
-    {% if n.accessible %}<a href="{{ n.path }}">{{ n.label }}</a>{% else %}<span>{{ n.label }}</span>{% endif %}
-    {% if n.current %}</strong>{% endif %}
-    </div>
-{% endfor %}
+{% include "salebox/checkout/_ideolocator.html" %}
 
 <hr />
 <h1>{{ checkout.step }}</h1>

@@ -1,0 +1,15 @@
+{% spaceless %}
+
+{% for n in checkout.nav.order %}
+    <div>
+    {% if n.current %}<strong>{% endif %}
+        {% if n.accessible %}
+            <a href="{{ n.path }}">{{ n.label }}</a>
+        {% else %}
+            <span>{{ n.label }}</span>
+        {% endif %}
+    {% if n.current %}</strong>{% endif %}
+    </div>
+{% endfor %}
+
+{% endspaceless %}
