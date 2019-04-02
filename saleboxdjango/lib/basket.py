@@ -306,6 +306,52 @@ class SaleboxBasket:
             return qs.filter(user__isnull=True) \
                      .filter(session=request.session.session_key)
 
+    def _get_raw_basket(self, request):
+        while True:
+            # get items from db
+            qs = self._filter_basket_queryset(
+                request,
+                BasketWishlist.objects.all()
+            )
+
+            # init duplicate lookups
+            duplicate_basket = {}
+            duplicate_wishlist = {}
+            delete_ids = []
+
+            # find duplicates
+            for pos, q in enumerate(qs):
+                vid = str(q.variant.id)
+
+                if q.basket_flag:
+                    # basket
+                    if vid in duplicate_basket:
+                        # merge into the first instance of this variant
+                        qs[duplicate_basket[vid]].quantity += q.quantity
+                        qs[duplicate_basket[vid]].save()
+
+                        # mark the duplicate to be deleted
+                        delete_ids.append(q.id)
+                    else:
+                        duplicate_basket[vid] = pos
+                else:
+                    # wishlist
+                    if vid in duplicate_wishlist:
+                        delete_ids.append(q.id)
+                    else:
+                        if q.quantity != 1:
+                            q.quantity = 1
+                            q.save()
+                        duplicate_wishlist[vid] = pos
+
+            # delete duplicates if they exist
+            if len(delete_ids) > 0:
+                BasketWishlist.objects.filter(id__in=delete_ids).delete()
+            else:
+                break
+
+        return qs
+
     def _get_variants(self, request, variant):
         if isinstance(variant, int):
             variant = ProductVariant.objects.get(id=variant)
@@ -352,13 +398,7 @@ class SaleboxBasket:
         }
 
         # retrieve items from db
-        qs = self._filter_basket_queryset(
-            request,
-            BasketWishlist.objects.all()
-        )
-
-        # clean up data
-        basket_duplicates = {}
+        qs = self._get_raw_basket(request)
 
         # populate data
         for q in qs:
@@ -413,46 +453,21 @@ class SaleboxBasket:
 
             if q.basket_flag:
                 self.data['basket']['qty'] += q.quantity
-
-                if str(q.variant.id) not in basket_duplicates:
-                    basket_duplicates[str(q.variant.id)] = {
-                        'original': q,
-                        'copies': []
-                    }
-
-                if q.variant.id not in self.data['basket']['order']:
-                    self.data['basket']['order'].append(str(q.variant.id))
-                    self.data['basket']['lookup'][str(q.variant.id)] = {
-                        'qty': q.quantity,
-                        'variant': pv
-                    }
-                else:
-                    self.data['basket']['lookup'][q.variant.id]['qty'] += q.quantity
-                    basket_duplicates[str(q.variant.id)]['copies'].append(q)
+                self.data['basket']['order'].append(str(q.variant.id))
+                self.data['basket']['lookup'][str(q.variant.id)] = {
+                    'qty': q.quantity,
+                    'variant': pv
+                }
             else:
-                if q.variant.id not in self.data['wishlist']['order']:
-                    self.data['wishlist']['qty'] += q.quantity
-                    self.data['wishlist']['order'].append(str(q.variant.id))
-                    self.data['wishlist']['lookup'][str(q.variant.id)] = pv
-                else:
-                    q.delete()
+                self.data['wishlist']['qty'] += q.quantity
+                self.data['wishlist']['order'].append(str(q.variant.id))
+                self.data['wishlist']['lookup'][str(q.variant.id)] = pv
 
         # populate the items list
         for i in self.data['basket']['order']:
             self.data['basket']['items'].append(self.data['basket']['lookup'][str(i)])
         for i in self.data['wishlist']['order']:
             self.data['wishlist']['items'].append(self.data['wishlist']['lookup'][str(i)])
-
-        # cleanup
-        delete_ids = []
-        for d in basket_duplicates:
-            for c in basket_duplicates[d]['copies']:
-                delete_ids.append(c.id)
-                basket_duplicates[d]['original'].quantity += c.quantity
-                basket_duplicates[d]['original'].save()
-
-        if len(delete_ids) > 0:
-            BasketWishlist.objects.filter(id__in=delete_ids).delete()
 
         # calculate basket value + loyalty points
         self._calculate_price(request)
