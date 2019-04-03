@@ -1,14 +1,17 @@
+from saleboxdjango.lib.common import get_price_display
+
 class SaleboxShippingOptions:
-    SORT_BY = 'DO_NOT_SORT'  # or 'PRICE_ASC', 'LABEL'
+    DEFAULT_SELECT = None  # or 'CHEAPEST', 'FIRST'
     REMOVE_UNAVAILABLE = True
+    SORT_BY = None  # or 'PRICE_ASC', 'LABEL'
 
     def get_options(self):
         # This is the function you need to replace.
         # Add your own functions here, e.g.
         #
         #   return [
-        #     self._postoffice(),
-        #     self._courier(),
+        #     self._example_option_1(),
+        #     self._example_option_2(),
         #   ]
         #
         # Useful vars:
@@ -27,16 +30,26 @@ class SaleboxShippingOptions:
         opts = [o for o in opts if o is not None]
 
         # optional: remove unavailable
+        # you *may* want to keep unavailable options in the list but greyed out
         if self.REMOVE_UNAVAILABLE:
             opts = [o for o in opts if o['available'] == True]
 
-        # optional: sort by price
-        #
-        #
+        # optional: sorting
+        if self.SORT_BY == 'PRICE_ASC':
+            # todo
+            pass
+        if self.SORT_BY == 'LABEL':
+            # todo
+            pass
 
-        # optional: sort by label
-        #
-        #
+        # optional: default select
+        if self.DEFAULT_SELECT is not None:
+            # todo
+            pass
+
+        # format the price
+        for o in opts:
+            o['price'] = get_price_display(o['price'])
 
         # return
         context['shipping_options'] = opts

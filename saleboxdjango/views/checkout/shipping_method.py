@@ -15,34 +15,8 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
 
     def get_additional_context_data(self, context):
         smc = self.shipping_options_class()
-        context = smc.go(
+        return smc.go(
             self.request,
             self.sc.get_raw_data(),
             context
         )
-
-        return context
-
-
-def get_shipping_options_function(request, checkout, context):
-    context['shipping_options'] = [
-        {
-            'provider': 'postoffice',
-            'service': 'regular',
-            'price': 1000,
-            'id': 1
-        },
-        {
-            'provider': 'courier',
-            'service': 'regular',
-            'price': 1500,
-            'id': 2
-        },
-        {
-            'provider': 'courier',
-            'service': 'express',
-            'price': 2000,
-            'id': 3
-        },
-    ]
-    return context
