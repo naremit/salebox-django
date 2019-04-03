@@ -14,6 +14,11 @@ class SaleboxAccountBasketView(TemplateView):
         sb = SaleboxBasket(request)
         context['data'] = sb.get_raw_data()
 
+        sc = SaleboxCheckout(request)
+        context['checkout'] = {
+            'nav': sc.get_checkout_nav()
+        }
+
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):

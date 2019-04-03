@@ -11,7 +11,7 @@ class SaleboxCheckout:
         self._init_session(request)
         self._write_session(request)
 
-    def get_checkout_nav(self, curr_page_name):
+    def get_checkout_nav(self, curr_page_name=None):
         nav = {
             'order': [],
             'lookup': {},
@@ -20,7 +20,7 @@ class SaleboxCheckout:
         }
 
         for pos, s in enumerate(self.sequence['order']):
-            accessible = self.sequence['lookup'][s]['accessible']
+            accessible = curr_page_name is not None and self.sequence['lookup'][s]['accessible']
             current = s == curr_page_name
 
             # set previous / next item helpers
