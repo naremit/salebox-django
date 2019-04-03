@@ -15,8 +15,8 @@ class SaleboxShippingOptions:
         #   ]
         #
         # Useful vars:
-        #   checkout['shipping_address']['address']['country']
-        #   checkout['shipping_address']['address']['country_state']
+        #   self.checkout['shipping_address']['address']['country']
+        #   self.checkout['shipping_address']['address']['country_state']
         #
         return [
             self._example_option_1(),
@@ -24,9 +24,13 @@ class SaleboxShippingOptions:
         ]
 
     def go(self, request, checkout, context):
+        self.request = request
+        self.checkout = checkout
+        self.context = context
+
         opts = self.get_options()
 
-        # remove None
+        # remove nulls
         opts = [o for o in opts if o is not None]
 
         # optional: remove unavailable
@@ -52,8 +56,8 @@ class SaleboxShippingOptions:
             o['price'] = get_price_display(o['price'])
 
         # return
-        context['shipping_options'] = opts
-        return context
+        self.context['shipping_options'] = opts
+        return self.context
 
     def init_option(
             self,
