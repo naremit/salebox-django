@@ -2,7 +2,10 @@ import time
 # from pprint import pprint
 
 from django.conf import settings
+from django.forms.models import model_to_dict
 from django.utils.translation import get_language
+
+from saleboxdjango.models import UserAddress
 
 
 class SaleboxCheckout:
@@ -142,6 +145,7 @@ class SaleboxCheckout:
 
     def set_shipping_address(self, required, address_id, address_str, meta, request):
         self.data['shipping_address']['required'] = required
+        self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=address_id))
         self.data['shipping_address']['address_id'] = address_id
         self.data['shipping_address']['address_str'] = address_str
         self.data['shipping_address']['meta'] = meta
