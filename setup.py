@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='salebox-django',
-    version='0.0.52',
+    version='0.0.54',
     author=u'Jon Combe',
     author_email='jon@getsalebox.com',
     packages=find_packages(),
@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'django-mptt',
         'django-opposable-thumbs',
+        'pyShipping-python3',
         'requests'
     ],
     url='https://getsalebox.com',
