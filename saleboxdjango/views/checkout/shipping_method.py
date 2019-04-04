@@ -25,6 +25,7 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
         # store in checkout
         self.sc.set_shipping_method(
             selected['id'],
+            selected['label'],
             selected['price']['price'],
             selected['extras'],
             self.request

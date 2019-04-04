@@ -4,6 +4,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import get_language
 
+from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import UserAddress
 
 
@@ -150,10 +151,11 @@ class SaleboxCheckout:
         self.data['shipping_address']['meta'] = meta
         self._write_session(request)
 
-    def set_shipping_method(self, id, price, extras, request):
+    def set_shipping_method(self, id, label, price, extras, request):
         self.data['shipping_method'] = {
             'id': id,
-            'price': price,
+            'label': label,
+            'price': get_price_display(price),
             'extras': extras
         }
         self._write_session(request)
@@ -171,20 +173,21 @@ class SaleboxCheckout:
             },
             'last_seen': int(time.time()),
             'payment_method': {
-                'selected_id': None,
                 'meta': None,
-                'options': []
+                'options': [],
+                'selected_id': None,
             },
             'shipping_address': {
-                'required': None,
-                'address_id': None,
                 'address': None,
-                'meta': None
+                'address_id': None,
+                'meta': None,
+                'required': None,
             },
             'shipping_method': {
-                'id': None,
-                'price': None,
                 'extras': None,
+                'id': None,
+                'label': None,
+                'price': None,
             }
         }
 
