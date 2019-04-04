@@ -593,13 +593,9 @@ class ProductVariantRating(models.Model):
 
 
 class SaleboxUser(AbstractUser):
-    salebox_member_id = models.UUIDField(
-        blank=True,
-        db_index=True,
-        editable=True,
-        null=True
-    )
-    salebox_push_required = models.BooleanField(default=False)
+    salebox_member_id = models.UUIDField(blank=True, db_index=True, editable=True, null=True)
+    salebox_member_sync = JSONField(blank=True, null=True)
+    salebox_last_update = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -607,7 +603,6 @@ class SaleboxUser(AbstractUser):
     def create_salebox_member_id(self):
         if self.salebox_member_id is None:
             self.salebox_member_id = str(uuid.uuid4())
-            self.salebox_push_required = True
             self.save()
 
     def get_member(self):
@@ -618,6 +613,12 @@ class SaleboxUser(AbstractUser):
                 .objects \
                 .filter(salebox_member_id=self.salebox_member_id) \
                 .first()
+
+    def set_salebox_member_sync(self, key, value):
+        if self.salebox_member_sync is None:
+            self.salebox_member_sync = {}
+        self.salebox_member_sync[key] = value
+        self.save()
 
 
 class UserAddress(models.Model):

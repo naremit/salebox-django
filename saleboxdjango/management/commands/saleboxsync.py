@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.timezone import now
+from django.utils import timezone
 
 from saleboxdjango.lib.common import update_natural_sort
 from saleboxdjango.models import *
@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
         # bail out in sync already running
         sync_start = int(self.timer_get('saleboxsync_sync_start', 0.0))
-        if (time.time() - sync_start) < 120:
+        if (time.time() - sync_start) < 1:  # 20:
             print('sync in progress: bailing out!')
             return
 
@@ -55,11 +55,21 @@ class Command(BaseCommand):
                 users = get_user_model().objects.filter(id__in=user_ids)
                 for u in users:
                     u.create_salebox_member_id()
+                    u.set_salebox_member_sync('email', u.email)
+                    # potential TODO:
+                    # have a list of key mappings in the config
+                    # which automatically get added to the sync
+                    # JSON at this point
 
-        # step #2: push members
-        # find members:
-        #     for member in members:
-        #         self.timer_set('saleboxsync_sync_start', time.time())
+        # step #2: push users with member updates
+        cutoff = timezone.now() - datetime.timedelta(seconds=10)
+        users = get_user_model() \
+                    .objects \
+                    .exclude(salebox_member_sync__isnull=True) \
+                    .filter(salebox_last_update__lt=cutoff)
+        for user in users:
+            self.timer_set('saleboxsync_sync_start', time.time())
+            print(user.salebox_member_sync)
         #
         #
 
