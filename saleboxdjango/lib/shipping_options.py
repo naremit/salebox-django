@@ -3,9 +3,9 @@ from saleboxdjango.lib.common import get_price_display
 
 
 class SaleboxShippingOptions:
-    DEFAULT_SELECT = None  # or 'CHEAPEST', 'FIRST'
+    DEFAULT_SELECT = 'FIRST'  # or 'CHEAPEST' or None
     REMOVE_UNAVAILABLE = True
-    SORT_BY = None  # or 'PRICE_ASC', 'LABEL'
+    SORT_BY = 'PRICE_ASC'  # 'LABEL' or None
 
     # variant variable names
     SHIPPING_WIDTH = 'int_1'
@@ -67,18 +67,25 @@ class SaleboxShippingOptions:
         if self.REMOVE_UNAVAILABLE:
             opts = [o for o in opts if o['available'] == True]
 
+        # set selected value (if exists)
+        if self.checkout['shipping_method']['id'] is not None:
+            option = next(o for o in opts if o['id'] == self.checkout['shipping_method']['id'])
+            option['selected'] = True
+
         # optional: sorting
         if self.SORT_BY == 'PRICE_ASC':
-            # todo
-            pass
-        if self.SORT_BY == 'LABEL':
-            # todo
-            pass
+            opts = sorted(opts, key=lambda k: k['price'])
+        elif self.SORT_BY == 'LABEL':
+            opts = sorted(opts, key=lambda k: k['label']['label'])
 
         # optional: default select
-        if self.DEFAULT_SELECT is not None:
-            # todo
-            pass
+        if self.DEFAULT_SELECT == 'CHEAPEST':
+            tmp = sorted(opts, key=lambda k: k['price'])
+            id = tmp[0]['id']
+            option = next(o for o in opts if o['id'] == id)
+            option['selected'] = True
+        elif self.DEFAULT_SELECT == 'FIRST':
+            opts[0]['selected'] = True
 
         # format each option's price
         for o in opts:
@@ -105,7 +112,8 @@ class SaleboxShippingOptions:
                 'remarks': remarks,  # e.g. '2-3 days'
                 'service': service  # 'ExpressPost'
             },
-            'price': 0
+            'price': 0,
+            'selected': False
         }
 
     def _do_binpack(self, containers, packages):

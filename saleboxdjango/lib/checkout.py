@@ -1,5 +1,4 @@
 import time
-# from pprint import pprint
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -151,6 +150,14 @@ class SaleboxCheckout:
         self.data['shipping_address']['meta'] = meta
         self._write_session(request)
 
+    def set_shipping_method(self, id, price, extras, request):
+        self.data['shipping_method'] = {
+            'id': id,
+            'price': price,
+            'extras': extras
+        }
+        self._write_session(request)
+
     def _init_data(self):
         self.data = {
             'basket': {},
@@ -175,10 +182,9 @@ class SaleboxCheckout:
                 'meta': None
             },
             'shipping_method': {
-                'method_id': None,
-                'method_price': None,
-                'method_vat': None,
-                'meta': None
+                'id': None,
+                'price': None,
+                'extras': None,
             }
         }
 
