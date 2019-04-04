@@ -45,7 +45,7 @@ class SaleboxShippingOptions:
         for b in checkout['basket']['basket']['items']:
             for i in range(0, b['qty']):
                 self.meta['total_items'] += 1
-                self.meta['total_weight'] += b['variant'][self.SHIPPING_WEIGHT]
+                self.meta['total_weight'] += b['variant'][self.SHIPPING_WEIGHT] or 0
                 self.meta['items'].append({
                     'variant_id': b['variant']['id'],
                     'width': b['variant'][self.SHIPPING_WIDTH],
