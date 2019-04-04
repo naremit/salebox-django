@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import requests
 import time
@@ -15,12 +16,14 @@ from saleboxdjango.models import *
 
 
 class Command(BaseCommand):
+    SOFTWARE_VERSION = '0.1.6'
+
     def handle(self, *args, **options):
         now = time.time()
 
         # bail out in sync already running
-        sync_start = int(self.timer_get('saleboxsync_sync_start', 0.0))
-        if (time.time() - sync_start) < 1:  # 20:
+        sync_start = int(self.timer_get('saleboxsync_sync_start'))
+        if (time.time() - sync_start) < 120:
             print('sync in progress: bailing out!')
             return
 
@@ -50,7 +53,7 @@ class Command(BaseCommand):
                                 .filter(salebox_member_id__isnull=True) \
                                 .values_list('id', flat=True)
 
-            # give those users a salebox_member_id and set sync flag = True
+            # give those users a salebox_member_id and details to sync
             if len(user_ids) > 0:
                 users = get_user_model().objects.filter(id__in=user_ids)
                 for u in users:
@@ -68,14 +71,12 @@ class Command(BaseCommand):
                     .exclude(salebox_member_sync__isnull=True) \
                     .filter(salebox_last_update__lt=cutoff)
         for user in users:
-            self.timer_set('saleboxsync_sync_start', time.time())
-            print(user.salebox_member_sync)
-        #
-        #
+            self.post_member(user)
 
         # step #3: pull data
         # members must be up-to-date before POSTing transactions
-        pull_start = int(self.timer_get('saleboxsync_pull_start', 0.0))
+        pull_start = int(self.timer_get('saleboxsync_pull_start'))
+        pull_start = 0
         if (time.time() - pull_start) > 599:
             while True:
                 self.timer_set('saleboxsync_sync_start', time.time())
@@ -85,7 +86,7 @@ class Command(BaseCommand):
                     print()
                     print('sleeping...')
                     print()
-                    time.sleep(3)
+                    time.sleep(5)
                 else:
                     break
 
@@ -106,13 +107,35 @@ class Command(BaseCommand):
         self.timer_set('saleboxsync_sync_start', 0.0)
         print('Finished in %.3fs' % (time.time() - now))
 
-    def pull(self):
-        post = {
+    def init_post(self):
+        return {
             'pos': settings.SALEBOX['API']['KEY'],
             'license': settings.SALEBOX['API']['LICENSE'],
             'platform_type': 'ECOMMERCE',
-            'platform_version': '0.1.6',
+            'platform_version': self.SOFTWARE_VERSION,
         }
+
+    def post_member(self, user):
+        self.timer_set('saleboxsync_sync_start', time.time())
+
+        # build post
+        post = self.init_post()
+        post['salebox_member_id'] = user.salebox_member_id
+        post['salebox_member_sync'] = json.dumps(user.salebox_member_sync)
+
+        # do request
+        url = '%s/api/pos/v2/member-update' % settings.SALEBOX['API']['URL']
+        try:
+            r = requests.post(url, data=post)
+            if r.status_code == 200:
+                user.salebox_member_sync = None
+                user.save()
+                self.timer_set('saleboxsync_pull_start', 0.0)
+        except:
+            print('Failed to POST member data')
+
+    def pull(self):
+        post = self.init_post()
 
         # populate last updates
         sync_from_dict = self.pull_get_sync_from_dict()
@@ -858,7 +881,7 @@ class Command(BaseCommand):
 
     def pull_set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
         if increment:
-            if now().timestamp() - api_lu > 60:
+            if timezone.now().timestamp() - api_lu > 20:
                 if api_lu == 0:
                     api_lu = 1.0
                 else:
@@ -872,7 +895,7 @@ class Command(BaseCommand):
                            # better still, have a list of cache keys to
                            # void, rather than all
 
-    def timer_get(self, code, default_value):
+    def timer_get(self, code, default_value=0.0):
         try:
             return LastUpdate.objects.get(code=code).value
         except:
