@@ -79,7 +79,7 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         )
 
         # get selected shipping address from checkout dict, else use the default
-        selected_shipping_address_id = self.sc.data['shipping_address']['address_id']
+        selected_shipping_address_id = self.sc.data['shipping_address']['id']
         if selected_shipping_address_id is None:
             for a in addresses:
                 if a.default:
@@ -95,7 +95,7 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         )
 
         # get selected invoice address from checkout dict, else use the default
-        selected_invoice_address_id = self.sc.data['invoice_address']['address_id']
+        selected_invoice_address_id = self.sc.data['invoice_address']['id']
         if selected_invoice_address_id is None:
             for a in addresses:
                 if a.default:
