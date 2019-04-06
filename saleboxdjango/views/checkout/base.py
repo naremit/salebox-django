@@ -45,11 +45,12 @@ class SaleboxCheckoutBaseView(FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        self.form_valid_pre_redirect(form)
+        valid = self.form_valid_pre_redirect(form)
+        if not valid:
+            return self.form_invalid(form)
 
         # set as complete and redirect to the next step
         r = self.sc.set_completed(self.checkout_step, self.request)
-        print(r)
         if r is None:
             raise Exception('There is no next checkout step to redirect to...')
         else:
@@ -58,9 +59,10 @@ class SaleboxCheckoutBaseView(FormView):
     def form_valid_pre_redirect(self, form):
         # add you own code here
         # self.request is available
+        # return True if form handled correctly
+        # return False to re-show the page as form_invalid()
         #
-        #
-        pass
+        return True
 
     def get_additional_context_data(self, context):
         # add your custom code here, e.g...

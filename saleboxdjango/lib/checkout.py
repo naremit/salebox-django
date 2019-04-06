@@ -143,6 +143,13 @@ class SaleboxCheckout:
         self.data['invoice_address']['meta'] = meta
         self._write_session(request)
 
+    def set_payment_method(self, code, meta, request):
+        self.data['payment_method'] = {
+            'code': code,
+            'meta': meta
+        }
+        self._write_session(request)
+
     def set_shipping_address(self, required, address_id, address_str, meta, request):
         self.data['shipping_address']['required'] = required
         self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=address_id))
@@ -151,12 +158,12 @@ class SaleboxCheckout:
         self.data['shipping_address']['meta'] = meta
         self._write_session(request)
 
-    def set_shipping_method(self, id, label, price, extras, request):
+    def set_shipping_method(self, id, label, price, meta, request):
         self.data['shipping_method'] = {
             'id': id,
             'label': label,
             'price': get_price_display(price),
-            'extras': extras
+            'meta': meta
         }
         self._write_session(request)
 
@@ -173,9 +180,8 @@ class SaleboxCheckout:
             },
             'last_seen': int(time.time()),
             'payment_method': {
+                'code': None,
                 'meta': None,
-                'options': [],
-                'selected_id': None,
             },
             'shipping_address': {
                 'address': None,
@@ -184,9 +190,9 @@ class SaleboxCheckout:
                 'required': None,
             },
             'shipping_method': {
-                'extras': None,
                 'id': None,
                 'label': None,
+                'meta': None,
                 'price': None,
             }
         }

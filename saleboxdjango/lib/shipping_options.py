@@ -101,23 +101,23 @@ class SaleboxShippingOptions:
             label,
             remarks,
             service,
-            extras=None
+            meta=None
         ):
         return {
             'available': True,
-            'extras': extras,
             'id': id,
             'label': {
                 'label': label,  # e.g. 'Post Office'
                 'remarks': remarks,  # e.g. '2-3 days'
                 'service': service  # 'ExpressPost'
             },
+            'meta': meta,
             'price': 0,
             'selected': False
         }
 
     def _do_binpack(self, containers, packages):
-        # containers like:
+        # containers example:
         # [
         #   ['name', price, width, height, depth],
         #   ['name', price, width, height, depth],

@@ -38,6 +38,7 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
         sa = SaleboxAddress(self.request.user)
         address = sa.get_single_by_id(form.cleaned_data['shipping_address_id'])
         self.set_shipping_address(address)
+        return True
 
     def get(self, request, *args, **kwargs):
         self.check_add_form(request)

@@ -61,6 +61,8 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
                 self.request
             )
 
+        return True
+
     def get(self, request, *args, **kwargs):
         self.check_add_form(request)
         return super().get(self, request, *args, **kwargs)

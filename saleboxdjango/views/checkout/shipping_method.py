@@ -27,9 +27,11 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
             selected['id'],
             selected['label'],
             selected['price']['price'],
-            selected['extras'],
+            selected['meta'],
             self.request
         )
+
+        return True
 
     def _get_shipping_options(self, context={}):
         smc = self.shipping_options_class()
