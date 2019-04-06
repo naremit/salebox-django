@@ -49,7 +49,7 @@ class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
         addresses = sa.get_list()
 
         # get selected address from checkout dict, else use the default
-        selected_address_id = self.sc.data['shipping_address']['address_id']
+        selected_address_id = self.sc.data['shipping_address']['id']
         if selected_address_id is None:
             for a in addresses:
                 if a.default:

@@ -1,3 +1,5 @@
+from random import randint
+import time
 import uuid
 
 from django.conf import settings
@@ -67,14 +69,30 @@ class BasketWishlist(models.Model):
 
 
 class CheckoutStore(models.Model):
-    code = models.CharField(max_length=32)
-    visible_code = models.CharField(max_length=14, unique=True)  # time.time to 2 decimals + 2 alpha
+    uuid = models.UUIDField(db_index=True)
+    visible_id = models.CharField(max_length=14, unique=True)
     user = models.IntegerField(blank=True, null=True)
-    payment_method = models.CharField(max_length=12)
+    gateway_code = models.CharField(max_length=12)
     status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
     data = JSONField()
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.uuid is None:
+            self.uuid = str(uuid.uuid4())
+
+        if self.visible_id is None:
+            self.visible_id = '%.2f' % time.time()
+            self.visible_id = self.visible_id.replace('.', '')
+            chars = 'BCDFGHJKLMNPQRSTWXY'
+            while len(self.visible_id) < 14:
+                self.visible_id = '%s%s' % (
+                    self.visible_id,
+                    chars[randint(1, len(chars)) - 1]
+                )
+
+        super().save(*args, **kwargs)
 
 
 class CheckoutStoreUpdate(models.Model):

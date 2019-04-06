@@ -5,7 +5,7 @@ from django.forms.models import model_to_dict
 from django.utils.translation import get_language
 
 from saleboxdjango.lib.common import get_price_display
-from saleboxdjango.models import UserAddress
+from saleboxdjango.models import CheckoutStore, UserAddress
 
 
 class SaleboxCheckout:
@@ -117,6 +117,17 @@ class SaleboxCheckout:
         except:
             return False
 
+    def save_to_store(self, user, gateway_code='default', sent_to_gateway=True, visible_id=None):
+        cs = CheckoutStore(
+            visible_id=visible_id,
+            user=user.id if user else None,
+            gateway_code=gateway_code,
+            status=20 if sent_to_gateway else 10,
+            data=self.get_raw_data()
+        )
+        cs.save()
+        return cs
+
     def set_basket(self, basket, request, reset_completed=True, reset_checkout=True):
         if reset_checkout:
             self._init_data()
@@ -137,7 +148,10 @@ class SaleboxCheckout:
         return self.get_next_page(page_name)
 
     def set_invoice_address(self, required, id, address_str, meta, request):
-        self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
+        if id is None:
+            self.data['invoice_address']['address'] = None
+        else:
+            self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
         self.data['invoice_address']['address_str'] = address_str
         self.data['invoice_address']['id'] = id
         self.data['invoice_address']['meta'] = meta

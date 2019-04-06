@@ -15,6 +15,7 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
 
     def gateway(self, request, *args, **kwargs):
         context = self.get_context_data()
+        store = self.sc.save_to_store(request.user)
 
         # override this middle section relevant to your needs
         #
@@ -25,7 +26,7 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
         return self.render_to_response(context)
 
     def get(self, request, *args, **kwargs):
-        return self.gateway(self, request, *args, **kwargs)
+        return self.gateway(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return self.gateway(self, request, *args, **kwargs)
+        return self.gateway(request, *args, **kwargs)

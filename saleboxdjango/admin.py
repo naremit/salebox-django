@@ -29,7 +29,7 @@ class BasketWishlistAdmin(admin.ModelAdmin):
 
 class CheckoutStoreAdmin(admin.ModelAdmin):
     inlines = [CheckoutStoreUpdateInline]
-    list_filter = ('status', 'payment_method')
+    list_filter = ('status', 'gateway_code')
 
 
 class CountryAdmin(admin.ModelAdmin):
