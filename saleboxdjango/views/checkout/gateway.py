@@ -1,4 +1,6 @@
 from django import forms
+
+from saleboxdjango.lib.basket import SaleboxBasket
 from .base import SaleboxCheckoutBaseView
 
 
@@ -23,6 +25,11 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
         #
         context['html'] = '<form><!-- PUT YOUR CODE HERE --></form>'
 
+        # reset the shopping basket
+        basket = SaleboxBasket(request)
+        basket.reset_basket(request)
+
+        # render the gateway redirect
         return self.render_to_response(context)
 
     def get(self, request, *args, **kwargs):

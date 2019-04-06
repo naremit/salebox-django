@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -6,6 +6,9 @@ from django.views.generic import View
 from saleboxdjango.models import CallbackStore
 
 class SaleboxCallbackView(View):
+    get_redirect = None
+    post_redirect = None
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         CallbackStore(
@@ -17,7 +20,11 @@ class SaleboxCallbackView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
+        if self.get_redirect is not None:
+            return HttpResponseRedirect(self.get_redirect)
         return HttpResponse('OK')
 
     def post(self, request):
+        if self.post_redirect is not None:
+            return HttpResponseRedirect(self.post_redirect)
         return HttpResponse('OK')

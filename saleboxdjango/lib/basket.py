@@ -192,6 +192,14 @@ class SaleboxBasket:
         # re-populate basket
         self._init_basket(request)
 
+    def reset_basket(self, request):
+        # get items from db
+        self._filter_basket_queryset(
+            request,
+            BasketWishlist.objects.filter(basket_flag=True)
+        ).delete()
+        self._init_basket(request)
+
     def update_basket(self, request, variant, qty, relative):
         if isinstance(variant, int):
             variant = ProductVariant.objects.get(id=variant)

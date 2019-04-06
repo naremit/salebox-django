@@ -31,6 +31,7 @@ class CallbackStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'ip_address', 'method')
 
 class CheckoutStoreAdmin(admin.ModelAdmin):
+    list_display = ('created', 'status', 'uuid', 'visible_id', 'gateway_code')
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'gateway_code')
 
