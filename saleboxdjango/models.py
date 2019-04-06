@@ -68,6 +68,12 @@ class BasketWishlist(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
 
+class CallbackStore(models.Model):
+    ip_address = models.GenericIPAddressField()
+    method = models.CharField(max_length=7)
+    post = JSONField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
 class CheckoutStore(models.Model):
     uuid = models.UUIDField(db_index=True)
     visible_id = models.CharField(max_length=14, unique=True)

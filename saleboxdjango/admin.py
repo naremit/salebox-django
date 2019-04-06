@@ -27,6 +27,9 @@ class BasketWishlistAdmin(admin.ModelAdmin):
     list_filter = ('user', 'session', 'basket_flag')
 
 
+class CallbackStoreAdmin(admin.ModelAdmin):
+    list_display = ('created', 'ip_address', 'method')
+
 class CheckoutStoreAdmin(admin.ModelAdmin):
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'gateway_code')
@@ -96,6 +99,7 @@ class UserAddressAdmin(admin.ModelAdmin):
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
 admin.site.register(BasketWishlist, BasketWishlistAdmin)
+admin.site.register(CallbackStore, CallbackStoreAdmin)
 admin.site.register(CheckoutStore, CheckoutStoreAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(CountryState, CountryStateAdmin)
