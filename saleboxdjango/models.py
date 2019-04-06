@@ -74,6 +74,7 @@ class CallbackStore(models.Model):
     post = JSONField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+
 class CheckoutStore(models.Model):
     uuid = models.UUIDField(db_index=True)
     visible_id = models.CharField(max_length=14, unique=True)

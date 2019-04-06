@@ -3,7 +3,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
-from saleboxdjango.models import CallbackStore
+from saleboxdjango.models import CallbackStore, CheckoutStore, CheckoutStoreUpdate
+
 
 class SaleboxCallbackView(View):
     get_redirect = None
@@ -28,3 +29,17 @@ class SaleboxCallbackView(View):
         if self.post_redirect is not None:
             return HttpResponseRedirect(self.post_redirect)
         return HttpResponse('OK')
+
+    def _get_store(self, uuid, visible_id):
+        return CheckoutStore \
+                .objects \
+                .filter(uuid=uuid) \
+                .filter(visible_id=visible_id) \
+                .first()
+
+    def _save_store_update(self, store, status, data):
+        CheckoutStoreUpdate(
+            store=store,
+            status=status,
+            data=data,
+        ).save()
