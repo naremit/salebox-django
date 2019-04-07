@@ -118,6 +118,7 @@ class SaleboxCheckout:
             return False
 
     def save_to_store(self, user, gateway_code='default', sent_to_gateway=True, visible_id=None):
+        data = self.get_raw_data()
         cs = CheckoutStore(
             visible_id=visible_id,
             user=user.id if user else None,
@@ -136,8 +137,6 @@ class SaleboxCheckout:
 
         # populate data object
         self.data['basket'] = basket.get_raw_data()['basket']
-        del self.data['basket']['completed']
-        del self.data['basket']['last_seen']
         self._write_session(request)
 
         # return url to redirect to

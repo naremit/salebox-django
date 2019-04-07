@@ -895,8 +895,9 @@ class Command(BaseCommand):
             self.push_member(user)
 
     def push_transaction(self, store):
-        print('POSTing transaction %s (%s)' % (store.uuid, store.visible_id))
-        data = {
+        # build POST
+        post = self.init_post()
+        post['transaction'] =  {
             'basket': self.transaction_basket(store),
             'invoice': self.transaction_invoice(store),
             'manual_discount': None,
@@ -907,7 +908,19 @@ class Command(BaseCommand):
             'stored_value_load': None,
             'total': self.transaction_total(store)
         }
-        pprint(data)
+
+        # send
+        url = '%s/api/pos/v2/transaction' % settings.SALEBOX['API']['URL']
+        try:
+            r = requests.post(url, data=post)
+            have_response = True
+        except:
+            print('Something went wrong: ConnectionError')
+            have_response = False
+
+        # check response
+        if have_response:
+            print(r)
 
     def push_transactions(self):
         css = CheckoutStore.objects.filter(status=30)
@@ -940,28 +953,43 @@ class Command(BaseCommand):
         o.save()
 
     def transaction_basket(self, store):
-        return []
+        basket = []
+        for b in store.data['basket']['items']:
+            v = b['variant']
+
+            basket.append({
+                'discount_ruleset': None,
+                'loyalty': v['loyalty_points'],
+                'price_original': v['qty_price']['price'],
+                'price_modified': v['qty_sale_price']['price'],
+                'product_weight': None,
+                'quantity': b['qty'],
+                'shipping_weight': v['shipping_weight'],
+                'unit_price': v['price'],
+                'variant_id': v['id'],
+            })
+
+        return basket
 
     def transaction_invoice(self, store):
         data = store.data['invoice_address']
 
         # invoice not requested
-        if data['id'] is None:
+        if not data['required']:
             return None
 
         # invoice requested, populate data
-        address = UserAddress.objects.get(id=store.data['invoice_address']['id'])
         return {
-            'address_1': address.address_1,
-            'address_2': address.address_2,
-            'address_3': address.address_3,
-            'address_4': address.address_4,
-            'address_5': address.address_5,
-            'country_state_id': address.country_state_id,
-            'country_id': address.country_id,
-            'postcode': address.postcode,
-            'recipient_name': address.full_name,
-            'recipient_tax_id': address.tax_id
+            'address_1': data['address']['address_1'],
+            'address_2': data['address']['address_2'],
+            'address_3': data['address']['address_3'],
+            'address_4': data['address']['address_4'],
+            'address_5': data['address']['address_5'],
+            'country_state_id': data['address']['country_state'],
+            'country_id': data['address']['country'],
+            'postcode': data['address']['postcode'],
+            'recipient_name': data['address']['full_name'],
+            'recipient_tax_id': data['address']['tax_id']
         }
 
     def transaction_member(self, store):
@@ -978,7 +1006,7 @@ class Command(BaseCommand):
     def transaction_meta(self, store):
         return {
             'guid': store.visible_id,
-            'user_id': 67,
+            'user_id': settings.SALEBOX['MISC']['POS_USER_ID'],
             'utc': [
                 store.last_updated.year,
                 store.last_updated.month,
@@ -990,14 +1018,53 @@ class Command(BaseCommand):
         }
 
     def transaction_payment(self, store):
-        return {}
+        total_price = (
+            store.data['basket']['sale_price']['price'] +
+            store.data['shipping_method']['price']['price']
+        )
+
+        return [
+            {
+                "amount_change": 0,
+                "amount_tendered": total_price,
+                "method_id": store.data['payment_method']['id']
+            }
+        ]
 
     def transaction_shipping(self, store):
-        return {}
+        address = store.data['shipping_address']
+        method = store.data['shipping_method']
+
+        # shipping not requested
+        if not address['required']:
+            return None
+
+        # shipping requested, populate data
+        return {
+            'address_1': address['address']['address_1'],
+            'address_2': address['address']['address_2'],
+            'address_3': address['address']['address_3'],
+            'address_4': address['address']['address_4'],
+            'address_5': address['address']['address_5'],
+            'country_id': address['address']['country'],
+            'country_state_id': address['address']['country_state'],
+            'method_id': method['id'],
+            'postcode': address['address']['postcode'],
+            'price': method['price']['price'],
+            'recipient_name': address['address']['full_name']
+        }
 
     def transaction_total(self, store):
-        return {}
+        vat_rate = settings.SALEBOX['MISC']['VAT_RATE']
+        gross = (
+            store.data['basket']['sale_price']['price'] +
+            store.data['shipping_method']['price']['price']
+        )
+        net = round(gross / (1 + (vat_rate / 100)))
 
-
-        # pprint(store.data.keys())
-        # pprint(store.data['invoice_address'])
+        return {
+            'total_gross': gross,
+            'total_net': net,
+            'total_vat': gross - net,
+            'vat_rate': vat_rate
+        }
