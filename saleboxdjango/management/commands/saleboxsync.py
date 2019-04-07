@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
             # 'PURCHASE': every website user that makes a purchase should
             # be a salebox member
-            elif user_equals_member == 'PURCHASE':
+            if user_equals_member == 'PURCHASE':
                 user_ids = CheckoutStore \
                             .objects \
                             .filter(status__lte=30) \
@@ -65,13 +65,7 @@ class Command(BaseCommand):
                     # JSON at this point
 
         # step #2: push users with member updates
-        cutoff = timezone.now() - datetime.timedelta(seconds=10)
-        users = get_user_model() \
-                    .objects \
-                    .exclude(salebox_member_sync__isnull=True) \
-                    .filter(salebox_last_update__lt=cutoff)
-        for user in users:
-            self.post_member(user)
+        self.push_members()
 
         # step #3: pull data
         # members must be up-to-date before POSTing transactions
@@ -97,11 +91,7 @@ class Command(BaseCommand):
             self.pull_images()
 
         # step 4: POST transactions
-        # for t in transactions:
-        #     self.timer_set('saleboxsync_sync_start', time.time())
-        #
-        #
-        #
+        self.push_transactions()
 
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
@@ -114,25 +104,6 @@ class Command(BaseCommand):
             'platform_type': 'ECOMMERCE',
             'platform_version': self.SOFTWARE_VERSION,
         }
-
-    def post_member(self, user):
-        self.timer_set('saleboxsync_sync_start', time.time())
-
-        # build post
-        post = self.init_post()
-        post['salebox_member_id'] = user.salebox_member_id
-        post['salebox_member_sync'] = json.dumps(user.salebox_member_sync)
-
-        # do request
-        url = '%s/api/pos/v2/member-update' % settings.SALEBOX['API']['URL']
-        try:
-            r = requests.post(url, data=post)
-            if r.status_code == 200:
-                user.salebox_member_sync = None
-                user.save()
-                self.timer_set('saleboxsync_pull_start', 0.0)
-        except:
-            print('Failed to POST member data')
 
     def pull(self):
         post = self.init_post()
@@ -894,6 +865,55 @@ class Command(BaseCommand):
             cache.clear()  # TODO, this probably wants to be a setting, and
                            # better still, have a list of cache keys to
                            # void, rather than all
+
+    def push_member(self, user):
+        self.timer_set('saleboxsync_sync_start', time.time())
+
+        # build post
+        post = self.init_post()
+        post['salebox_member_id'] = user.salebox_member_id
+        post['salebox_member_sync'] = json.dumps(user.salebox_member_sync)
+
+        # do request
+        url = '%s/api/pos/v2/member-update' % settings.SALEBOX['API']['URL']
+        try:
+            r = requests.post(url, data=post)
+            if r.status_code == 200:
+                user.salebox_member_sync = None
+                user.save()
+                self.timer_set('saleboxsync_pull_start', 0.0)
+        except:
+            print('Failed to POST member data')
+
+    def push_members(self):
+        cutoff = timezone.now() - datetime.timedelta(seconds=10)
+        users = get_user_model() \
+                    .objects \
+                    .filter(salebox_member_sync__isnull=False) \
+                    .filter(salebox_last_update__lt=cutoff)
+        for user in users:
+            self.push_member(user)
+
+    def push_transaction(self, store):
+        print('POSTing transaction %s (%s)' % (store.uuid, store.visible_id))
+
+    def push_transactions(self):
+        css = CheckoutStore.objects.filter(status=30)
+        for cs in css:
+            self.timer_set('saleboxsync_sync_start', time.time())
+
+            # ensure this user has a corresponding salebox_member
+            if cs.user is not None:
+                user = get_user_model().objects.get(id=cs.user)
+                member = Member.objects.filter(salebox_member_id=user.salebox_member_id).first()
+                if member is None:
+                    # skip for now, get on the next time round
+                    if user.salebox_member_sync is None:
+                        user.set_salebox_member_sync('email', user.email)
+                    continue
+
+            # push transaction
+            self.push_transaction(cs)
 
     def timer_get(self, code, default_value=0.0):
         try:
