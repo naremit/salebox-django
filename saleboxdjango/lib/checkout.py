@@ -135,7 +135,9 @@ class SaleboxCheckout:
             self.data['completed'] = []
 
         # populate data object
-        self.data['basket'] = basket.get_raw_data()
+        self.data['basket'] = basket.get_raw_data()['basket']
+        del self.data['basket']['completed']
+        del self.data['basket']['last_seen']
         self._write_session(request)
 
         # return url to redirect to

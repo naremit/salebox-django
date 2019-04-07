@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
         # bail out in sync already running
         sync_start = int(self.timer_get('saleboxsync_sync_start'))
-        if (time.time() - sync_start) < 120:
+        if (time.time() - sync_start) < 1:  # 120
             print('sync in progress: bailing out!')
             return
 
@@ -896,6 +896,18 @@ class Command(BaseCommand):
 
     def push_transaction(self, store):
         print('POSTing transaction %s (%s)' % (store.uuid, store.visible_id))
+        data = {
+            'basket': self.transaction_basket(store),
+            'invoice': self.transaction_invoice(store),
+            'manual_discount': None,
+            'member': self.transaction_member(store),
+            'meta': self.transaction_meta(store),
+            'payment': self.transaction_payment(store),
+            'shipping': self.transaction_shipping(store),
+            'stored_value_load': None,
+            'total': self.transaction_total(store)
+        }
+        pprint(data)
 
     def push_transactions(self):
         css = CheckoutStore.objects.filter(status=30)
@@ -926,3 +938,66 @@ class Command(BaseCommand):
         o = LastUpdate.objects.get(code=code)
         o.value = value
         o.save()
+
+    def transaction_basket(self, store):
+        return []
+
+    def transaction_invoice(self, store):
+        data = store.data['invoice_address']
+
+        # invoice not requested
+        if data['id'] is None:
+            return None
+
+        # invoice requested, populate data
+        address = UserAddress.objects.get(id=store.data['invoice_address']['id'])
+        return {
+            'address_1': address.address_1,
+            'address_2': address.address_2,
+            'address_3': address.address_3,
+            'address_4': address.address_4,
+            'address_5': address.address_5,
+            'country_state_id': address.country_state_id,
+            'country_id': address.country_id,
+            'postcode': address.postcode,
+            'recipient_name': address.full_name,
+            'recipient_tax_id': address.tax_id
+        }
+
+    def transaction_member(self, store):
+        if store.user is None:
+            return None
+
+        # retrieve user
+        user = get_user_model().objects.get(id=store.user)
+        return {
+            "salebox_member_id": str(user.salebox_member_id),
+            "total_loyalty": store.data['basket']['loyalty']
+        }
+
+    def transaction_meta(self, store):
+        return {
+            'guid': store.visible_id,
+            'user_id': 67,
+            'utc': [
+                store.last_updated.year,
+                store.last_updated.month,
+                store.last_updated.day,
+                store.last_updated.hour,
+                store.last_updated.minute,
+                store.last_updated.second,
+            ]
+        }
+
+    def transaction_payment(self, store):
+        return {}
+
+    def transaction_shipping(self, store):
+        return {}
+
+    def transaction_total(self, store):
+        return {}
+
+
+        # pprint(store.data.keys())
+        # pprint(store.data['invoice_address'])
