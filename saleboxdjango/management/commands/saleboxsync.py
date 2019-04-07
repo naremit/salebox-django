@@ -1014,6 +1014,7 @@ class Command(BaseCommand):
                 store.last_updated.hour,
                 store.last_updated.minute,
                 store.last_updated.second,
+                store.last_updated.microsecond,
             ]
         }
 
