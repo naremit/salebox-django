@@ -102,7 +102,7 @@ class Command(BaseCommand):
             'pos': settings.SALEBOX['API']['KEY'],
             'license': settings.SALEBOX['API']['LICENSE'],
             'platform_type': 'ECOMMERCE',
-            'platform_version': self.SOFTWARE_VERSION,
+            'platform_version': self.SOFTWARE_VERSION
         }
 
     def pull(self):
@@ -896,8 +896,8 @@ class Command(BaseCommand):
 
     def push_transaction(self, store):
         # build POST
-        post = self.init_post()
-        post['transaction'] =  {
+        data = self.init_post()
+        data['transaction'] = json.dumps({
             'basket': self.transaction_basket(store),
             'invoice': self.transaction_invoice(store),
             'manual_discount': None,
@@ -907,12 +907,12 @@ class Command(BaseCommand):
             'shipping': self.transaction_shipping(store),
             'stored_value_load': None,
             'total': self.transaction_total(store)
-        }
+        })
 
         # send
         url = '%s/api/pos/v2/transaction' % settings.SALEBOX['API']['URL']
         try:
-            r = requests.post(url, data=post)
+            r = requests.post(url, data=data)
             have_response = True
         except:
             print('Something went wrong: ConnectionError')
@@ -1056,15 +1056,23 @@ class Command(BaseCommand):
 
     def transaction_total(self, store):
         vat_rate = settings.SALEBOX['MISC']['VAT_RATE']
-        gross = (
-            store.data['basket']['sale_price']['price'] +
-            store.data['shipping_method']['price']['price']
-        )
-        net = round(gross / (1 + (vat_rate / 100)))
 
+        # calculate gross + gross_vat_applicable
+        gross_total = 0
+        gross_vat_applicable = 0
+        for b in store.data['basket']['items']:
+            gross_total += b['variant']['qty_sale_price']['price']
+            if b['variant']['product']['vat_applicable']:
+                gross_vat_applicable += b['variant']['qty_sale_price']['price']
+
+        # gross += shipping cost
+        gross_total += store.data['shipping_method']['price']['price']
+
+        # calculate
+        total_net = gross_total - round(gross_vat_applicable / (1 + (vat_rate / 100)))
         return {
-            'total_gross': gross,
-            'total_net': net,
-            'total_vat': gross - net,
+            'total_gross': gross_total,
+            'total_net': total_net,
+            'total_vat': gross_total - total_net,
             'vat_rate': vat_rate
         }
