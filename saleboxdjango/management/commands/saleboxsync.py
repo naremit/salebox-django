@@ -1068,14 +1068,11 @@ class Command(BaseCommand):
             if b['variant']['product']['vat_applicable']:
                 gross_vat_applicable += b['variant']['qty_sale_price']['price']
 
-        # gross += shipping cost
-        gross_total += store.data['shipping_method']['price']['price']
-
         # calculate
-        total_net = gross_total - round(gross_vat_applicable / (1 + (vat_rate / 100)))
+        total_vat = round(gross_vat_applicable / (1 + (vat_rate / 100)))
         return {
             'total_gross': gross_total,
-            'total_net': total_net,
-            'total_vat': gross_total - total_net,
+            'total_net': gross_total - total_vat,
+            'total_vat': total_vat,
             'vat_rate': vat_rate
         }
