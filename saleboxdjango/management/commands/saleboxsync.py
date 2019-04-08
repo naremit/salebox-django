@@ -135,6 +135,13 @@ class Command(BaseCommand):
                 # display debug meta
                 print('Output received (\'data\' attribute truncated to len(data)):')
                 response_meta = r.json()
+
+                # exit if connection error
+                if response_meta['status'] != 'OK':
+                    print('Connection error: %s' % response_meta['status'])
+                    return
+
+                # display meta object
                 for code in response_meta['sync']:
                     code['data'] = len(code['data'])
                 pprint(response_meta)
@@ -142,111 +149,110 @@ class Command(BaseCommand):
                 print('Updating:')
 
                 # save data
-                if response['status'] == 'OK':
-                    for i, value in enumerate(response['sync']):
-                        if value['code'] == 'attribute':
-                            self.pull_model_attribute(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                for i, value in enumerate(response['sync']):
+                    if value['code'] == 'attribute':
+                        self.pull_model_attribute(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'attribute_item':
-                            self.pull_model_attribute_item(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'attribute_item':
+                        self.pull_model_attribute_item(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'country':
-                            self.pull_model_country(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'country':
+                        self.pull_model_country(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'country_state':
-                            self.pull_model_country_state(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'country_state':
+                        self.pull_model_country_state(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'country_state_translation':
-                            self.pull_model_country_state_translation(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'country_state_translation':
+                        self.pull_model_country_state_translation(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'country_translation':
-                            self.pull_model_country_translation(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'country_translation':
+                        self.pull_model_country_translation(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'discount_seasonal_group':
-                            self.pull_model_discount_seasonal_group(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'discount_seasonal_group':
+                        self.pull_model_discount_seasonal_group(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'discount_seasonal_ruleset':
-                            self.pull_model_discount_seasonal_ruleset(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'discount_seasonal_ruleset':
+                        self.pull_model_discount_seasonal_ruleset(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'member':
-                            self.pull_model_member(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'member':
+                        self.pull_model_member(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'member_group':
-                            self.pull_model_member_group(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'member_group':
+                        self.pull_model_member_group(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'product':
-                            self.pull_model_product(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'product':
+                        self.pull_model_product(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'product_category':
-                            self.pull_model_product_category(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'product_category':
+                        self.pull_model_product_category(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'product_variant':
-                            self.pull_model_product_variant(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'product_variant':
+                        self.pull_model_product_variant(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        elif value['code'] == 'product_variant_image':
-                            self.pull_model_product_variant_image(
-                                value['data'],
-                                value['lu'],
-                                sync_from_dict
-                            )
+                    elif value['code'] == 'product_variant_image':
+                        self.pull_model_product_variant_image(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
 
-                        else:
-                            print('Error: %s' % value['code'])
+                    else:
+                        print('Error: %s' % value['code'])
 
-                    return response['resync_now']
-                    # return False
+                return response['resync_now']
+                # return False
         except:
             print('Something went wrong')
             return False
