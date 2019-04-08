@@ -920,7 +920,9 @@ class Command(BaseCommand):
 
         # check response
         if have_response:
-            print(r)
+            if r.json()['status'] == 'OK':
+                store.status = 31
+                store.save()
 
     def push_transactions(self):
         css = CheckoutStore.objects.filter(status=30)

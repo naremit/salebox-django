@@ -132,9 +132,9 @@ class SaleboxShippingOptions:
         for p in packages:
             bp.add_package(
                 p['variant_id'],
-                p['width'],
-                p['height'],
-                p['depth'],
+                p['width'] or 0,
+                p['height'] or 0,
+                p['depth'] or 0,
             )
 
         return bp.go()
