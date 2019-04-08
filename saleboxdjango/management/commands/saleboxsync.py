@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
         # bail out in sync already running
         sync_start = int(self.timer_get('saleboxsync_sync_start'))
-        if (time.time() - sync_start) < 1:  # 120
+        if (time.time() - sync_start) < 120:
             print('sync in progress: bailing out!')
             return
 
