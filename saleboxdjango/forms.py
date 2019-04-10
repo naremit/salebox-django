@@ -13,7 +13,7 @@ class SaleboxAddressAddForm(SaleboxBaseForm):
     default = forms.BooleanField(required=False)
     full_name = forms.CharField(max_length=150)
     address_1 = forms.CharField(max_length=150)
-    address_2 = forms.CharField(max_length=150)
+    address_2 = forms.CharField(max_length=150, required=False)
     address_3 = forms.CharField(max_length=150, required=False)
     address_4 = forms.CharField(max_length=150, required=False)
     address_5 = forms.CharField(max_length=150, required=False)
