@@ -8,7 +8,7 @@ class SaleboxAddressRemoveView(SaleboxAddressView):
 
     def form_valid(self, request):
         try:
-            self.sa.remove_address(self.form.cleaned_data['id'])
+            self.sa.set_inactive(self.form.cleaned_data['id'])
             self.status = 'success'
         except:
             self.status = 'fail'

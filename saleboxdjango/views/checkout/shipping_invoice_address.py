@@ -1,9 +1,9 @@
 from django import forms
 from django.shortcuts import redirect
 
+from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.lib.address import SaleboxAddress
 from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
-
 
 class SaleboxCheckoutShippingInvoiceAddressForm(forms.Form):
     shipping_address_id = forms.IntegerField()
@@ -12,11 +12,12 @@ class SaleboxCheckoutShippingInvoiceAddressForm(forms.Form):
 
 
 class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
-    default_country_id = None
+    initial = {}
     checkout_step = 'shipping_invoice_address'
     form_class = SaleboxCheckoutShippingInvoiceAddressForm
     template_name = 'salebox/checkout/shipping_invoice_address.html'
 
+    """
     def check_add_form(self, request):
         # add a new address if it has been POSTed in
         sa = SaleboxAddress(self.request.user)
@@ -62,13 +63,42 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
             )
 
         return True
+    """
 
     def get(self, request, *args, **kwargs):
-        self.check_add_form(request)
+        self.shipping_form = SaleboxAddressAddForm()
+        self.invoice_form = SaleboxAddressAddForm()
         return super().get(self, request, *args, **kwargs)
+
 
     def get_additional_context_data(self, context):
         sa = SaleboxAddress(self.request.user)
+
+        # existing address lists
+        context['shipping_addresses'] = sa.get(
+            force_selected=True
+        )
+        context['invoice_addresses'] = sa.get(
+            non_null_fields=['tax_id'],
+            force_selected=True
+        )
+
+        # return
+        return context
+
+    """
+    def get_additional_context_data(self, context):
+        sa = SaleboxAddress(self.request.user)
+
+        # init shipping
+        shipping_addresses = sa.get()
+
+        # init invoice
+        invoice_addresses = sa.get(non_null_fields=['tax_id'])
+
+
+        print('...')
+
         addresses = sa.get_list()
 
         # init empty shipping address form
@@ -158,3 +188,4 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
             None,
             self.request
         )
+    """

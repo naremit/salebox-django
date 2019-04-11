@@ -2,6 +2,32 @@
 
 {% block checkout %}
 
+{% if shipping_addresses|length > 0 %}
+<form>
+    {% csrf_token %}
+    <h3>Pick a shipping address:</h3>
+    <input type="hidden" name="salebox_form_name" value="select_address" />
+    {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
+    <hr>
+    <p>Or add a new one</p>
+</form>
+{% endif %}
+
+<!--
+<form>
+    {% csrf_token %}
+    <input type="hidden" name="salebox_form_name" value="add_shipping" />
+    Add shipping address form
+</form>
+
+<form>
+    {% csrf_token %}
+    <input type="hidden" name="salebox_form_name" value="add_invoice" />
+    Add invoice address form
+</form>
+-->
+
+<!--
     {% if has_addresses %}
         <form method="post" id="shipping_address_choose">
             {% csrf_token %}
@@ -41,17 +67,5 @@
         <p>Enter your delivery address:</p>
         {{ add_shipping_form | safe }}
     {% endif %}
+-->
 {% endblock %}
-
-
-{% comment %}
-    <p>Do you want a tax invoice?</p>
-    <button class="btn btn-primary btn-sm" onclick="$('#form_tax_invoice').show(); $('#tax_invoice_reqd').val(true); return false;">Yes</button>
-    <button class="btn btn-secondary btn-sm" onclick="$('#form_tax_invoice').hide(); $('#tax_invoice_reqd').val(false); return false;">No</button>
-    <input type="hidden" id="tax_invoice_reqd" name="tax_invoice_reqd" value="false" />
-    <div id="form_tax_invoice" style="display: none;">
-        <p>Address #1: <input type="radio" name="invoice_address" checked /></p>
-        <p>Address #2: <input type="radio" name="invoice_address" /></p>
-        <p>Address #3: <input type="radio" name="invoice_address" /></p>
-    </div>
-{% endcomment %}
