@@ -148,12 +148,11 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
-    def set_invoice_address(self, required, id, address_str, meta, request):
+    def set_invoice_address(self, required, id, meta, request):
         if id is None:
             self.data['invoice_address']['address'] = None
         else:
             self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
-        self.data['invoice_address']['address_str'] = address_str
         self.data['invoice_address']['id'] = id
         self.data['invoice_address']['meta'] = meta
         self.data['invoice_address']['required'] = required
@@ -166,9 +165,8 @@ class SaleboxCheckout:
         }
         self._write_session(request)
 
-    def set_shipping_address(self, required, id, address_str, meta, request):
+    def set_shipping_address(self, required, id, meta, request):
         self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
-        self.data['shipping_address']['address_str'] = address_str
         self.data['shipping_address']['id'] = id
         self.data['shipping_address']['meta'] = meta
         self.data['shipping_address']['required'] = required
@@ -190,7 +188,6 @@ class SaleboxCheckout:
             'data': {},
             'invoice_address': {
                 'address': None,
-                'address_str': None,
                 'id': None,
                 'meta': None,
                 'required': None,
@@ -202,7 +199,6 @@ class SaleboxCheckout:
             },
             'shipping_address': {
                 'address': None,
-                'address_str': None,
                 'id': None,
                 'meta': None,
                 'required': None,

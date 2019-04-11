@@ -21,38 +21,38 @@ class SaleboxAddress:
                         .select_related('country', 'country_state')
 
     def add(self, values):
-            # get country
-            if isinstance(values['country'], int):
-                values['country'] = \
-                    Country.objects.get(id=values['country'])
+        # get country
+        if isinstance(values['country'], int):
+            values['country'] = \
+                Country.objects.get(id=values['country'])
 
-            # get country_state
-            if isinstance(values['country_state'], int):
-                values['country_state'] = \
-                    CountryState.objects.get(id=values['country_state'])
+        # get country_state
+        if isinstance(values['country_state'], int):
+            values['country_state'] = \
+                CountryState.objects.get(id=values['country_state'])
 
-            address = UserAddress(
-                user=self.user,
-                default=values['default'] or False,
-                address_group=values['address_group'] or 'default',
-                full_name=values['full_name'],
-                address_1=values['address_1'],
-                address_2=values['address_2'],
-                address_3=values['address_3'],
-                address_4=values['address_4'],
-                address_5=values['address_5'],
-                country_state=values['country_state'],
-                country=values['country'],
-                postcode=values['postcode'].upper(),
-                phone_1=values['phone_1'],
-                phone_2=values['phone_2'],
-                email=values['email'],
-                string_1=values['string_1'],
-                string_2=values['string_2'],
-                tax_id=values['tax_id']
-            )
-            address.save()
-            return address
+        address = UserAddress(
+            user=self.user,
+            default=values['default'] or False,
+            address_group=values['address_group'] or 'default',
+            full_name=values['full_name'],
+            address_1=values['address_1'],
+            address_2=values['address_2'],
+            address_3=values['address_3'],
+            address_4=values['address_4'],
+            address_5=values['address_5'],
+            country_state=values['country_state'],
+            country=values['country'],
+            postcode=str(values['postcode'] or '').upper(),
+            phone_1=values['phone_1'],
+            phone_2=values['phone_2'],
+            email=values['email'],
+            string_1=values['string_1'],
+            string_2=values['string_2'],
+            tax_id=values['tax_id']
+        )
+        address.save()
+        return address
 
     def form_extras(self, country_id=None):
         country_list = self._get_country_list()
@@ -86,7 +86,6 @@ class SaleboxAddress:
             # get addresses
             addresses = self.query.all()
             if 'tax_id' in non_null_fields:
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 addresses = addresses.filter(tax_id__isnull=False)
 
             # add 'selected' value and localised country name

@@ -38,18 +38,6 @@
         <div>Tax ID: {{ address.tax_id }}</div>
     {% endif %}
 
-    {% if addresses|length > 1 %}
-        <div>
-            {% if address.default %}
-                <span>DEFAULT</span>
-            {% else %}
-                <span onclick="salebox.address.setDefaultRedirect({{ a.id }})">Set as default</span>
-            {% endif %}
-            <span> | </span>
-            <span onclick="salebox.address.removeRedirect({{ address.id }})">Remove</span>
-        </div>
-    {% endif %}
-
     <br />
 </div>
 
