@@ -1,0 +1,64 @@
+{% spaceless %}
+<form method="post" id="{{ form_id }}">
+    {% csrf_token %}
+    <input type="hidden" name="form_name" value="{{ form_name }}">
+    <input type="hidden" name="state" value="{{ state }}">
+
+    <div class="form-group">
+        <label for="{{ form_id }}_full_name">Full name:</label>
+        <input name="full_name" class="form-control" required id="{{ form_id }}_full_name">
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_address_1">Address #1:</label>
+        <input name="address_1" class="form-control" required id="{{ form_id }}_address_1">
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_address_2">Address #2:</label>
+        <input name="address_2" class="form-control" required id="{{ form_id }}_address_2">
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_address_3">Address #3:</label>
+        <input name="address_3" class="form-control" id="{{ form_id }}_address_3">
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_address_4">Address #4:</label>
+        <input name="address_4" class="form-control" id="{{ form_id }}_address_4">
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_address_5">Address #5:</label>
+        <input name="address_5" class="form-control" id="{{ form_id }}_address_5">
+    </div>
+    <div class="form-group{% if current_states|length == 0 %} d-none{% endif %}">
+        <label for="{{ form_id }}_state">State:</label>
+        <select name="country_state" class="form-control" id="{{ form_id }}_state">
+            <option value=""></option>
+            {% for c in current_states %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_country">Country:</label>
+        <select name="country" onchange="salebox.address.countryStateDropdown('{{ form_id }}')" class="form-control" id="{{ form_id }}_country">
+            {% if dropdown_countries|length > 1 %}
+                <option value=""></option>
+            {% endif %}
+            {% for c in dropdown_countries %}
+                <option value="{{ c.id }}"{% if c.id == form.country.value %} selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="{{ form_id }}_postcode">Postcode:</label>
+        <input name="postcode" required class="form-control" id="{{ form_id }}_postcode">
+    </div>
+    {% if show_set_as_default %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" checked name="default" id="{{ form_id }}_default">
+            <label class="form-check-label" for="{{ form_id }}_default">Use as default address?</label>
+        </div>
+    {% endif %}
+    <input type="submit"  value="Add address">
+</form>
+<script>var saleboxCountryState={{ states_dict|safe }};</script>
+{% endspaceless %}

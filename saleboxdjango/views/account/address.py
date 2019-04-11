@@ -25,7 +25,11 @@ class SaleboxAccountAddressView(TemplateView):
 
         # init address class
         sa = SaleboxAddress(request.user)
+        context['addresses'] = sa.get()
 
+        a, b, c = sa.form_extras()
+
+        """
         # add address if one POSTed in
         add_status, add_address, add_form, add_state = sa.add_form(
             request,
@@ -37,6 +41,7 @@ class SaleboxAccountAddressView(TemplateView):
             return redirect(request.get_full_path())
 
         # update context
-        context['addresses'] = sa.render_list(sa.get_list())
-        context['add_form'] = add_form
+        # context['addresses'] = sa.render_list(sa.get_list())
+        # context['add_form'] = add_form
+        """
         return self.render_to_response(context)

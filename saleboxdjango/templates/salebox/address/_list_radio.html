@@ -1,0 +1,22 @@
+{% spaceless %}
+{% if addresses %}
+    {% for a in addresses %}
+        <div style="display: flex; line-height: 1.4; padding: 0 0 5px;">
+            <div style="flex: 0 0 30px;">
+                <input type="radio" name="{{ field_name }}" value="{{ a.id }}" id="{{ field_name }}_option_{{ a.id }}"{% if selected_id == a.id %} checked{% endif %}>
+            </div>
+            <div onclick="$('#{{ field_name }}_option_{{ a.id }}').click()" style="cursor: pointer">
+                <strong>{{ a.full_name }}</strong><br />
+                {% for al in a.address_list %}
+                    <span style="display:inline-block; white-space: nowrap;">{{ al }}{% if not forloop.last %},&nbsp;{% endif %}</span>
+                {% endfor %}
+                {% if a.postcode %}
+                    <span style="display:inline-block; white-space: nowrap;">&nbsp;{{ a.postcode }}</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <span>No addresses found</span>
+{% endif %}
+{% endspaceless %}

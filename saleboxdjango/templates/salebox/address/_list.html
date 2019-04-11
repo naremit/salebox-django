@@ -1,0 +1,29 @@
+{% spaceless %}
+{% if addresses %}
+    {% for a in addresses %}
+        <div style="line-height: 1.4; padding: 0 0 5px;">
+            <div>
+                <strong>{{ a.full_name }}</strong>
+            </div>
+            <div>
+                {% for al in a.address_list %}
+                    <span style="display:inline-block; white-space: nowrap;">{{ al }}{% if not forloop.last %},&nbsp;{% endif %}</span>
+                {% endfor %}
+            </div>
+            <div style="font-size: 13px;">
+                {% if a.default %}
+                    <span>Default</span>
+                {% else %}
+                    <span onclick="salebox.address.setDefaultRedirect({{ a.id }})">Make default</span>
+                {% endif %}
+                {% if addresses|length > 1 %}
+                    <span> &nbsp;|&nbsp; </span>
+                    <span onclick="salebox.address.removeRedirect({{ a.id }})">Remove</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <span>No addresses found</span>
+{% endif %}
+{% endspaceless %}

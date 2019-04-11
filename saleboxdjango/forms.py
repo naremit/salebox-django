@@ -9,8 +9,8 @@ class SaleboxBaseForm(forms.Form):
 
 # address
 class SaleboxAddressAddForm(SaleboxBaseForm):
-    address_group = forms.CharField(required=False)
     default = forms.BooleanField(required=False)
+    address_group = forms.CharField(required=False)
     full_name = forms.CharField(max_length=150)
     address_1 = forms.CharField(max_length=150)
     address_2 = forms.CharField(max_length=150, required=False)
@@ -20,6 +20,12 @@ class SaleboxAddressAddForm(SaleboxBaseForm):
     country_state = forms.IntegerField(required=False)
     country = forms.IntegerField(required=False)
     postcode = forms.CharField(max_length=12, required=False)
+    phone_1 = forms.CharField(max_length=20, required=False)
+    phone_2 = forms.CharField(max_length=20, required=False)
+    email = forms.EmailField(required=False)
+    string_1 = forms.CharField(max_length=255, required=False)
+    string_2 = forms.CharField(max_length=255, required=False)
+    tax_id = forms.CharField(max_length=30, required=False)
 
 
 class SaleboxAddressIDForm(SaleboxBaseForm):

@@ -1,6 +1,12 @@
 <h1>My addresses</h1>
 
-{{ addresses|safe }}
+{% include "salebox/address/list_static.html" %}
+
 <hr />
-<h5>Add a new address</h5>
+<h3>Add a new address</h3>
+
+
+{% comment %}
+{{ addresses|safe }}
 {{ add_form|safe }}
+{% endcomment %}

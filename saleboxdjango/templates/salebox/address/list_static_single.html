@@ -1,0 +1,54 @@
+{% spaceless %}
+
+<div>
+    <div style="font-weight: bold">{{ address.full_name }}</div>
+    <div>{{ address.address_1 }}</div>
+
+    {% if address.address_2 %}
+        <div>{{ address.address_2 }}</div>
+    {% endif %}
+
+    {% if address.address_3 %}
+        <div>{{ address.address_3 }}</div>
+    {% endif %}
+
+    {% if address.address_4 %}
+        <div>{{ address.address_4 }}</div>
+    {% endif %}
+
+    {% if address.address_5 %}
+        <div>{{ address.address_5 }}</div>
+    {% endif %}
+
+    {% if address.country_state %}
+        <div>{{ address.country_state_name }}</div>
+    {% endif %}
+
+    {% if address.country %}
+        <div>{{ address.country_name }}</div>
+    {% endif %}
+
+    {% if address.postcode %}
+        <div>{{ address.postcode }}</div>
+    {% endif %}
+
+    {% if address.tax_id %}
+        <div>{{ address.tax_id }}</div>
+    {% endif %}
+
+    {% if addresses|length > 1 %}
+        <div>
+            {% if address.default %}
+                <span>DEFAULT</span>
+            {% else %}
+                <span onclick="salebox.address.setDefaultRedirect({{ a.id }})">Set as default</span>
+            {% endif %}
+            <span> | </span>
+            <span onclick="salebox.address.removeRedirect({{ address.id }})">Remove</span>
+        </div>
+    {% endif %}
+
+    <br />
+</div>
+
+{% endspaceless %}

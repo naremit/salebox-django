@@ -5,6 +5,7 @@
     {% if has_addresses %}
         <form method="post" id="shipping_address_choose">
             {% csrf_token %}
+
             <p>Pick your delivery address:</p>
             {{ shipping_address_list | safe }}
             <p>Or, <a href="#" onclick="$('#shipping_address_choose').hide(); $('#shipping_address_add').show();">enter a new address</a></p>

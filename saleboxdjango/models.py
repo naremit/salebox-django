@@ -664,7 +664,8 @@ class UserAddress(models.Model):
     email = models.EmailField(blank=True, null=True)
     string_1 = models.CharField(max_length=255, blank=True, null=True)
     string_2 = models.CharField(max_length=255, blank=True, null=True)
-    tax_id = models.CharField(max_length=30, blank=True, null=True)
+    tax_id = models.CharField(max_length=36, blank=True, null=True)
+    active_flag = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
