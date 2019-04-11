@@ -2,25 +2,41 @@
 
 {% block checkout %}
 
+<pre>
+shipping_address_id: {{ shipping_address_id }}
+invoice_address_id: {{ shipping_address_id }}
+invoice_required: {{ shipping_address_id }}
+</pre>
+
 {% if shipping_addresses|length > 0 %}
-<form>
+<form method="post">
     {% csrf_token %}
-    <h3>Pick a shipping address:</h3>
     <input type="hidden" name="salebox_form_name" value="select_address" />
+
+    <h3>Pick a shipping address:</h3>
     {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
     <hr>
     <p>Or add a new one</p>
+
+    <hr>
+    <h3>Pick an invoice address:</h3>
+    {% include "salebox/address/list_radio.html" with addresses=invoice_addresses field_name='invoice_address_id' %}
+    <hr>
+    <p>Or add a new one</p>
+
+    <input type="submit" value="go" />
 </form>
 {% endif %}
 
-<!--
-<form>
+
+<form method="post">
     {% csrf_token %}
     <input type="hidden" name="salebox_form_name" value="add_shipping" />
-    Add shipping address form
+    <h2>Add shipping address</h2>
+    {% include "salebox/address/add_form.html" with form=address_form form_id='addaddress' hide_default=True %}
 </form>
 
-<form>
+<form method="post">
     {% csrf_token %}
     <input type="hidden" name="salebox_form_name" value="add_invoice" />
     Add invoice address form

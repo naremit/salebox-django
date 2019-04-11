@@ -5,11 +5,19 @@ from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.lib.address import SaleboxAddress
 from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
 
+
 class SaleboxCheckoutShippingInvoiceAddressForm(forms.Form):
     shipping_address_id = forms.IntegerField()
     invoice_required = forms.BooleanField(required=False)
     invoice_address_id = forms.IntegerField(required=False)
 
+
+class SaleboxFormNameForm(forms.Form):
+    salebox_form_name = forms.ChoiceField(choices=(
+        ('select_address', 'select_address'),
+        ('add_shipping', 'add_shipping'),
+        ('add_invoice', 'add_invoice'),
+    ))
 
 class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
     initial = {}
@@ -84,7 +92,35 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         )
 
         # return
+        context['shipping_address_id'] = self.sc.data['shipping_address']['id']
+        context['invoice_address_id'] = self.sc.data['invoice_address']['id']
+        context['invoice_required'] = self.sc.data['invoice_address']['required']
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.shipping_form = SaleboxAddressAddForm()
+        self.invoice_form = SaleboxAddressAddForm()
+
+        # which action is being performed?
+        form = SaleboxFormNameForm(request.POST)
+        if form.is_valid():
+            action = form.cleaned_data['salebox_form_name']
+        else:
+            return self.get(request, *args, **kwargs)
+
+        # action: user has selected an option
+        if action == 'select_address':
+            pass
+
+        # action: user is adding a shipping address
+        if action == 'add_address':
+            self.shipping_form = SaleboxAddressAddForm(request.POST)
+
+        # action: user is adding an invoice address
+        if action == 'add_invoice':
+            self.invoice_form = SaleboxAddressAddForm(request.POST)
+
+
 
     """
     def get_additional_context_data(self, context):
