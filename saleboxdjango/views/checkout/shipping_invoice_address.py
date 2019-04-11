@@ -87,6 +87,12 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
                     request
                 )
 
+                r = self.sc.set_completed(self.checkout_step, request)
+                if r is None:
+                    raise Exception('There is no next checkout step to redirect to...')
+                else:
+                    return redirect(r)
+
         # action: user is adding a shipping address
         if action == 'add_shipping':
             self.shipping_form = SaleboxAddressAddForm(
