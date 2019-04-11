@@ -21,7 +21,7 @@ invoice_required: {{ invoice_required }}
 
         <hr>
         <h3>Do you need an invoice?</h3>
-        <input type="checkbox" name="invoice_required"{% if invoice_required %} checked{% endif %} onchange="setInvoiceRequired(this, {{ invoice_addresses|length }})">
+        <input type="checkbox" name="invoice_required"{% if invoice_required %} checked{% endif %} onchange="setInvoiceRequired(this, {{ invoice_addresses|length }})" id="salebox_shipping_invoice_address_checkbox">
 
         <div id="salebox_shipping_invoice_address_picker_invoice"{% if not invoice_required %} style="display: none;"{% endif %}>
             <hr>
@@ -59,7 +59,7 @@ invoice_required: {{ invoice_required }}
     {% if invoice_addresses|length > 0 %}
         <p>Or <span class="text-primary" onclick="hideAddForm()">use an existing address</span></p>
     {% else %}
-        <p>Or <span class="text-primary" onclick="hideAddForm()">cancel</span></p>
+        <p>Or <span class="text-primary" onclick="hideAddForm(true)">cancel</span></p>
     {% endif %}
 </div>
 
@@ -76,7 +76,10 @@ function setInvoiceRequired(el, invoiceAddressCount) {
     }
 }
 
-function hideAddForm() {
+function hideAddForm(unsetInvoice) {
+    if (unsetInvoice) {
+        $('#salebox_shipping_invoice_address_checkbox').prop('checked', false);
+    }
     $('#salebox_shipping_invoice_address_addshipping').hide();
     $('#salebox_shipping_invoice_address_addinvoice').hide();
     $('#salebox_shipping_invoice_address_picker').show();
