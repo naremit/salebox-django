@@ -5,8 +5,4 @@
 <hr />
 <h3>Add a new address</h3>
 
-
-{% comment %}
-{{ addresses|safe }}
-{{ add_form|safe }}
-{% endcomment %}
+{% include "salebox/address/add_form.html" with form_id='addaddress' %}

@@ -89,7 +89,11 @@ class SaleboxAddress:
                 .replace(', "name": ', ',s:') \
                 .replace('}, {', '},{')
 
-        return (country_list, current_country_states, js_country_states)
+        return {
+            'countries': country_list,
+            'current_states': current_country_states,
+            'js_states': js_country_states
+        }
 
     def get(
             self,

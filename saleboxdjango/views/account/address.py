@@ -26,8 +26,7 @@ class SaleboxAccountAddressView(TemplateView):
         # init address class
         sa = SaleboxAddress(request.user)
         context['addresses'] = sa.get()
-
-        a, b, c = sa.form_extras()
+        context['address_extras'] = sa.form_extras(country_id=self.default_country_id)
 
         """
         # add address if one POSTed in

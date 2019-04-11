@@ -1,0 +1,87 @@
+{% spaceless %}
+
+<form method="post" id="{{ form_id }}">
+    {% csrf_token %}
+
+    <!--
+    <input type="hidden" name="form_name" value="{{ form_name }}">
+    <input type="hidden" name="state" value="{{ state }}">
+    -->
+
+    <div class="form-group">
+        <label for="{{ form_id }}_full_name">Full name:</label>
+        <input name="full_name" class="form-control" required id="{{ form_id }}_full_name">
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form_id }}_address_1">Address #1:</label>
+        <input name="address_1" class="form-control" required id="{{ form_id }}_address_1">
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form_id }}_address_2">Address #2:</label>
+        <input name="address_2" class="form-control" required id="{{ form_id }}_address_2">
+    </div>
+
+    {% if hide_address_3 is not True %}
+        <div class="form-group">
+            <label for="{{ form_id }}_address_3">Address #3:</label>
+            <input name="address_3" class="form-control" id="{{ form_id }}_address_3">
+        </div>
+    {% endif %}
+
+    {% if hide_address_4 is not True %}
+        <div class="form-group">
+            <label for="{{ form_id }}_address_4">Address #4:</label>
+            <input name="address_4" class="form-control" id="{{ form_id }}_address_4">
+        </div>
+    {% endif %}
+
+    {% if hide_address_5 is not True %}
+        <div class="form-group">
+            <label for="{{ form_id }}_address_5">Address #5:</label>
+            <input name="address_5" class="form-control" id="{{ form_id }}_address_5">
+        </div>
+    {% endif %}
+
+    {% if hide_country_state is not True %}
+        <div class="form-group{% if address_extras.current_states|length == 0 %} d-none{% endif %}">
+            <label for="{{ form_id }}_state">State:</label>
+            <select name="country_state" class="form-control" id="{{ form_id }}_state">
+                {% for c in address_extras.current_states %}
+                    <option value="{{ c.id }}"{% if c.id == default_country_state_id %} selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+
+    {% if hide_country is not True %}
+        <div class="form-group">
+            <label for="{{ form_id }}_country">Country:</label>
+            <select name="country" onchange="salebox.address.countryStateDropdown('{{ form_id }}')" class="form-control" id="{{ form_id }}_country">
+                {% for c in address_extras.country_list %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+
+    {% if hide_postcode is not True %}
+        <div class="form-group">
+            <label for="{{ form_id }}_postcode">Postcode:</label>
+            <input name="postcode" required class="form-control" id="{{ form_id }}_postcode">
+        </div>
+    {% endif %}
+
+    {% if show_set_as_default %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" checked name="default" id="{{ form_id }}_default">
+            <label class="form-check-label" for="{{ form_id }}_default">Use as default address?</label>
+        </div>
+    {% endif %}
+
+    <input type="submit"  value="Add address">
+</form>
+
+<script>var saleboxCountryState={{ states_dict|safe }};</script>
+{% endspaceless %}
