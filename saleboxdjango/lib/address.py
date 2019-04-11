@@ -12,6 +12,7 @@ from saleboxdjango.models import Country, CountryState, CountryTranslation, \
 
 class SaleboxAddress:
     def __init__(self, user, address_group='default'):
+        self.user = user
         self.query = UserAddress \
                         .objects \
                         .filter(user=user) \
@@ -19,54 +20,36 @@ class SaleboxAddress:
                         .filter(active_flag=True) \
                         .select_related('country', 'country_state')
 
-    def add(
-            self,
-            user,
-            full_name,
-            address_1,
-            address_2=None,
-            address_3=None,
-            address_4=None,
-            address_5=None,
-            country_state=None,
-            country=None,
-            postcode=None,
-            phone_1=None,
-            phone_2=None,
-            email=None,
-            string_1=None,
-            string_2=None,
-            tax_id=None,
-            is_default=False,
-            address_group='default'
-        ):
+    def add(self, values):
             # get country
-            if isinstance(self.country, int):
-                country = Country.objects.get(id=self.country)
+            if isinstance(values['country'], int):
+                values['country'] = \
+                    Country.objects.get(id=values['country'])
 
             # get country_state
-            if isinstance(self.country_state, int):
-                country_state = CountryState.objects.get(id=self.country_state)
+            if isinstance(values['country_state'], int):
+                values['country_state'] = \
+                    CountryState.objects.get(id=values['country_state'])
 
             address = UserAddress(
-                user=user,
-                default=is_default,
-                address_group=address_group,
-                full_name=full_name,
-                address_1=address_1,
-                address_2=address_2,
-                address_3=address_3,
-                address_4=address_4,
-                address_5=address_5,
-                country_state=country_state,
-                country=country,
-                postcode=postcode.upper(),
-                phone_1=phone_1,
-                phone_2=phone_1,
-                email=email,
-                string_1=string_1,
-                string_2=string_2,
-                tax_id=tax_id
+                user=self.user,
+                default=values['default'] or False,
+                address_group=values['address_group'] or 'default',
+                full_name=values['full_name'],
+                address_1=values['address_1'],
+                address_2=values['address_2'],
+                address_3=values['address_3'],
+                address_4=values['address_4'],
+                address_5=values['address_5'],
+                country_state=values['country_state'],
+                country=values['country'],
+                postcode=values['postcode'].upper(),
+                phone_1=values['phone_1'],
+                phone_2=values['phone_2'],
+                email=values['email'],
+                string_1=values['string_1'],
+                string_2=values['string_2'],
+                tax_id=values['tax_id']
             )
             address.save()
             return address

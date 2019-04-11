@@ -23,7 +23,10 @@ class SaleboxAccountAddressView(TemplateView):
     def post(self, request, *args, **kwargs):
         self.form = SaleboxAddressAddForm(request.POST, initial=self.default_values)
         if self.form.is_valid():
-            print(self.form['country'], print(self.form['country_state']))
+            address = self.sa.add(self.form.cleaned_data)
+
+            # prevent refreshing the page adding a duplicate address
+            return redirect(request.get_full_path())
 
         return self.output(request, *args, **kwargs)
 
@@ -37,19 +40,4 @@ class SaleboxAccountAddressView(TemplateView):
             country_id=self.form['country'].value()
         )
 
-        """
-        # add address if one POSTed in
-        add_status, add_address, add_form, add_state = sa.add_form(
-            request,
-            default_country_id=self.default_country_id
-        )
-
-        # prevent refreshing the page adding a duplicate address
-        if add_status == 'success':
-            return redirect(request.get_full_path())
-
-        # update context
-        # context['addresses'] = sa.render_list(sa.get_list())
-        # context['add_form'] = add_form
-        """
         return self.render_to_response(context)
