@@ -9,23 +9,31 @@ invoice_required: {{ invoice_required }}
 </pre>
 
 {% if shipping_addresses|length > 0 %}
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="salebox_form_name" value="select_address" />
+<div id="salebox_address_picker">
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="salebox_form_name" value="select_address" />
 
-    <h3>Pick a shipping address:</h3>
-    {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
-    <hr>
-    <p>Or add a new one</p>
+        <h3>Pick a shipping address:</h3>
+        {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
+        <hr>
+        <p>Or add a new one</p>
 
-    <hr>
-    <h3>Pick an invoice address:</h3>
-    {% include "salebox/address/list_radio.html" with addresses=invoice_addresses field_name='invoice_address_id' %}
-    <hr>
-    <p>Or add a new one</p>
+        <hr>
+        <h3>Do you need an invoice?</h3>
+        <input type="radio" name="invoice_required" value="{{ invoice_required }}">
 
-    <input type="submit" value="go" />
-</form>
+        <div id="salebox_invoice_picker">
+            <hr>
+            <h3>Pick an invoice address:</h3>
+            {% include "salebox/address/list_radio.html" with addresses=invoice_addresses field_name='invoice_address_id' %}
+            <hr>
+            <p>Or add a new one</p>
+        </div>
+
+        <input type="submit" value="go" />
+    </form>
+</div>
 {% endif %}
 
 

@@ -122,23 +122,3 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         # if we've reached this point, some input was invalid...
         # just re-show the page
         return self.form_invalid(form)
-
-    """
-    def get_additional_context_data(self, context):
-        # add to context
-        context['has_addresses'] = len(addresses) > 0
-        context['add_shipping_form'] = add_shipping_form
-        context['add_invoice_form'] = add_invoice_form
-        context['invoice_required'] = self.sc.data['invoice_address']['required']
-        context['shipping_address_list'] = sa.render_list_radio(
-            addresses,
-            field_name='shipping_address_id',
-            selected_id=selected_shipping_address_id
-        )
-        context['invoice_address_list'] = sa.render_list_radio(
-            addresses,
-            field_name='invoice_address_id',
-            selected_id=selected_invoice_address_id
-        )
-        return context
-    """
