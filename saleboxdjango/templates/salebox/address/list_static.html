@@ -1,7 +1,3 @@
-{% if addresses %}
-    {% for a in addresses %}
-        {% include "salebox/address/list_static_single.html" with address=a %}
-    {% endfor %}
-{% else %}
-    <span>No addresses found</span>
-{% endif %}
+{% for a in addresses %}
+    {% include "salebox/address/list_static_single.html" with address=a %}
+{% endfor %}

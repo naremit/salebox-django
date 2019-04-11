@@ -6,7 +6,6 @@ from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.utils.translation import get_language
 
-from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.models import Country, CountryState, CountryTranslation, \
     CountryStateTranslation, UserAddress
 
@@ -78,7 +77,7 @@ class SaleboxAddress:
 
         # build 'current' country_state list
         try:
-            current_country_states = country_state_lookup[country_id].copy()
+            current_country_states = country_state_lookup[int(country_id)]
         except:
             current_country_states = []
 
@@ -90,7 +89,7 @@ class SaleboxAddress:
                 .replace('}, {', '},{')
 
         return {
-            'countries': country_list,
+            'country_list': country_list,
             'current_states': current_country_states,
             'js_states': js_country_states
         }

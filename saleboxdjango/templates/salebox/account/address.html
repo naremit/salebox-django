@@ -1,8 +1,16 @@
 <h1>My addresses</h1>
 
-{% include "salebox/address/list_static.html" %}
+{% if addresses|length > 0 %}
+    {% include "salebox/address/list_static.html" %}
+{% else %}
+    <p>No addresses available</p>
+{% endif %}
 
 <hr />
 <h3>Add a new address</h3>
 
-{% include "salebox/address/add_form.html" with form_id='addaddress' %}
+{% if addresses|length > 0 %}
+    {% include "salebox/address/add_form.html" with form=address_form form_id='addaddress' %}
+{% else %}
+    {% include "salebox/address/add_form.html" with form=address_form form_id='addaddress' hide_default=True %}
+{% endif %}

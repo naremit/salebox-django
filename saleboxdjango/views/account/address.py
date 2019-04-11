@@ -3,30 +3,39 @@ from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
+from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.lib.address import SaleboxAddress
 
 
 class SaleboxAccountAddressView(TemplateView):
-    default_country_id = None
+    default_values = {}
     template_name = 'salebox/account/address.html'
 
     @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        self.sa = SaleboxAddress(request.user)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
+        self.form = SaleboxAddressAddForm(initial=self.default_values)
         return self.output(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        self.form = SaleboxAddressAddForm(request.POST, initial=self.default_values)
+        if self.form.is_valid():
+            print(self.form['country'], print(self.form['country_state']))
+
         return self.output(request, *args, **kwargs)
 
     def output(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
 
-        # init address class
-        sa = SaleboxAddress(request.user)
-        context['addresses'] = sa.get()
-        context['address_extras'] = sa.form_extras(country_id=self.default_country_id)
+        # init values
+        context['addresses'] = self.sa.get()
+        context['address_form'] = self.form
+        context['address_extras'] = self.sa.form_extras(
+            country_id=self.form['country'].value()
+        )
 
         """
         # add address if one POSTed in

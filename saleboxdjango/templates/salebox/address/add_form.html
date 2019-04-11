@@ -10,37 +10,37 @@
 
     <div class="form-group">
         <label for="{{ form_id }}_full_name">Full name:</label>
-        <input name="full_name" class="form-control" required id="{{ form_id }}_full_name">
+        <input name="full_name" class="form-control" required id="{{ form_id }}_full_name" value="{{ form.full_name.value|default_if_none:'' }}">
     </div>
 
     <div class="form-group">
         <label for="{{ form_id }}_address_1">Address #1:</label>
-        <input name="address_1" class="form-control" required id="{{ form_id }}_address_1">
+        <input name="address_1" class="form-control" required id="{{ form_id }}_address_1" value="{{ form.address_1.value|default_if_none:'' }}">
     </div>
 
     <div class="form-group">
         <label for="{{ form_id }}_address_2">Address #2:</label>
-        <input name="address_2" class="form-control" required id="{{ form_id }}_address_2">
+        <input name="address_2" class="form-control"{% if form.fields.address_2.required %} required{% endif %} id="{{ form_id }}_address_2" value="{{ form.address_2.value|default_if_none:'' }}">
     </div>
 
     {% if hide_address_3 is not True %}
         <div class="form-group">
             <label for="{{ form_id }}_address_3">Address #3:</label>
-            <input name="address_3" class="form-control" id="{{ form_id }}_address_3">
+            <input name="address_3" class="form-control"{% if form.fields.address_3.required %} required{% endif %} id="{{ form_id }}_address_3" value="{{ form.address_3.value|default_if_none:'' }}">
         </div>
     {% endif %}
 
     {% if hide_address_4 is not True %}
         <div class="form-group">
             <label for="{{ form_id }}_address_4">Address #4:</label>
-            <input name="address_4" class="form-control" id="{{ form_id }}_address_4">
+            <input name="address_4" class="form-control"{% if form.fields.address_4.required %} required{% endif %} id="{{ form_id }}_address_4" value="{{ form.address_4.value|default_if_none:'' }}">
         </div>
     {% endif %}
 
     {% if hide_address_5 is not True %}
         <div class="form-group">
             <label for="{{ form_id }}_address_5">Address #5:</label>
-            <input name="address_5" class="form-control" id="{{ form_id }}_address_5">
+            <input name="address_5" class="form-control"{% if form.fields.address_5.required %} required{% endif %} id="{{ form_id }}_address_5" value="{{ form.address_5.value|default_if_none:'' }}">
         </div>
     {% endif %}
 
@@ -49,7 +49,7 @@
             <label for="{{ form_id }}_state">State:</label>
             <select name="country_state" class="form-control" id="{{ form_id }}_state">
                 {% for c in address_extras.current_states %}
-                    <option value="{{ c.id }}"{% if c.id == default_country_state_id %} selected{% endif %}>{{ c.name }}</option>
+                    <option value="{{ c.id }}"{% if c.id == form.country_state.value %} selected{% endif %}>{{ c.name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -60,7 +60,7 @@
             <label for="{{ form_id }}_country">Country:</label>
             <select name="country" onchange="salebox.address.countryStateDropdown('{{ form_id }}')" class="form-control" id="{{ form_id }}_country">
                 {% for c in address_extras.country_list %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    <option value="{{ c.id }}"{% if c.id == form.country.value %} selected{% endif %}>{{ c.name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -69,11 +69,18 @@
     {% if hide_postcode is not True %}
         <div class="form-group">
             <label for="{{ form_id }}_postcode">Postcode:</label>
-            <input name="postcode" required class="form-control" id="{{ form_id }}_postcode">
+            <input name="postcode"{% if form.fields.postcode.required %} required{% endif %} class="form-control" id="{{ form_id }}_postcode" value="{{ form.postcode.value|default_if_none:'' }}">
         </div>
     {% endif %}
 
-    {% if show_set_as_default %}
+    {% if hide_tax_id is not True %}
+        <div class="form-group">
+            <label for="{{ form_tax_id }}_tax_id">Tax ID:</label>
+            <input name="tax_id"{% if form.fields.tax_id.required %} required{% endif %} class="form-control" id="{{ form_id }}_tax_id" value="{{ form.tax_id.value|default_if_none:'' }}">
+        </div>
+    {% endif %}
+
+    {% if hide_default is not True %}
         <div class="form-check">
             <input class="form-check-input" type="checkbox" checked name="default" id="{{ form_id }}_default">
             <label class="form-check-label" for="{{ form_id }}_default">Use as default address?</label>
@@ -83,5 +90,8 @@
     <input type="submit"  value="Add address">
 </form>
 
-<script>var saleboxCountryState={{ states_dict|safe }};</script>
+{% if address_extras.country_list|length > 1 %}
+    <script>var saleboxCountryState={{ address_extras.js_states|safe }};</script>
+{% endif %}
+
 {% endspaceless %}
