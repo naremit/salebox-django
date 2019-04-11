@@ -86,7 +86,8 @@ class SaleboxAddress:
             # get addresses
             addresses = self.query.all()
             if 'tax_id' in non_null_fields:
-                addressess = addresses.filter(tax_id__isnull=False)
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                addresses = addresses.filter(tax_id__isnull=False)
 
             # add 'selected' value and localised country name
             for a in addresses:

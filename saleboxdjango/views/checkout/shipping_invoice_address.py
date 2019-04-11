@@ -74,8 +74,8 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
     """
 
     def get(self, request, *args, **kwargs):
-        self.shipping_form = SaleboxAddressAddForm()
-        self.invoice_form = SaleboxAddressAddForm()
+        self.shipping_form = SaleboxAddressAddForm(initial=self.initial)
+        self.invoice_form = SaleboxAddressAddForm(initial=self.initial)
         return super().get(self, request, *args, **kwargs)
 
 
@@ -92,14 +92,20 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
         )
 
         # return
+        context['shipping_address_extras'] = sa.form_extras(
+            country_id=self.shipping_form['country'].value()
+        )
+        context['invoice_address_extras'] = sa.form_extras(
+            country_id=self.invoice_form['country'].value()
+        )
         context['shipping_address_id'] = self.sc.data['shipping_address']['id']
         context['invoice_address_id'] = self.sc.data['invoice_address']['id']
         context['invoice_required'] = self.sc.data['invoice_address']['required']
         return context
 
     def post(self, request, *args, **kwargs):
-        self.shipping_form = SaleboxAddressAddForm()
-        self.invoice_form = SaleboxAddressAddForm()
+        self.shipping_form = SaleboxAddressAddForm(initial=self.initial)
+        self.invoice_form = SaleboxAddressAddForm(initial=self.initial)
 
         # which action is being performed?
         form = SaleboxFormNameForm(request.POST)
@@ -113,14 +119,49 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
             pass
 
         # action: user is adding a shipping address
-        if action == 'add_address':
-            self.shipping_form = SaleboxAddressAddForm(request.POST)
+        if action == 'add_shipping':
+            self.shipping_form = SaleboxAddressAddForm(
+                request.POST,
+                initial=self.initial
+            )
+            if self.shipping_form.is_valid():
+                # add address to db
+                # update checkout
+                # redirect to self to prevent refresh
+                pass
 
         # action: user is adding an invoice address
         if action == 'add_invoice':
-            self.invoice_form = SaleboxAddressAddForm(request.POST)
+            print('add invoice')
+            self.invoice_form = SaleboxAddressAddForm(
+                request.POST,
+                initial=self.initial
+            )
+            if self.invoice_form.is_valid():
+                tax_id = self.invoice_form.cleaned_data['tax_id']
+                if tax_id is not None and len(tax_id.strip()) > 4:
+                    # add address to db
+                    sa = SaleboxAddress(self.request.user)
+                    address = sa.add(self.invoice_form)
 
+                    # update checkout
+                    self.sc.set_invoice_address(
+                        True,
+                        address.id,
+                        '%s, %s' % (
+                            address.full_name,
+                            ', '.join(address.address_list)
+                        ),
+                        None,
+                        self.request
+                    )
 
+                    # redirect to self to prevent refresh
+                    return redirect(request.get_full_path())
+
+        # if we've reached this point, some input was invalid...
+        # just re-show the page
+        return self.form_invalid(form)
 
     """
     def get_additional_context_data(self, context):

@@ -28,8 +28,7 @@ class SaleboxAccountAddressView(TemplateView):
         if self.form.is_valid():
             address = self.sa.add(self.form.cleaned_data)
 
-            # prevent refreshing the page adding a
-            # duplicate address
+            # redirect to self to prevent refresh
             return redirect(request.get_full_path())
 
         return self.output(request, *args, **kwargs)

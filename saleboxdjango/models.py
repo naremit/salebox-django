@@ -683,6 +683,10 @@ class UserAddress(models.Model):
         self.ensure_one_default_exists(user, address_group)
 
     def save(self, *args, **kwargs):
+        if self.tax_id is not None:
+            self.tax_id = self.tax_id.strip()
+            if len(self.tax_id) == 0:
+                self.tax_id = None
         super().save(*args, **kwargs)
         self.ensure_one_default_exists(self.user, self.address_group)
 
