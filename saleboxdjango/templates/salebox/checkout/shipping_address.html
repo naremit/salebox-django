@@ -2,22 +2,33 @@
 
 {% block checkout %}
 
-    {% if has_addresses %}
-        <form method="post" id="shipping_address_choose">
-            {% csrf_token %}
-            <p>Pick your delivery address:</p>
-            {{ address_list | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_choose').hide(); $('#shipping_address_add').show();">enter a new address</a></p>
-            <button class="btn btn-primary">Next</button>
-        </form>
+{% if shipping_addresses|length > 0 %}
+<div id="salebox_shipping_invoice_address_picker">
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="salebox_form_name" value="select_address" />
 
-        <div id="shipping_address_add" style="display: none">
-            <p>Enter a new delivery address:</p>
-            {{ add_form | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_add').hide(); $('#shipping_address_choose').show();">use an existing address</a></p>
-        </div>
-    {% else %}
-        <p>Enter your delivery address:</p>
-        {{ add_form | safe }}
+        <h3>Pick a shipping address:</h3>
+        {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
+        <hr>
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingAddress.toggle(true)">add a new one</span></p>
+
+        <hr>
+        <input type="submit" value="go" />
+    </form>
+</div>
+{% endif %}
+
+<div id="salebox_shipping_invoice_address_addshipping"{% if shipping_addresses|length > 0 %} style="display: none;"{% endif %}>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="salebox_form_name" value="add_shipping" />
+        <h2>Add shipping address</h2>
+        {% include "salebox/address/add_form.html" with form=shipping_form form_id='addaddress' address_extras=shipping_address_extras hide_default=True %}
+    </form>
+    {% if shipping_addresses|length > 0 %}
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingAddress.toggle()">use an existing address</span></p>
     {% endif %}
+</div>
+
 {% endblock %}

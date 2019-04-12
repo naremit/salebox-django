@@ -34,20 +34,22 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
     def get_additional_context_data(self, context):
         sa = SaleboxAddress(self.request.user)
 
-        # existing address lists
+        # shipping form
+        context['shipping_form'] = self.shipping_form
         context['shipping_addresses'] = sa.get(
             selected_id=self.sc.data['shipping_address']['id'],
             force_selected=True
         )
+        context['shipping_address_extras'] = sa.form_extras(
+            country_id=self.shipping_form['country'].value()
+        )
+
+        # invoice form
+        context['invoice_form'] = self.invoice_form
         context['invoice_addresses'] = sa.get(
             selected_id=self.sc.data['invoice_address']['id'],
             non_null_fields=['tax_id'],
             force_selected=True
-        )
-
-        # form extras
-        context['shipping_address_extras'] = sa.form_extras(
-            country_id=self.shipping_form['country'].value()
         )
         context['invoice_address_extras'] = sa.form_extras(
             country_id=self.invoice_form['country'].value()

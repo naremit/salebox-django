@@ -1,7 +1,9 @@
 from django import forms
 from django.shortcuts import redirect
 
+from saleboxdjango.forms import SaleboxAddressAddForm
 from saleboxdjango.lib.address import SaleboxAddress
+from saleboxdjango.models import UserAddress
 from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
 
 
@@ -9,78 +11,81 @@ class SaleboxCheckoutShippingAddressForm(forms.Form):
     shipping_address_id = forms.IntegerField()
 
 
+class SaleboxFormNameForm(forms.Form):
+    salebox_form_name = forms.ChoiceField(choices=(
+        ('select_address', 'select_address'),
+        ('add_shipping', 'add_shipping'),
+    ))
+
 class SaleboxCheckoutShippingAddressView(SaleboxCheckoutBaseView):
-    default_country_id = None
+    initial = {}
     checkout_step = 'shipping_address'
     form_class = SaleboxCheckoutShippingAddressForm
     template_name = 'salebox/checkout/shipping_address.html'
 
-    def check_add_form(self, request):
-        # add a new address if it has been posted in
-        sa = SaleboxAddress(self.request.user)
-        add_status, add_address, add_form, add_state = sa.add_form(
-            request,
-            default_country_id=self.default_country_id
-        )
-
-        # redirect to next page if address successfully added, else
-        # continue as normal
-        if add_status == 'success':
-            add_address = sa.get_single_by_id(add_address.id)
-            self.set_shipping_address(add_address)
-            return self.sc.set_completed(self.checkout_step, request)
-        else:
-            self.add_form = add_form
-            self.add_status = add_status
-            return None
-
-    def form_valid_pre_redirect(self, form):
-        sa = SaleboxAddress(self.request.user)
-        address = sa.get_single_by_id(form.cleaned_data['shipping_address_id'])
-        self.set_shipping_address(address)
-        return True
-
     def get(self, request, *args, **kwargs):
-        self.check_add_form(request)
+        self.shipping_form = SaleboxAddressAddForm(initial=self.initial)
         return super().get(self, request, *args, **kwargs)
 
     def get_additional_context_data(self, context):
         sa = SaleboxAddress(self.request.user)
-        addresses = sa.get_list()
 
-        # get selected address from checkout dict, else use the default
-        selected_address_id = self.sc.data['shipping_address']['id']
-        if selected_address_id is None:
-            for a in addresses:
-                if a.default:
-                    selected_address_id = a.id
-                    break
-
-        # add to context
-        context['has_addresses'] = len(addresses) > 0
-        context['add_form'] = self.add_form
-        context['add_status'] = self.add_status
-        context['address_list'] = sa.render_list_radio(
-            addresses,
-            field_name='shipping_address_id',
-            selected_id=selected_address_id
+        # shipping form
+        context['shipping_form'] = self.shipping_form
+        context['shipping_addresses'] = sa.get(
+            selected_id=self.sc.data['shipping_address']['id'],
+            force_selected=True
         )
+        context['shipping_address_extras'] = sa.form_extras(
+            country_id=self.shipping_form['country'].value()
+        )
+
+        # form control
+        context['shipping_address_id'] = self.sc.data['shipping_address']['id']
         return context
 
     def post(self, request, *args, **kwargs):
-        r = self.check_add_form(request)
-        if r is not None:
-            return redirect(r)
-        return super().post(self, request, *args, **kwargs)
+        self.shipping_form = SaleboxAddressAddForm(initial=self.initial)
 
-    def set_shipping_address(self, address):
-        self.sc.set_shipping_address(
-            True,
-            address.id,
-            '%s, %s' % (
-                address.full_name,
-                ', '.join(address.address_list)
-            ),
-            None,
-            self.request
-        )
+        # which action is being performed?
+        form = SaleboxFormNameForm(request.POST)
+        if form.is_valid():
+            action = form.cleaned_data['salebox_form_name']
+        else:
+            return self.get(request, *args, **kwargs)
+
+        # action: user has selected an option
+        if action == 'select_address':
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                self.sc.set_shipping_address(
+                    True,
+                    form.cleaned_data['shipping_address_id'],
+                    None,
+                    request
+                )
+
+                r = self.sc.set_completed(self.checkout_step, request)
+                if r is None:
+                    raise Exception('There is no next checkout step to redirect to...')
+                else:
+                    return redirect(r)
+
+        # action: user is adding a shipping address
+        if action == 'add_shipping':
+            self.shipping_form = SaleboxAddressAddForm(
+                request.POST,
+                initial=self.initial
+            )
+            if self.shipping_form.is_valid():
+                # add address to db
+                sa = SaleboxAddress(request.user)
+                address = sa.add(self.shipping_form.cleaned_data)
+                self.sc.set_shipping_address(True, address.id, None, request)
+
+                # redirect to self to prevent refresh
+                return redirect(request.get_full_path())
+
+        # if we've reached this point, some input was invalid...
+        # just re-show the page
+        return self.form_invalid(form)

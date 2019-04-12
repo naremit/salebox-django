@@ -14,7 +14,7 @@
         <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.showAddForm(true)">add a new one</span></p>
 
         <hr>
-        <h3>Do you need an invoice?</h3>
+        <h3>Do you need a tax invoice?</h3>
         <input type="checkbox" name="invoice_required"{% if invoice_required %} checked{% endif %} onchange="salebox.checkout.shippingInvoiceAddress.setInvoiceRequired(this, {{ invoice_addresses|length }})" id="salebox_shipping_invoice_address_checkbox">
 
         <div id="salebox_shipping_invoice_address_picker_invoice"{% if not invoice_required %} style="display: none;"{% endif %}>

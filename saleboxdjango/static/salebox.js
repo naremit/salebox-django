@@ -81,6 +81,19 @@ var salebox = {
     },
 
     checkout: {
+        shippingAddress: {
+            toggle: function(show) {
+                if (show) {
+                    $('#salebox_shipping_invoice_address_picker').hide();
+                    $('#salebox_shipping_invoice_address_addshipping').show();
+                } else {
+                    $('#salebox_shipping_invoice_address_addshipping').hide();
+                    $('#salebox_shipping_invoice_address_picker').show();
+                }
+                salebox.utils.scrollTop(true);
+            }
+        },
+
         shippingInvoiceAddress: {
             hideAddForm: function(unsetInvoice) {
                 if (unsetInvoice) {
