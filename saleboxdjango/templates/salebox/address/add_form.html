@@ -3,11 +3,6 @@
 <form method="post" id="{{ form_id }}">
     {% csrf_token %}
 
-    <!--
-    <input type="hidden" name="form_name" value="{{ form_name }}">
-    <input type="hidden" name="state" value="{{ state }}">
-    -->
-
     <div class="form-group">
         <label for="{{ form_id }}_full_name">Full name:</label>
         <input name="full_name" class="form-control" required id="{{ form_id }}_full_name" value="{{ form.full_name.value|default_if_none:'' }}">

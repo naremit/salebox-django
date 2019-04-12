@@ -1,5 +1,7 @@
 {% spaceless %}
 
+{% load salebox_address %}
+
 <div>
     <div style="font-weight: bold">{{ address.full_name }}</div>
     <div>{{ address.address_1 }}</div>
@@ -21,11 +23,11 @@
     {% endif %}
 
     {% if address.country_state %}
-        <div>{{ address.country_state_name }}</div>
+        <div>{% sb_country_state_name address.country_state %}</div>
     {% endif %}
 
     {% if address.country %}
-        <div>{{ address.country_name }}</div>
+        <div>{% sb_country_name address.country %}</div>
     {% endif %}
 
     {% if address.postcode %}

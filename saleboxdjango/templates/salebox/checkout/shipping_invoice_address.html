@@ -2,12 +2,6 @@
 
 {% block checkout %}
 
-<pre>
-shipping_address_id: {{ shipping_address_id }}
-invoice_address_id: {{ invoice_address_id }}
-invoice_required: {{ invoice_required }}
-</pre>
-
 {% if shipping_addresses|length > 0 %}
 <div id="salebox_shipping_invoice_address_picker">
     <form method="post">
@@ -17,18 +11,18 @@ invoice_required: {{ invoice_required }}
         <h3>Pick a shipping address:</h3>
         {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
         <hr>
-        <p>Or <span class="text-primary" onclick="showAddForm(true)">add a new one</span></p>
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.showAddForm(true)">add a new one</span></p>
 
         <hr>
         <h3>Do you need an invoice?</h3>
-        <input type="checkbox" name="invoice_required"{% if invoice_required %} checked{% endif %} onchange="setInvoiceRequired(this, {{ invoice_addresses|length }})" id="salebox_shipping_invoice_address_checkbox">
+        <input type="checkbox" name="invoice_required"{% if invoice_required %} checked{% endif %} onchange="salebox.checkout.shippingInvoiceAddress.setInvoiceRequired(this, {{ invoice_addresses|length }})" id="salebox_shipping_invoice_address_checkbox">
 
         <div id="salebox_shipping_invoice_address_picker_invoice"{% if not invoice_required %} style="display: none;"{% endif %}>
             <hr>
             <h3>Pick an invoice address:</h3>
             {% include "salebox/address/list_radio.html" with addresses=invoice_addresses field_name='invoice_address_id' %}
             <hr>
-            <p>Or <span class="text-primary" onclick="showAddForm(false)">add a new one</span></p>
+            <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.showAddForm(false)">add a new one</span></p>
         </div>
 
         <hr>
@@ -45,7 +39,7 @@ invoice_required: {{ invoice_required }}
         {% include "salebox/address/add_form.html" with form=shipping_form form_id='addaddress' address_extras=shipping_address_extras hide_default=True %}
     </form>
     {% if shipping_addresses|length > 0 %}
-        <p>Or <span class="text-primary" onclick="hideAddForm()">use an existing address</span></p>
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.hideAddForm()">use an existing address</span></p>
     {% endif %}
 </div>
 
@@ -57,84 +51,10 @@ invoice_required: {{ invoice_required }}
         {% include "salebox/address/add_form.html" with form=invoice_form form_id='addinvoice' address_extras=invoice_address_extras hide_default=True %}
     </form>
     {% if invoice_addresses|length > 0 %}
-        <p>Or <span class="text-primary" onclick="hideAddForm()">use an existing address</span></p>
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.hideAddForm()">use an existing address</span></p>
     {% else %}
-        <p>Or <span class="text-primary" onclick="hideAddForm(true)">cancel</span></p>
+        <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.hideAddForm(true)">cancel</span></p>
     {% endif %}
 </div>
 
-<script>
-function setInvoiceRequired(el, invoiceAddressCount) {
-    if ($(el).is(':checked')) {
-        if (invoiceAddressCount > 0) {
-            $('#salebox_shipping_invoice_address_picker_invoice').show();
-        } else {
-            showAddForm(false);
-        }
-    } else {
-        $('#salebox_shipping_invoice_address_picker_invoice').hide();
-    }
-}
-
-function hideAddForm(unsetInvoice) {
-    if (unsetInvoice) {
-        $('#salebox_shipping_invoice_address_checkbox').prop('checked', false);
-    }
-    $('#salebox_shipping_invoice_address_addshipping').hide();
-    $('#salebox_shipping_invoice_address_addinvoice').hide();
-    $('#salebox_shipping_invoice_address_picker').show();
-}
-
-function showAddForm(shipping) {
-    $('#salebox_shipping_invoice_address_picker').hide();
-    if (shipping) {
-        $('#salebox_shipping_invoice_address_addshipping').show();
-    } else {
-        $('#salebox_shipping_invoice_address_addinvoice').show();
-    }
-}
-
-</script>
-
-<!--
-    {% if has_addresses %}
-        <form method="post" id="shipping_address_choose">
-            {% csrf_token %}
-
-            <p>Pick your delivery address:</p>
-            {{ shipping_address_list | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_choose').hide(); $('#shipping_address_add').show();">enter a new address</a></p>
-
-            <br>
-            <div>
-                <input type="checkbox" name="invoice_required" id="invoice_required" onchange="($(this).is(':checked')) ? $('#invoice_address_choose').show() : $('#invoice_address_choose').hide()"{% if invoice_required %} checked{% endif %}>
-                <label for="invoice_required">Would you like a tax invoice?</label>
-            </div>
-
-            <div id="invoice_address_choose"{% if not invoice_required %} style="display: none"{% endif %}>
-                <p>Pick your invoice address:</p>
-                {{ invoice_address_list | safe }}
-                <p>Or, <a href="#" onclick="$('#shipping_address_choose').hide(); $('#invoice_address_add').show();">enter a new address</a></p>
-            </div>
-
-            <br>
-            <button class="btn btn-primary">Next</button>
-        </form>
-
-        <div id="shipping_address_add" style="display: none">
-            <p>Enter your delivery address:</p>
-            {{ add_shipping_form | safe }}
-            <p>Or, <a href="#" onclick="$('#shipping_address_add').hide(); $('#shipping_address_choose').show();">use an existing address</a></p>
-        </div>
-
-        <div id="invoice_address_add" style="display: none">
-            <p>Enter your invoice address:</p>
-            {{ add_invoice_form | safe }}
-            <p>Or, <a href="#" onclick="$('#invoice_address_add').hide(); $('#shipping_address_choose').show();">use an existing address</a></p>
-        </div>
-    {% else %}
-        <p>Enter your delivery address:</p>
-        {{ add_shipping_form | safe }}
-    {% endif %}
--->
 {% endblock %}
