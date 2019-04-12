@@ -18,13 +18,17 @@
                         <td>{{ item.variant.name }}</td>
                         <td>{{ item.variant.sale_price_display.formatted_html | safe }}</td>
                         <td>
-                            {% if item.qty > 1 %}
-                                <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'-1' }}, false)">-</button>
-                            {% else %}
-                                <button disabled>-</button>
+                            {% if disable_qty_change is not True %}
+                                {% if item.qty > 1 %}
+                                    <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'-1' }}, false)">-</button>
+                                {% else %}
+                                    <button disabled>-</button>
+                                {% endif %}
                             {% endif %}
                             <span style="padding: 0 7px;">x{{ item.qty }}</span>
-                            <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'1' }}, false)">+</button>
+                            {% if disable_qty_change is not True %}
+                                <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'1' }}, false)">+</button>
+                            {% endif %}
                         </td>
                         <td>{{ item.variant.qty_sale_price.formatted_html | safe }}</td>
                         <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>

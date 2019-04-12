@@ -22,7 +22,7 @@ def sb_country_name(country, default='', lang=None):
         if i18n is not None:
             return i18n.value
 
-    # fallback to ENglish
+    # fallback to English
     return country.name
 
 @register.simple_tag
@@ -42,5 +42,5 @@ def sb_country_state_name(country_state, default='', lang=None):
         if i18n is not None:
             return i18n.value
 
-    # fallback to ENglish
+    # fallback to English
     return country_state.name
