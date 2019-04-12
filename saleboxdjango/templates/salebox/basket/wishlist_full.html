@@ -2,28 +2,34 @@
 
 {% if data.wishlist.qty > 0 %}
     <table style="width: 100%">
-        <tbody>
-            {% for item in data.wishlist.items %}
-                <tr>
-                    <td style="background: #f8f8f8; color: #ccc; height: 50px; text-align: center; vertical-align: middle; width: 50px;">
-                        {% if item.image %}
-                            <img src="{{ item.image }}" style="height: 50px; width: 50px;" />
-                        {% else %}
-                            <span>n/a</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.sale_price_display.formatted_html | safe }}</td>
-                    <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
-                    <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                        <span onclick="setWishlist({{ item.id }}, false)">remove</span>
-                    </td>
-                    <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                        <span onclick="migrateBasketWishlist({{ item.id }}, true)">add to basket</span>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
+        {% block thead %}{% endblock %}
+        {% block pre_tbody %}{% endblock %}
+        {% block tbody %}
+            <tbody>
+                {% for item in data.wishlist.items %}
+                    <tr>
+                        <td style="background: #f8f8f8; color: #ccc; height: 50px; text-align: center; vertical-align: middle; width: 50px;">
+                            {% if item.image %}
+                                <img src="{{ item.image }}" style="height: 50px; width: 50px;" />
+                            {% else %}
+                                <span>n/a</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.sale_price_display.formatted_html | safe }}</td>
+                        <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
+                        <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
+                            <span onclick="setWishlist({{ item.id }}, false)">remove</span>
+                        </td>
+                        <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
+                            <span onclick="migrateBasketWishlist({{ item.id }}, true)">add to basket</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endblock %}
+        {% block post_tbody %}{% endblock %}
+        {% block tfoot %}{% endblock %}
     </table>
 {% else %}
     <div>Your wishlist is empty</div>
