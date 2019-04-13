@@ -14,7 +14,33 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
     template_name = 'salebox/checkout/shipping_method.html'
 
     def get_additional_context_data(self, context):
-        return self._get_shipping_options(context)
+        context = self._get_shipping_options(context)
+
+        combined_price = None
+
+        # use selected option if exists
+        if self.sc.get_raw_data()['shipping_method']['id'] is not None:
+            for o in context['shipping_options']:
+                if o['id'] == self.sc.get_raw_data()['shipping_method']['id']:
+                    combined_price = o['combined_price'].copy()
+                    break
+
+        # no option selected, choice the default
+        if combined_price is None:
+            for o in context['shipping_options']:
+                if o['available'] and o['selected']:
+                    combined_price = o['combined_price'].copy()
+                    break
+
+        # no option selected, no default, fallback to first available
+        if combined_price is None:
+            for o in context['shipping_options']:
+                if o['available']:
+                    combined_price = o['combined_price'].copy()
+                    break
+
+        context['combined_shipping_price'] = combined_price
+        return context
 
     def form_valid_pre_redirect(self, form):
         # retrieve selected option

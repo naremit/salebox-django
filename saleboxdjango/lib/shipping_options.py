@@ -89,6 +89,10 @@ class SaleboxShippingOptions:
 
         # format each option's price
         for o in opts:
+            o['combined_price'] = get_price_display(
+                self.checkout['basket']['sale_price']['price'] +
+                o['price']
+            )
             o['price'] = get_price_display(o['price'])
 
         # return
