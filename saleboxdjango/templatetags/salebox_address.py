@@ -11,7 +11,7 @@ def sb_country_name(country, default='', lang=None):
         return default
 
     if lang is None:
-        lang = get_language()
+        lang = (get_language()).lower().split('-')[0]
 
     if not lang.startswith('en'):
         i18n = CountryTranslation \
@@ -31,7 +31,7 @@ def sb_country_state_name(country_state, default='', lang=None):
         return default
 
     if lang is None:
-        lang = get_language()
+        lang = (get_language()).lower().split('-')[0]
 
     if not lang.startswith('en'):
         i18n = CountryStateTranslation \
