@@ -22,21 +22,21 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
         if self.sc.get_raw_data()['shipping_method']['id'] is not None:
             for o in context['shipping_options']:
                 if o['id'] == self.sc.get_raw_data()['shipping_method']['id']:
-                    combined_price = o['combined_price'].copy()
+                    combined_price = o['combined_price']
                     break
 
         # no option selected, choice the default
         if combined_price is None:
             for o in context['shipping_options']:
                 if o['available'] and o['selected']:
-                    combined_price = o['combined_price'].copy()
+                    combined_price = o['combined_price']
                     break
 
         # no option selected, no default, fallback to first available
         if combined_price is None:
             for o in context['shipping_options']:
                 if o['available']:
-                    combined_price = o['combined_price'].copy()
+                    combined_price = o['combined_price']
                     break
 
         context['combined_shipping_price'] = combined_price

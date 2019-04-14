@@ -110,7 +110,7 @@ var salebox = {
                     if (invoiceAddressCount > 0) {
                         $('#salebox_shipping_invoice_address_picker_invoice').show();
                     } else {
-                        showAddForm(false);
+                        salebox.checkout.shippingInvoiceAddress.showAddForm(false);
                     }
                 } else {
                     $('#salebox_shipping_invoice_address_picker_invoice').hide();

@@ -76,7 +76,7 @@ class SaleboxCheckoutBaseView(FormView):
         context = super().get_context_data(**kwargs)
         data = self.sc.get_raw_data()
 
-        total_price = data['basket']['sale_price']['price']
+        total_price = data['basket']['sale_price']
         if data['shipping_method']['id'] is not None:
             total_price += data['shipping_method']['price']
 
