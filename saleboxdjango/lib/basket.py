@@ -4,7 +4,6 @@ import time
 from django.conf import settings
 from django.template.loader import render_to_string
 
-from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import BasketWishlist, ProductVariant
 
 
@@ -283,8 +282,8 @@ class SaleboxBasket:
         self._call_external('PRE_CALCULATE_PRICE', request)
 
         for i in self.data['basket']['items']:
-            i['variant']['qty_price'] = get_price_display(i['variant']['price'] * i['qty'])
-            i['variant']['qty_sale_price'] = get_price_display(i['variant']['sale_price'] * i['qty'])
+            i['variant']['qty_price'] = i['variant']['price'] * i['qty']
+            i['variant']['qty_sale_price'] = i['variant']['sale_price'] * i['qty']
             self.data['basket']['orig_price'] += i['variant']['price'] * i['qty']
             self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
 
@@ -425,7 +424,6 @@ class SaleboxBasket:
                 'name': q.variant.name,
                 'plu': q.variant.plu,
                 'price': q.variant.price,
-                'price_display': q.variant.price_display(),
                 'product': {
                     'category': {
                         'id': q.variant.product.category.id,
@@ -448,7 +446,6 @@ class SaleboxBasket:
                 'rating_vote_count': q.variant.rating_vote_count,
                 'sale_percent': q.variant.sale_percent,
                 'sale_price': q.variant.sale_price,
-                'sale_price_display': q.variant.sale_price_display(),
                 'shipping_weight': q.variant.shipping_weight,
                 'size_uom': q.variant.size_uom,
                 'sku': q.variant.sku,
@@ -480,13 +477,6 @@ class SaleboxBasket:
         # calculate basket value + loyalty points
         self._calculate_price(request)
         self._calculate_loyalty(request)
-
-        # display prices
-        for item in self.data['basket']['items']:
-            for s in ['price', 'sale_price']:
-                item['variant']['%s_display' % s] = get_price_display(item['variant'][s])
-        for s in ['orig_price', 'sale_price']:
-            self.data['basket'][s] = get_price_display(self.data['basket'][s])
 
         # save to session
         request.session['saleboxbasket'] = self.data

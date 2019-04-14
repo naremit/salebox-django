@@ -1,6 +1,5 @@
 from django import forms
 
-from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
 
 

@@ -24,23 +24,6 @@ def fetchsinglevalue(sql):
     return fetchflatlist(sql)[0]
 
 
-def get_price_display(price):
-    formatted = '{:,.2f}'.format(price / 100)
-    unformatted = '{:.2f}'.format(price / 100)
-    minor = formatted.split('.')[1]
-
-    return {
-        'price': price,
-        'float': price / 100,
-        'major': int(unformatted.split('.')[0]),
-        'minor': minor,
-        'formatted': formatted,
-        'unformatted': unformatted,
-        'formatted_html': '%s<span>.%s</span>' % (formatted.split('.')[0], minor),
-        'unformatted_html': '%s<span>.%s</span>' % (unformatted.split('.')[0], minor)
-    }
-
-
 def get_rating_display(score, vote_count):
     if vote_count > 0:
         return {

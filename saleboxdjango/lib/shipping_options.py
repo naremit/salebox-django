@@ -1,5 +1,4 @@
 from saleboxdjango.lib.binpack import BinPack
-from saleboxdjango.lib.common import get_price_display
 
 
 class SaleboxShippingOptions:
@@ -87,13 +86,9 @@ class SaleboxShippingOptions:
         elif self.DEFAULT_SELECT == 'FIRST':
             opts[0]['selected'] = True
 
-        # format each option's price
+        # calculate combined_price
         for o in opts:
-            o['combined_price'] = get_price_display(
-                self.checkout['basket']['sale_price']['price'] +
-                o['price']
-            )
-            o['price'] = get_price_display(o['price'])
+            o['combined_price'] = (self.checkout['basket']['sale_price'] + o['price'])
 
         # return
         self.context['shipping_options'] = opts

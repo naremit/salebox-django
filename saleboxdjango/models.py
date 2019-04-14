@@ -10,7 +10,7 @@ from django.db import models
 from django.db.models import Avg
 
 from mptt.models import MPTTModel, TreeForeignKey
-from saleboxdjango.lib.common import get_price_display, get_rating_display
+from saleboxdjango.lib.common import get_rating_display
 
 CHECKOUT_STATUS_CHOICES = (
     (10, 'New: pending send to gateway'),
@@ -528,14 +528,8 @@ class ProductVariant(models.Model):
     def delete(self):
         pass
 
-    def price_display(self):
-        return get_price_display(self.price)
-
     def rating_display(self):
         return get_rating_display(self.rating_score, self.rating_vote_count)
-
-    def sale_price_display(self):
-        return get_price_display(self.sale_price)
 
     def save(self, *args, **kwargs):
         self.default_image = None

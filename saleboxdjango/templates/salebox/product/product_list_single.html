@@ -1,3 +1,5 @@
+{% load salebox_utils %}
+
 <div class="product">
     <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">
         <div class="img">
@@ -12,9 +14,9 @@
         <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">{{ p.p_name }}</a>
     </div>
     {% if pv.sale_price != pv.price %}
-        <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price_display.formatted_html|safe }}</div>
+        <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price|sb_currency }}</div>
     {% endif %}
-    <div class="price">{{ pv.sale_price_display.formatted_html|safe }}</div>
+    <div class="price">{{ pv.sale_price|sb_currency }}</div>
 
     {% if pv.rating_display.10 is not None %}
         {% include "salebox/utils/rating.html" with readonly=True rating=pv.rating_display.10 %}

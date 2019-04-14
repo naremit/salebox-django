@@ -4,7 +4,6 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import get_language
 
-from saleboxdjango.lib.common import get_price_display
 from saleboxdjango.models import CheckoutStore, UserAddress
 
 
@@ -176,7 +175,7 @@ class SaleboxCheckout:
         self.data['shipping_method'] = {
             'id': id,
             'label': label,
-            'price': get_price_display(price),
+            'price': price,
             'meta': meta
         }
         self._write_session(request)

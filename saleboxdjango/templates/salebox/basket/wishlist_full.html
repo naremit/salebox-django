@@ -1,5 +1,7 @@
 {% spaceless %}
 
+{% load salebox_utils %}
+
 {% if data.wishlist.qty > 0 %}
     <table style="width: 100%">
         {% block thead %}{% endblock %}
@@ -16,8 +18,8 @@
                             {% endif %}
                         </td>
                         <td>{{ item.name }}</td>
-                        <td>{{ item.sale_price_display.formatted_html | safe }}</td>
-                        <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
+                        <td>{{ item.sale_price|sb_currency }}</td>
+                        <td style="text-align: right;">{{ item.price|sb_currency }}</td>
                         <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                             <span onclick="setWishlist({{ item.id }}, false)">remove</span>
                         </td>

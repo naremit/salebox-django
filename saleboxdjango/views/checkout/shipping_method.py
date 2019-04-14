@@ -52,7 +52,7 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
         self.sc.set_shipping_method(
             selected['id'],
             selected['label'],
-            selected['price']['price'],
+            selected['price'],
             selected['meta'],
             self.request
         )

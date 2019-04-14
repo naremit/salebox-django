@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from django.views.generic import FormView
 
 from saleboxdjango.lib.checkout import SaleboxCheckout
-from saleboxdjango.lib.common import get_price_display
 
 
 class SaleboxCheckoutBaseView(FormView):
@@ -79,12 +78,12 @@ class SaleboxCheckoutBaseView(FormView):
 
         total_price = data['basket']['sale_price']['price']
         if data['shipping_method']['id'] is not None:
-            total_price += data['shipping_method']['price']['price']
+            total_price += data['shipping_method']['price']
 
         context['checkout'] = {
             'data': data,
             'nav': self.sc.get_checkout_nav(self.checkout_step),
             'step': self.checkout_step,
-            'total_price': get_price_display(total_price)
+            'total_price': total_price
         }
         return self.get_additional_context_data(context)

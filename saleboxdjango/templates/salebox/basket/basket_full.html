@@ -1,5 +1,7 @@
 {% spaceless %}
 
+{% load salebox_utils %}
+
 {% if data.basket.qty > 0 %}
     <table style="width: 100%">
         {% block thead %}{% endblock %}
@@ -16,7 +18,7 @@
                             {% endif %}
                         </td>
                         <td>{{ item.variant.name }}</td>
-                        <td>{{ item.variant.sale_price_display.formatted_html | safe }}</td>
+                        <td>{{ item.variant|sb_currency }}</td>
                         <td>
                             {% if disable_qty_change is not True %}
                                 {% if item.qty > 1 %}
@@ -30,8 +32,8 @@
                                 <button onclick="setBasket({{ item.variant.id }}, {{ item.qty|add:'1' }}, false)">+</button>
                             {% endif %}
                         </td>
-                        <td>{{ item.variant.qty_sale_price.formatted_html | safe }}</td>
-                        <td style="text-align: right;">{{ item.price.formatted_html | safe }}</td>
+                        <td>{{ item.variant.qty_sale_price|sb_currency }}</td>
+                        <td style="text-align: right;">{{ item.price|sb_currency }}</td>
                         <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
                             <span onclick="setBasket({{ item.variant.id }}, 0, false)">remove</span>
                         </td>
@@ -49,7 +51,7 @@
             <tfoot>
                 <tr>
                     <th colspan="4"></th>
-                    <th>{{ data.basket.sale_price.formatted_html | safe }}</th>
+                    <th>{{ data.basket.sale_price|sb_currency }}</th>
                 </tr>
             </tfoot>
         {% endblock %}

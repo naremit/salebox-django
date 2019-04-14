@@ -1029,7 +1029,7 @@ class Command(BaseCommand):
     def transaction_payment(self, store):
         total_price = (
             store.data['basket']['sale_price']['price'] +
-            store.data['shipping_method']['price']['price']
+            store.data['shipping_method']['price']
         )
 
         return [
@@ -1059,7 +1059,7 @@ class Command(BaseCommand):
             'country_state_id': address['address']['country_state'],
             'method_id': method['id'],
             'postcode': address['address']['postcode'],
-            'price': method['price']['price'],
+            'price': method['price'],
             'recipient_name': address['address']['full_name']
         }
 
