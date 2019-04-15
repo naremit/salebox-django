@@ -168,7 +168,7 @@ var salebox = {
         currency: function(amount) {
             amount = (amount / 100).toFixed(2).split('.');
             amount[0] = amount[0].split('').reverse().join('').replace(/(\d{3})(?=\d)/g, '$1,').split('').reverse().join('');
-            return aamountDigits.join('.');
+            return amount.join('.');
         },
 
         getCSRF: function() {
