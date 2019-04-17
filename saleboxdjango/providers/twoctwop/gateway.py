@@ -6,7 +6,7 @@ from saleboxdjango.lib.basket import SaleboxBasket
 from saleboxdjango.views.checkout.gateway import SaleboxCheckoutGatewayView
 
 
-class SaleboxProviders2C2PCallbackView(SaleboxCheckoutGatewayView):
+class SaleboxProviders2C2PGatewayView(SaleboxCheckoutGatewayView):
     gateway_code = '2c2p'
 
     def gateway(self, request, *args, **kwargs):
@@ -16,18 +16,17 @@ class SaleboxProviders2C2PCallbackView(SaleboxCheckoutGatewayView):
         # override start
         data = self.sc.get_raw_data()
 
-        # show all available types
-        tctp = this.gateway_init(data, request)
+        # get the html to POST to the gatewy
+        context['html'] = self.gateway_init(data, request, store)
 
         # reset basket  TODO - should the basket be reset on first callback?
         basket = SaleboxBasket(request)
         basket.reset_basket(request)
 
         # render
-        context['html'] = tctp.request()
         return self.render_to_response(context)
 
-    def gateway_init(self, data, request):
+    def gateway_init(self, data, request, store):
         """
         Optionally override this method if there are different
         payment parameters you wish to send
@@ -54,4 +53,4 @@ class SaleboxProviders2C2PCallbackView(SaleboxCheckoutGatewayView):
         tctp.set_value('result_url_2', settings.TWOCTWOP_2['CALLBACK_URL_BACKEND'],)
         tctp.set_value('user_defined_1', store.uuid)
 
-        return tctp
+        return tctp.request()

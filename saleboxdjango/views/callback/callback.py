@@ -6,11 +6,11 @@ from django.views.generic import View
 from saleboxdjango.models import CallbackStore, CheckoutStore, CheckoutStoreUpdate
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SaleboxCallbackView(View):
     get_redirect = None
     post_redirect = None
 
-    @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         CallbackStore(
             ip_address=request.META['REMOTE_ADDR'],

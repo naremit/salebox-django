@@ -1,4 +1,6 @@
 from django import forms
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 from saleboxdjango.models import CheckoutStore
 from saleboxdjango.views.callback.callback import SaleboxCallbackView
@@ -9,6 +11,8 @@ class SaleboxProvider2C2PCallbackForm(forms.Form):
     payment_status = forms.CharField()
     user_defined_1 = forms.CharField()
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class SaleboxProviders2C2PCallbackView(SaleboxCallbackView):
     def post(self, request):
         form = SaleboxProvider2C2PCallbackForm(request.POST)
