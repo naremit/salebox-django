@@ -4,6 +4,7 @@ import re
 from django.conf import settings
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.utils.translation import LANGUAGE_SESSION_KEY
 
 from saleboxdjango.lib.basket import SaleboxBasket
 
@@ -56,7 +57,7 @@ class SaleboxMiddleware:
 
 """
 This middleware sets whatever language is in the URL, e.g. /en/about-us = 'en'
-and stores it in the session[settings.LANGUAGE_SESSION_KEY']. This means django
+and stores it in the session[LANGUAGE_SESSION_KEY]. This means django
 can 'remember' the language of the non-language specific URLs, e.g. /basket/
 """
 class SaleboxI18NSessionStoreMiddleware:
@@ -65,8 +66,8 @@ class SaleboxI18NSessionStoreMiddleware:
 
     def __call__(self, request):
         available_languages = [l[0].lower() for l in settings.LANGUAGES]
-        language_session_key = getattr(settings, 'LANGUAGE_SESSION_KEY', 'salebox_language')
-        prev_language = request.session.get(language_session_key, None)
+        key = getattr(settings, 'LANGUAGE_SESSION_KEY', LANGUAGE_SESSION_KEY)
+        prev_language = request.session.get(key, None)
         curr_language = prev_language
 
         # set a default language if none exists
@@ -83,7 +84,7 @@ class SaleboxI18NSessionStoreMiddleware:
 
         # update the session if applicable
         if prev_language != curr_language:
-            request.session[language_session_key] = curr_language
+            request.session[key] = curr_language
 
         # create response
         return self.get_response(request)
