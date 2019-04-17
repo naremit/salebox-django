@@ -23,12 +23,12 @@ class SaleboxCallbackView(View):
     def get(self, request):
         if self.get_redirect is not None:
             return HttpResponseRedirect(self.get_redirect)
-        return HttpResponse('OK <a href="/">Home</a> %s' % request.user.is_authenticated)
+        return HttpResponse('OK')
 
     def post(self, request):
         if self.post_redirect is not None:
             return HttpResponseRedirect(self.post_redirect)
-        return HttpResponse('OK <a href="/">Home</a> %s' % request.user.is_authenticated)
+        return HttpResponse('OK')
 
     def _get_store(self, uuid, visible_id):
         return CheckoutStore \

@@ -52,3 +52,38 @@ class SaleboxMiddleware:
         elif sb.get_cookie_action(request) == 'remove':
             response.delete_cookie('psessionid')
         return response
+
+
+"""
+This middleware sets whatever language is in the URL, e.g. /en/about-us = 'en'
+and stores it in the session[settings.LANGUAGE_SESSION_KEY']. This means django
+can 'remember' the language of the non-language specific URLs, e.g. /basket/
+"""
+class SaleboxI18NSessionStoreMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        available_languages = [l[0].lower() for l in settings.LANGUAGES]
+        language_session_key = getattr(settings, 'LANGUAGE_SESSION_KEY', 'salebox_language')
+        prev_language = request.session.get(language_session_key, None)
+        curr_language = prev_language
+
+        # set a default language if none exists
+        if curr_language is None:
+            curr_language = available_languages[0]
+
+        # attempt to set the language from the path
+        try:
+            prefix = request.path.lower().strip('/').split('/')[0]
+            if prefix in available_languages:
+                curr_language = prefix
+        except:
+            pass
+
+        # update the session if applicable
+        if prev_language != curr_language:
+            request.session[language_session_key] = curr_language
+
+        # create response
+        return self.get_response(request)
