@@ -968,8 +968,8 @@ class Command(BaseCommand):
             basket.append({
                 'discount_ruleset': None,
                 'loyalty': v['loyalty_points'],
-                'price_original': v['qty_price']['price'],
-                'price_modified': v['qty_sale_price']['price'],
+                'price_original': v['qty_price'],
+                'price_modified': v['qty_sale_price'],
                 'product_weight': None,
                 'quantity': b['qty'],
                 'shipping_weight': v['shipping_weight'],
@@ -1028,7 +1028,7 @@ class Command(BaseCommand):
 
     def transaction_payment(self, store):
         total_price = (
-            store.data['basket']['sale_price']['price'] +
+            store.data['basket']['sale_price'] +
             store.data['shipping_method']['price']
         )
 
@@ -1070,9 +1070,9 @@ class Command(BaseCommand):
         gross_total = 0
         gross_vat_applicable = 0
         for b in store.data['basket']['items']:
-            gross_total += b['variant']['qty_sale_price']['price']
+            gross_total += b['variant']['qty_sale_price']
             if b['variant']['product']['vat_applicable']:
-                gross_vat_applicable += b['variant']['qty_sale_price']['price']
+                gross_vat_applicable += b['variant']['qty_sale_price']
 
         # calculate
         total_vat = round(gross_vat_applicable / (1 + (vat_rate / 100)))
