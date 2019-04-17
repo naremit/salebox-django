@@ -271,8 +271,9 @@ class SaleboxBasket:
         self._call_external('PRE_CALCULATE_LOYALTY', request)
 
         for i in self.data['basket']['items']:
-            if i['variant']['loyalty_points'] is not None:
-                self.data['basket']['loyalty'] += i['variant']['loyalty_points'] * i['qty']
+            if i['variant']['loyalty'] is not None:
+                i['variant']['qty_loyalty'] = i['variant']['loyalty'] * i['qty']
+                self.data['basket']['loyalty'] += i['variant']['loyalty'] * i['qty']
 
         # post_calculate_loyalty
         self._call_external('POST_CALCULATE_LOYALTY', request)
@@ -419,7 +420,7 @@ class SaleboxBasket:
                 'int_3': q.variant.int_3,
                 'int_4': q.variant.int_4,
                 'local_image': q.variant.local_image,
-                'loyalty_points': q.variant.loyalty_points,
+                'loyalty': q.variant.loyalty_points,
                 'member_discount_applicable': q.variant.member_discount_applicable,
                 'name': q.variant.name,
                 'plu': q.variant.plu,

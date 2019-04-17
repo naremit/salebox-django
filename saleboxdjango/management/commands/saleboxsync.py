@@ -776,7 +776,7 @@ class Command(BaseCommand):
                     'int_2',
                     'int_3',
                     'int_4',
-                    'loyalty_points',
+                    'loyalty',
                     'member_discount_applicable',
                     'name',
                     'plu',
@@ -967,7 +967,7 @@ class Command(BaseCommand):
 
             basket.append({
                 'discount_ruleset': None,
-                'loyalty': v['loyalty_points'],
+                'loyalty': v['loyalty'],
                 'price_original': v['qty_price'],
                 'price_modified': v['qty_sale_price'],
                 'product_weight': None,
