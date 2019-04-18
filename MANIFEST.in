@@ -2,6 +2,7 @@ include AUTHORS
 include LICENCE
 include README.md
 
+recursive-include saleboxdjango/locale *
 recursive-include saleboxdjango/static *
 recursive-include saleboxdjango/templates *
 
