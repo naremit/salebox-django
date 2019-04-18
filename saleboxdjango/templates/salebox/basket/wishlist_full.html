@@ -1,6 +1,6 @@
 {% spaceless %}
 
-{% load salebox_utils %}
+{% load i18n salebox_utils %}
 
 {% if data.wishlist.qty > 0 %}
     <table style="width: 100%">
@@ -14,17 +14,17 @@
                             {% if item.image %}
                                 <img src="{{ item.image }}" style="height: 50px; width: 50px;" />
                             {% else %}
-                                <span>n/a</span>
+                                <span>{% trans "n/a" %}</span>
                             {% endif %}
                         </td>
                         <td>{{ item.name }}</td>
                         <td>{{ item.sale_price|sb_currency }}</td>
                         <td style="text-align: right;">{{ item.price|sb_currency }}</td>
                         <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                            <span onclick="setWishlist({{ item.id }}, false)">remove</span>
+                            <span onclick="setWishlist({{ item.id }}, false)">{% trans "Remove" %}</span>
                         </td>
                         <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                            <span onclick="migrateBasketWishlist({{ item.id }}, true)">add to basket</span>
+                            <span onclick="migrateBasketWishlist({{ item.id }}, true)">{% trans "Add to basket" %}</span>
                         </td>
                     </tr>
                 {% endfor %}
@@ -34,7 +34,7 @@
         {% block tfoot %}{% endblock %}
     </table>
 {% else %}
-    <div>Your wishlist is empty</div>
+    <div>{% trans "Your wishlist is empty" %}</div>
 {% endif %}
 
 {% endspaceless %}

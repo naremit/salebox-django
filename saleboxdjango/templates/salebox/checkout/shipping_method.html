@@ -1,5 +1,7 @@
 {% extends "salebox/checkout/_base.html" %}
 
+{% load i18n %}
+
 {% block checkout %}
     <form method="post">
         {% csrf_token %}
@@ -8,6 +10,6 @@
         <p>Option #1: <input type="radio" name="shipping_method" checked /></p>
         <p>Option #2: <input type="radio" name="shipping_method" /></p>
         <hr />
-        <button class="btn btn-primary">Next</button>
+        <button class="btn btn-primary">{% trans "Next" %}</button>
     </form>
 {% endblock %}

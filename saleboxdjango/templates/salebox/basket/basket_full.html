@@ -1,6 +1,6 @@
 {% spaceless %}
 
-{% load salebox_utils %}
+{% load i18n salebox_utils %}
 
 {% if data.basket.qty > 0 %}
     <table style="width: 100%">
@@ -35,11 +35,11 @@
                         <td>{{ item.variant.qty_sale_price|sb_currency }}</td>
                         <td style="text-align: right;">{{ item.price|sb_currency }}</td>
                         <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                            <span onclick="setBasket({{ item.variant.id }}, 0, false)">remove</span>
+                            <span onclick="setBasket({{ item.variant.id }}, 0, false)">{% trans "Remove" %}</span>
                         </td>
                         {% if request.user.is_authenticated %}
                             <td style="color: blue; cursor: pointer; font-size: 12px; text-decoration: underline;">
-                                <span onclick="switchBasketWishlist({{ item.variant.id }}, false)">move to wishlist</span>
+                                <span onclick="switchBasketWishlist({{ item.variant.id }}, false)">{% trans "Move to wishlist" %}</span>
                             </td>
                         {% endif %}
                     </tr>
@@ -58,8 +58,8 @@
     </table>
 
     <br />
-    <button onclick="alert('Coming soon')">Checkout</button>
+    <button onclick="alert('Coming soon')">{% trans "Checkout" %}</button>
 {% else %}
-    <div>Your basket is empty</div>
+    <div>{% trans "Your basket is empty" %}</div>
 {% endif %}
 {% endspaceless %}

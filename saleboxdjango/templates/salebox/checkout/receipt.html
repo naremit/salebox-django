@@ -1,6 +1,6 @@
 {% extends "salebox/checkout/_base.html" %}
 
-{% load salebox_utils %}
+{% load i18n salebox_utils %}
 
 {% block checkout %}
     <form method="post">
@@ -9,6 +9,6 @@
         <p>Your Receipt</p>
         <p>Total price <strong>{{ checkout.data.basket.basket.sale_price|sb_currency }}</strong></p>
         <hr />
-        <button class="btn btn-primary">Next</button>
+        <button class="btn btn-primary">{% trans "Next" %}</button>
     </form>
 {% endblock %}

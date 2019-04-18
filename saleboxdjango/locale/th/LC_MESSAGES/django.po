@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-18 14:22+0700\n"
+"POT-Creation-Date: 2019-04-18 15:15+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,7 @@ msgstr "ไม่มีที่อยู่ที่คุณระบุ"
 
 #: templates/salebox/account/address.html:12
 msgid "Add a new address"
-msgstr "เพิ่มที่อยู่"
+msgstr "เพิ่มที่อยู่ใหม่"
 
 #: templates/salebox/account/basket.html:3
 #: templates/salebox/account/home.html:8
@@ -83,8 +83,53 @@ msgid "Default"
 msgstr "ค่าเริ่มต้น"
 
 #: templates/salebox/address/list_static_single.html:49
+#: templates/salebox/basket/basket_full.html:38
+#: templates/salebox/basket/button_wishlist.html:7
+#: templates/salebox/basket/wishlist_full.html:24
 msgid "Remove"
 msgstr "ลบ"
+
+#: templates/salebox/basket/basket_full.html:42
+msgid "Move to wishlist"
+msgstr ""
+
+#: templates/salebox/basket/basket_full.html:61
+msgid "Checkout"
+msgstr "สั่งซื้อสินค้า"
+
+#: templates/salebox/basket/basket_full.html:63
+msgid "Your basket is empty"
+msgstr "ตะกร้าว่างเปล่า"
+
+#: templates/salebox/basket/button_basket.html:13
+#: templates/salebox/basket/wishlist_full.html:27
+msgid "Add to basket"
+msgstr ""
+
+#: templates/salebox/basket/button_wishlist.html:7
+msgid "In wishlist"
+msgstr ""
+
+#: templates/salebox/basket/button_wishlist.html:9
+#, fuzzy
+#| msgid "My wishlist"
+msgid "Add to wishlist"
+msgstr "รายการที่ชอบ"
+
+#: templates/salebox/basket/wishlist_full.html:17
+msgid "n/a"
+msgstr ""
+
+#: templates/salebox/basket/wishlist_full.html:37
+msgid "Your wishlist is empty"
+msgstr "ไม่มีรายการที่ชอบ"
+
+#: templates/salebox/checkout/confirmation.html:13
+#: templates/salebox/checkout/payment_method.html:13
+#: templates/salebox/checkout/receipt.html:12
+#: templates/salebox/checkout/shipping_method.html:13
+msgid "Next"
+msgstr "ถัดไป"
 
 #: templates/salebox/checkout/gateway.html:15
 msgid "One moment please..."
@@ -97,8 +142,12 @@ msgstr "โชว์ %(from)s ถึง %(to)s จากทั้งหมด %(
 
 #: templates/salebox/product/product_list.html:10
 #, python-format
-msgid "Showing %(total)s of %(total)s"
-msgstr "โชว์ %(total)s จากทั้งหมด %(total)s"
+msgid "Showing %(from)s to %(total)s"
+msgstr "โชว์ %(from)s ถึง %(total)s ไอเทม"
+
+#: templates/salebox/product/product_list.html:30
+msgid "No products found"
+msgstr ""
 
 #: templates/salebox/product/product_list_single.html:9
 msgid "No picture available"
