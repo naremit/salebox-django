@@ -22,21 +22,22 @@ class SaleboxProviders2C2PCallbackView(SaleboxCallbackView):
                 form.cleaned_data['order_id']
             )
 
-            if cs is not None and cs.status < 30:
-                status = form.cleaned_data['payment_status']
+            if cs is not None:
+                if cs.status < 30:
+                    status = form.cleaned_data['payment_status']
 
-                # success
-                if status == '000':
-                    cs.status = 30
-                    cs.save()
+                    # success
+                    if status == '000':
+                        cs.status = 30
+                        cs.save()
 
-                # reject
-                if status in ['002', '003', '999']:
-                    cs.status = 40
-                    cs.save()
+                    # reject
+                    if status in ['002', '003', '999']:
+                        cs.status = 40
+                        cs.save()
 
-            # save update
-            self._save_store_update(cs, cs.status, request.POST)
+                # save update
+                self._save_store_update(cs, cs.status, request.POST)
 
         # repond
         return super().post(request)

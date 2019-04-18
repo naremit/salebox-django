@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.translation import get_language
 
 from python2c2p.redirectapi import twoctwop_redirectapi
 
@@ -46,7 +47,7 @@ class SaleboxProviders2C2PGatewayView(SaleboxCheckoutGatewayView):
         tctp.set_value('amount', total_price)
         tctp.set_value('currency', 'THB')
         tctp.set_value('customer_email', request.user.email)
-        tctp.set_value('default_lang', 'th')
+        tctp.set_value('default_lang', get_language())
         tctp.set_value('order_id', store.visible_id)
         tctp.set_value('payment_description', settings.TWOCTWOP_2['PAYMENT_DESCRIPTION'])
         tctp.set_value('result_url_1', settings.TWOCTWOP_2['CALLBACK_URL_FRONTEND'],)
