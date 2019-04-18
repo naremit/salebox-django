@@ -1,4 +1,8 @@
-{% spaceless %}<html>
+{% spaceless %}
+
+{% load i18n %}
+
+<html>
 
 <head>
     <style>
@@ -8,7 +12,7 @@
     </style>
 </head>
 <body>
-    <div id="msg">One moment please...</div>
+    <div id="msg">{% trans "One moment please..." %}</div>
     <div style="display: none;">{{ html|safe }}</div>
 </body>
 

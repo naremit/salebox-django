@@ -1,0 +1,105 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-18 14:22+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: templates/salebox/account/address.html:3
+#: templates/salebox/account/home.html:10
+msgid "My addresses"
+msgstr "ที่อยู่ของฉัน"
+
+#: templates/salebox/account/address.html:8
+msgid "No addresses available"
+msgstr "ไม่มีที่อยู่ที่คุณระบุ"
+
+#: templates/salebox/account/address.html:12
+msgid "Add a new address"
+msgstr "เพิ่มที่อยู่"
+
+#: templates/salebox/account/basket.html:3
+#: templates/salebox/account/home.html:8
+msgid "My basket"
+msgstr "ตะกร้าของฉัน"
+
+#: templates/salebox/account/home.html:3
+msgid "My account"
+msgstr "บัญชีผู้ใช้ของฉัน"
+
+#: templates/salebox/account/home.html:6
+msgid "Shopping"
+msgstr "การสั่งซื้อสินค้า"
+
+#: templates/salebox/account/home.html:9
+#: templates/salebox/account/wishlist.html:3
+msgid "My wishlist"
+msgstr "รายการที่ชอบ"
+
+#: templates/salebox/address/add_form.html:9
+msgid "Name"
+msgstr "ชื่อ"
+
+#: templates/salebox/address/add_form.html:14
+msgid "Address"
+msgstr "ที่อยู่"
+
+#: templates/salebox/address/add_form.html:42
+msgid "State"
+msgstr "จังหวัด"
+
+#: templates/salebox/address/add_form.html:63
+msgid "Postcode"
+msgstr "รหัสไปรษณีย์"
+
+#: templates/salebox/address/add_form.html:70
+msgid "Tax ID"
+msgstr "เลขที่เสียภาษี"
+
+#: templates/salebox/address/add_form.html:78
+#: templates/salebox/address/list_static_single.html:46
+msgid "Set as default"
+msgstr "ใช้ที่อยู่นี้เป็นที่อยู่ปัจจุบัน"
+
+#: templates/salebox/address/add_form.html:82
+msgid "Add address"
+msgstr "เพิ่มที่อยู่"
+
+#: templates/salebox/address/list_static_single.html:44
+msgid "Default"
+msgstr "ค่าเริ่มต้น"
+
+#: templates/salebox/address/list_static_single.html:49
+msgid "Remove"
+msgstr "ลบ"
+
+#: templates/salebox/checkout/gateway.html:15
+msgid "One moment please..."
+msgstr "กรุณารอซักครู่..."
+
+#: templates/salebox/product/product_list.html:8
+#, python-format
+msgid "Showing %(from)s to %(to)s of %(total)s"
+msgstr "โชว์ %(from)s ถึง %(to)s จากทั้งหมด %(total)s ไอเทม"
+
+#: templates/salebox/product/product_list.html:10
+#, python-format
+msgid "Showing %(total)s of %(total)s"
+msgstr "โชว์ %(total)s จากทั้งหมด %(total)s"
+
+#: templates/salebox/product/product_list_single.html:9
+msgid "No picture available"
+msgstr "ไม่มีรูป"

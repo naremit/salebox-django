@@ -1,6 +1,6 @@
 {% spaceless %}
 
-{% load salebox_address %}
+{% load i18n salebox_address %}
 
 <div>
     <div style="font-weight: bold">{{ address.full_name }}</div>
@@ -23,7 +23,7 @@
     {% endif %}
 
     {% if address.country_state %}
-        <div>{% sb_country_state_name address.country_state %}</div>
+        <div>{% sb_country_state_name addi18nress.country_state %}</div>
     {% endif %}
 
     {% if address.country %}
@@ -41,12 +41,12 @@
     {% if addresses|length > 1 %}
         <div>
             {% if address.default %}
-                <span>DEFAULT</span>
+                <span>{% trans "Default" %}</span>
             {% else %}
-                <span onclick="salebox.address.setDefaultRedirect({{ a.id }})">Set as default</span>
+                <span onclick="salebox.address.setDefaultRedirect({{ a.id }})">{% trans "Set as default" %}</span>
             {% endif %}
             <span> | </span>
-            <span onclick="salebox.address.removeRedirect({{ address.id }})">Remove</span>
+            <span onclick="salebox.address.removeRedirect({{ address.id }})">{% trans "Remove" %}</span>
         </div>
     {% endif %}
 

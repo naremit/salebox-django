@@ -1,4 +1,4 @@
-{% load salebox_utils %}
+{% load i18n salebox_utils %}
 
 <div class="product">
     <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">
@@ -6,7 +6,7 @@
             {% if pv.image or pv.product.image %}
                 <img src="{% if pv.image %}{{ pv.image }}{% else %}{{ pv.product.image }}{% endif %}">
             {% else %}
-                <div>No picture available</div>
+                <div>{% trans "No picture available" %}</div>
             {% endif %}
         </div>
     </a>
