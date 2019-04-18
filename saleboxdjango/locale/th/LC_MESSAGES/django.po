@@ -111,8 +111,10 @@ msgid "In wishlist"
 msgstr ""
 
 #: templates/salebox/basket/button_wishlist.html:9
+#, fuzzy
+#| msgid "My wishlist"
 msgid "Add to wishlist"
-msgstr ""
+msgstr "รายการที่ชอบ"
 
 #: templates/salebox/basket/wishlist_full.html:17
 msgid "n/a"

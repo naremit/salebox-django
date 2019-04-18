@@ -693,13 +693,22 @@ class UserAddress(models.Model):
 
         if len(addresses) > 0:
             default_count = 0
-            for a in addresses:
+
+            # ensure in inactive addresses are marked as default
+            for a in addresses.all():
+                if not a.active_flag and a.default:
+                    UserAddress.objects.filter(id=a.id).update(default=False)
+
+            # ensure we have a maximum of one default
+            for a in addresses.all():
                 if a.default:
                     default_count += 1
                     if default_count > 1:
-                        a.default = False
-                        a.save()
+                        UserAddress.objects.filter(id=a.id).update(default=False)
 
+            # if we don't have a default, set one
             if default_count == 0:
-                addresses[0].default = True
-                addresses[0].save()
+                for a in addresses.all():
+                    if a.active_flag:
+                        UserAddress.objects.filter(id=a.id).update(default=True)
+                        break
