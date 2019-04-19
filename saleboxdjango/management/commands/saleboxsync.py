@@ -1,7 +1,9 @@
 import datetime
+import importlib
 import json
 import os
 import requests
+import sys
 import time
 from pprint import pprint
 
@@ -93,9 +95,13 @@ class Command(BaseCommand):
         # step 4: POST transactions
         self.push_transactions()
 
-        # step 5: queue emails
-        #
-        #
+        # step 5: run event handler
+        if 'EVENT_HANDLER' in settings.SALEBOX:
+            sys.path.insert(0, settings.SALEBOX['EVENT_HANDLER']['APP_FOLDER'])
+            import_path = settings.SALEBOX['EVENT_HANDLER']['CLASS']
+            path, name = import_path.rsplit('.', 1)
+            c = getattr(importlib.import_module(path), name)
+            c()
 
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
