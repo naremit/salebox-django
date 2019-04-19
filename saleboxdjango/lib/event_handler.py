@@ -1,3 +1,5 @@
+import requests
+
 from django.conf import settings
 
 try:
@@ -58,6 +60,23 @@ class SaleboxEventHandler:
         """
         event.processed_flag=True
         event.save()
+
+    def _fetch_transaction(self, event):
+        post = {
+            'pos': settings.SALEBOX['API']['KEY'],
+            'license': settings.SALEBOX['API']['LICENSE'],
+            'platform_type': 'ECOMMERCE',
+            'platform_version': '0.1.6',
+            'pos_guid': event.transaction_guid
+        }
+
+        # do request
+        url = '%s/api/pos/v2/transaction/fetch' % settings.SALEBOX['API']['URL']
+        try:
+            r = requests.post(url, data=post)
+            return r.json()['transaction']
+        except:
+            return None
 
     # optional: for use with django-mail-queue
     def _mailqueue(self, to_address, subject, content, html=None, cc=None, bcc=None, from_address=None):

@@ -67,41 +67,38 @@ class Command(BaseCommand):
                     # JSON at this point
 
         # step #2: push users with member updates
+        self.timer_set('saleboxsync_sync_start', time.time())
         self.push_members()
 
         # step #3: pull data
         # members must be up-to-date before POSTing transactions
         pull_start = int(self.timer_get('saleboxsync_pull_start'))
-        pull_start = 0
         if (time.time() - pull_start) > 599:
-            while True:
-                self.timer_set('saleboxsync_sync_start', time.time())
-                self.timer_set('saleboxsync_pull_start', time.time())
-                pull_result = self.pull()
-                if pull_result:
-                    print()
-                    print('sleeping...')
-                    print()
-                    time.sleep(5)
-                else:
-                    break
-
-            # pull images
-            print()
-            print('Downloading images...')
-            print()
-            self.pull_images()
+            self.pull_loop()
 
         # step 4: POST transactions
-        self.push_transactions()
+        transactions_pushed = self.push_transactions()
+        if transactions_pushed:
+            # pull again to get the event emails
+            time.sleep(2)
+            self.pull_loop()
 
         # step 5: run event handler
+        self.timer_set('saleboxsync_sync_start', time.time())
         if 'EVENT_HANDLER' in settings.SALEBOX:
             sys.path.insert(0, settings.SALEBOX['EVENT_HANDLER']['APP_FOLDER'])
             import_path = settings.SALEBOX['EVENT_HANDLER']['CLASS']
             path, name = import_path.rsplit('.', 1)
             c = getattr(importlib.import_module(path), name)
             c()
+
+        # step 6: send django-mail-queue emails
+        try:
+            self.timer_set('saleboxsync_sync_start', time.time())
+            from mailqueue.models import MailerMessage
+            MailerMessage.objects.send_queued(limit=30)
+        except:
+            pass
 
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
@@ -380,6 +377,25 @@ class Command(BaseCommand):
             if success:
                 img.local_img = path
                 img.save()
+
+    def pull_loop(self):
+        while True:
+            self.timer_set('saleboxsync_sync_start', time.time())
+            self.timer_set('saleboxsync_pull_start', time.time())
+            pull_result = self.pull()
+            if pull_result:
+                print()
+                print('sleeping...')
+                print()
+                time.sleep(5)
+            else:
+                break
+
+        # pull images
+        print()
+        print('Downloading images...')
+        print()
+        self.pull_images()
 
     def pull_model_attribute(self, data, api_lu, sync_from_dict):
         try:
@@ -961,7 +977,7 @@ class Command(BaseCommand):
         })
 
         # send
-        url = '%s/api/pos/v2/transaction' % settings.SALEBOX['API']['URL']
+        url = '%s/api/pos/v2/transaction/create' % settings.SALEBOX['API']['URL']
         try:
             r = requests.post(url, data=data)
             have_response = True
@@ -976,6 +992,8 @@ class Command(BaseCommand):
                 store.save()
 
     def push_transactions(self):
+        transactions_pushed = False
+
         css = CheckoutStore.objects.filter(status=30)
         for cs in css:
             self.timer_set('saleboxsync_sync_start', time.time())
@@ -992,6 +1010,9 @@ class Command(BaseCommand):
 
             # push transaction
             self.push_transaction(cs)
+            transactions_pushed = True
+
+        return transactions_pushed
 
     def timer_get(self, code, default_value=0.0):
         try:
