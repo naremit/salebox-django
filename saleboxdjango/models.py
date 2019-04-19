@@ -646,6 +646,30 @@ class SaleboxUser(AbstractUser):
         self.save()
 
 
+class TransactionEvent(models.Model):
+    transaction_guid = models.CharField(max_length=20)
+    event = models.CharField(max_length=32)
+    processed_flag = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # mark unprocessed duplicate events as processed
+        if not self.processed_flag:
+            TransactionEvent \
+                .objects \
+                .filter(transaction_guid=self.transaction_guid) \
+                .filter(event=self.event) \
+                .filter(processed_flag=False) \
+                .exclude(id=self.id) \
+                .update(processed_flag=True)
+
+
 class UserAddress(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)

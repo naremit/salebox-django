@@ -30,6 +30,7 @@ class BasketWishlistAdmin(admin.ModelAdmin):
 class CallbackStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'ip_address', 'method')
 
+
 class CheckoutStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'status', 'uuid', 'visible_id', 'gateway_code')
     inlines = [CheckoutStoreUpdateInline]
@@ -84,6 +85,12 @@ class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_filter = ('user',)
 
 
+class TransactionEventAdmin(admin.ModelAdmin):
+    list_display = ('transaction_guid', 'event', 'processed_flag', 'created')
+    list_filter = ('event', 'processed_flag')
+    readonly_fields = ('transaction_guid', 'event', 'processed_flag', 'created')
+
+
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (
         'address_group',
@@ -112,4 +119,5 @@ admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(ProductVariantRating, ProductVariantRatingAdmin)
+admin.site.register(TransactionEvent, TransactionEventAdmin)
 admin.site.register(UserAddress, UserAddressAdmin)

@@ -93,6 +93,10 @@ class Command(BaseCommand):
         # step 4: POST transactions
         self.push_transactions()
 
+        # step 5: queue emails
+        #
+        #
+
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
         print('Finished in %.3fs' % (time.time() - now))
@@ -248,6 +252,13 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
+                    elif value['code'] == 'transaction_event':
+                        self.pull_model_transaction_event(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
+
                     else:
                         print('Error: %s' % value['code'])
 
@@ -281,6 +292,7 @@ class Command(BaseCommand):
             'product_category',
             'product_variant',
             'product_variant_image',
+            'transaction_event',
         ]:
             if code not in lu:
                 LastUpdate(code=code, value=0.0).save()
@@ -859,6 +871,27 @@ class Command(BaseCommand):
             )
 
             print('%s x ProductVariantImage' % len(data))
+        except:
+            pass
+
+    def pull_model_transaction_event(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                te = TransactionEvent(
+                    transaction_guid=d['transaction_guid'],
+                    event=d['event'],
+                )
+                te.save()
+
+            # update sync_from
+            self.pull_set_sync_from_dict(
+                'transaction_event',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x TransactionEvent' % len(data))
         except:
             pass
 
