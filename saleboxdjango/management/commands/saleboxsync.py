@@ -73,6 +73,7 @@ class Command(BaseCommand):
         # step #3: pull data
         # members must be up-to-date before POSTing transactions
         pull_start = int(self.timer_get('saleboxsync_pull_start'))
+        pull_start= 100
         if (time.time() - pull_start) > 599:
             self.pull_loop()
 

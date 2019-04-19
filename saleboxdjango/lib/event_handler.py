@@ -1,6 +1,7 @@
 import requests
 
 from django.conf import settings
+from django.template.loader import render_to_string
 
 try:
     from mailqueue.models import MailerMessage
@@ -46,20 +47,54 @@ class SaleboxEventHandler:
         event.save()
 
     def event_shipping_shipped(self, event):
-        """
-        Add your code here
-        Don't forget to set the processed_flag when done
-        """
-        event.processed_flag=True
-        event.save()
+        try:
+            t = self._fetch_transaction(event)
+            if t['status'] != 'OK':
+                return
+
+            # queue email
+            self._mailqueue(
+                t['transaction']['member']['email'],
+                render_to_string(
+                    'salebox/email/shipping_shipped/subject.txt',
+                    t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/shipping_shipped/body.txt',
+                    t['transaction']
+                )
+            )
+
+            # mark as processed
+            event.processed_flag = True
+            event.save()
+        except:
+            pass
 
     def event_transaction_created(self, event):
-        """
-        Add your code here
-        Don't forget to set the processed_flag when done
-        """
-        event.processed_flag=True
-        event.save()
+        try:
+            t = self._fetch_transaction(event)
+            if t['status'] != 'OK':
+                return
+
+            # queue email
+            self._mailqueue(
+                t['transaction']['member']['email'],
+                render_to_string(
+                    'salebox/email/transaction_created/subject.txt',
+                    t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/transaction_created/body.txt',
+                    t['transaction']
+                )
+            )
+
+            # mark as processed
+            event.processed_flag = True
+            event.save()
+        except:
+            pass
 
     def _fetch_transaction(self, event):
         post = {
@@ -74,7 +109,7 @@ class SaleboxEventHandler:
         url = '%s/api/pos/v2/transaction/fetch' % settings.SALEBOX['API']['URL']
         try:
             r = requests.post(url, data=post)
-            return r.json()['transaction']
+            return r.json()
         except:
             return None
 

@@ -1,0 +1,10 @@
+Hi,
+
+we have recieved your order. We will send it to you as soon as possible.
+
+Transaction ID: {{ pos_guid }}
+
+Thank you!
+
+Love,
+Salebox
