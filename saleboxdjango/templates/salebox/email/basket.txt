@@ -1,0 +1,4 @@
+{% load salebox_utils %}{% for b in basket %}
+{{ b.product.name|stringformat:"-40s" }}  x{{ b.quantity|stringformat:"-6s" }} {{ b.total_price|sb_currency_text|stringformat:"-10s" }}
+{% endfor %}
+{{ 'Total:'|stringformat:"-48s" }}{{ total_price|sb_currency_text|stringformat:"-10s" }}

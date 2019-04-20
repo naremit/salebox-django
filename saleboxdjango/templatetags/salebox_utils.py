@@ -11,3 +11,9 @@ def sb_currency(value):
     minor, major = modf(value / 100)
     return mark_safe('%s<span>.%s</span>' % \
         (intcomma(int(major)), '{:.2f}'.format(minor)[2:]))
+
+
+@register.filter(is_safe=True)
+def sb_currency_text(value):
+    minor, major = modf(value / 100)
+    return '%s.%s' % (intcomma(int(major)), '{:.2f}'.format(minor)[2:])

@@ -1,11 +1,10 @@
 Hi,
 
-your purchase has been shipped from our warehouse and is on it's way to you now.
+your purchase (transaction ID: {{ pos_guid }}) has been shipped from our warehouse and is on it's way to you now.
 
-Transaction ID: {{ pos_guid }}
+Sent by {{ shipping.option.name }} (Reference: {{ shipping.steps.0.reference_code }})
 
-Courier: {{ shipping.option.name }}
-Courier Reference: {{ shipping.steps.0.reference_code }}
+{% include "salebox/email/basket.txt" %}
 
 Enjoy your new things!
 

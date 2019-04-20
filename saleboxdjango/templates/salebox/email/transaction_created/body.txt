@@ -1,8 +1,8 @@
 Hi,
 
-we have recieved your order. We will send it to you as soon as possible.
+we have recieved your order (transaction ID: {{ pos_guid }}). We are processing it now and will send it to you as soon as possible.
 
-Transaction ID: {{ pos_guid }}
+{% include "salebox/email/basket.txt" %}
 
 Thank you!
 
