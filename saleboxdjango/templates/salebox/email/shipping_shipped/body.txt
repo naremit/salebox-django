@@ -4,7 +4,7 @@ your purchase (transaction ID: {{ pos_guid }}) has been shipped from our warehou
 
 Sent by {{ shipping.option.name }} (Reference: {{ shipping.steps.0.reference_code }})
 
-{% include "salebox/email/basket.txt" %}
+{% include "salebox/email/_basket.txt" %}
 
 Enjoy your new things!
 

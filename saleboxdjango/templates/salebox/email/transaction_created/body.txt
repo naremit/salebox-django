@@ -2,7 +2,7 @@ Hi,
 
 we have recieved your order (transaction ID: {{ pos_guid }}). We are processing it now and will send it to you as soon as possible.
 
-{% include "salebox/email/basket.txt" %}
+{% include "salebox/email/_basket.txt" %}
 
 Thank you!
 
