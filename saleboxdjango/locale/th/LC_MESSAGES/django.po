@@ -138,12 +138,12 @@ msgstr "กรุณารอซักครู่..."
 #: templates/salebox/product/product_list.html:8
 #, python-format
 msgid "Showing %(from)s to %(to)s of %(total)s"
-msgstr "โชว์ %(from)s ถึง %(to)s จากทั้งหมด %(total)s ไอเทม"
+msgstr "%(from)s ถึง %(to)s จากทั้งหมด %(total)s"
 
 #: templates/salebox/product/product_list.html:10
 #, python-format
 msgid "Showing %(from)s to %(total)s"
-msgstr "โชว์ %(from)s ถึง %(total)s ไอเทม"
+msgstr "%(from)s ถึง %(total)s"
 
 #: templates/salebox/product/product_list.html:30
 msgid "No products found"
