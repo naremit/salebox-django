@@ -340,6 +340,7 @@ class Command(BaseCommand):
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'pospc')
             if success:
+                print('.', end='')
                 img.local_image = path
                 img.save()
 
@@ -352,6 +353,7 @@ class Command(BaseCommand):
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'posp')
             if success:
+                print('.', end='')
                 img.local_image = path
                 img.save()
 
@@ -364,6 +366,7 @@ class Command(BaseCommand):
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'pospv')
             if success:
+                print('.', end='')
                 img.local_image = path
                 img.save()
 
@@ -376,6 +379,7 @@ class Command(BaseCommand):
         for img in imgs:
             path, success = self.pull_image(img.id, img.img, 'pvi')
             if success:
+                print('.', end='')
                 img.local_img = path
                 img.save()
 
@@ -395,8 +399,8 @@ class Command(BaseCommand):
         # pull images
         print()
         print('Downloading images...')
-        print()
         self.pull_images()
+        print()
 
     def pull_model_attribute(self, data, api_lu, sync_from_dict):
         try:
@@ -694,6 +698,10 @@ class Command(BaseCommand):
                 o, created = Product.objects.get_or_create(id=d['id'])
                 o.category = ProductCategory.objects.get(id=d['category'])
 
+                # do we need to reset the local_image flag?
+                if not created and o.image != d['image']:
+                    o.local_image = None
+
                 # update
                 for a in [
                     'active_flag',
@@ -735,6 +743,11 @@ class Command(BaseCommand):
             # pass #1: save with parent = None to avoid mptt errors
             for d in data:
                 o, created = ProductCategory.objects.get_or_create(id=d['id'])
+
+                # do we need to reset the local_image flag?
+                if not created and o.image != d['image']:
+                    o.local_image = None
+
                 o.parent = None
                 o.active_flag = d['active_flag']
                 o.image = d['image']
@@ -798,6 +811,10 @@ class Command(BaseCommand):
                 # create object
                 o, created = ProductVariant.objects.get_or_create(id=d['id'])
                 o.product = Product.objects.get(id=d['product'])
+
+                # do we need to reset the local_image flag?
+                if not created and o.image != d['image']:
+                    o.local_image = None
 
                 # update
                 for a in [
