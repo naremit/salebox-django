@@ -205,6 +205,14 @@ var salebox = {
             } else {
                 $(window).scrollTop(0);
             }
+        },
+
+        sendQueryString: function(qs) {
+            window.location.href = window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + qs;
+        },
+
+        setSortOrder: function(code) {
+            salebox.utils.sendQueryString('product_list_order=' + code);
         }
     }
 };
