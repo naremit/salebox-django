@@ -1017,11 +1017,13 @@ class Command(BaseCommand):
             self.timer_set('saleboxsync_sync_start', time.time())
 
             # ensure this user has a corresponding salebox_member
-            if cs.user is not None:
+            user_equals_member = settings.SALEBOX['MEMBER']['USER_EQUALS_MEMBER']
+            if user_equals_member != 'MANUAL' and cs.user is not None:
                 user = get_user_model().objects.get(id=cs.user)
                 member = Member.objects.filter(salebox_member_id=user.salebox_member_id).first()
                 if member is None:
-                    # skip for now, get on the next time round
+                    # skip posting this transaction for now...
+                    # get on the next time round
                     if user.salebox_member_sync is None:
                         user.set_salebox_member_sync('email', user.email)
                     continue
@@ -1090,6 +1092,9 @@ class Command(BaseCommand):
 
         # retrieve user
         user = get_user_model().objects.get(id=store.user)
+        if user.salebox_member_id is None:
+            return None
+
         return {
             "salebox_member_id": str(user.salebox_member_id),
             "total_loyalty": store.data['basket']['loyalty']

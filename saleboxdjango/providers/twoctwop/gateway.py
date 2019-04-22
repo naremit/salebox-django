@@ -34,9 +34,9 @@ class SaleboxProviders2C2PGatewayView(SaleboxCheckoutGatewayView):
         """
 
         tctp = twoctwop_redirectapi(
-            settings.TWOCTWOP_1['MERCHANT_ID'],
-            settings.TWOCTWOP_1['SECRET_KEY'],
-            settings.TWOCTWOP_1['GATEWAY_URL'],
+            settings.TWOCTWOP['MERCHANT_ID'],
+            settings.TWOCTWOP['SECRET_KEY'],
+            settings.TWOCTWOP['GATEWAY_URL'],
         )
         tctp.set_value('payment_option', 'A')
 
@@ -49,9 +49,9 @@ class SaleboxProviders2C2PGatewayView(SaleboxCheckoutGatewayView):
         tctp.set_value('customer_email', request.user.email)
         tctp.set_value('default_lang', get_language())
         tctp.set_value('order_id', store.visible_id)
-        tctp.set_value('payment_description', settings.TWOCTWOP_2['PAYMENT_DESCRIPTION'])
-        tctp.set_value('result_url_1', settings.TWOCTWOP_2['CALLBACK_URL_FRONTEND'],)
-        tctp.set_value('result_url_2', settings.TWOCTWOP_2['CALLBACK_URL_BACKEND'],)
+        tctp.set_value('payment_description', settings.TWOCTWOP['PAYMENT_DESCRIPTION'])
+        tctp.set_value('result_url_1', settings.TWOCTWOP['CALLBACK_URL_FRONTEND'],)
+        tctp.set_value('result_url_2', settings.TWOCTWOP['CALLBACK_URL_BACKEND'],)
         tctp.set_value('user_defined_1', store.uuid)
 
         return tctp.request()
