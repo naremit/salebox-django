@@ -59,7 +59,6 @@ class Command(BaseCommand):
             if len(user_ids) > 0:
                 users = get_user_model().objects.filter(id__in=user_ids)
                 for u in users:
-                    u.create_salebox_member_id()
                     u.set_salebox_member_sync('email', u.email)
                     # potential TODO:
                     # have a list of key mappings in the config
@@ -954,6 +953,10 @@ class Command(BaseCommand):
 
     def push_member(self, user):
         self.timer_set('saleboxsync_sync_start', time.time())
+
+        # define a salebox_member_id if one doesn't exist
+        if user.salebox_member_id is None:
+            user.create_salebox_member_id()
 
         # build post
         post = self.init_post()
