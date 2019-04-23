@@ -214,6 +214,13 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
+                    elif value['code'] == 'event':
+                        self.pull_model_event(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
+
                     elif value['code'] == 'member':
                         self.pull_model_member(
                             value['data'],
@@ -256,13 +263,6 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
-                    elif value['code'] == 'transaction_event':
-                        self.pull_model_transaction_event(
-                            value['data'],
-                            value['lu'],
-                            sync_from_dict
-                        )
-
                     else:
                         print('Error: %s' % value['code'])
 
@@ -290,13 +290,13 @@ class Command(BaseCommand):
             'country_translation',
             # 'discount_seasonal_group',
             # 'discount_seasonal_ruleset',
+            'event',
             'member',
             'member_group',
             'product',
             'product_category',
             'product_variant',
             'product_variant_image',
-            'transaction_event',
         ]:
             if code not in lu:
                 LastUpdate(code=code, value=0.0).save()
@@ -556,6 +556,28 @@ class Command(BaseCommand):
             api_lu
         )
         """
+
+    def pull_model_event(self, data, api_lu, sync_from_dict):
+        try:
+            for d in data:
+                e = Event(
+                    event=d['event'],
+                    salebox_member_id=d['salebox_member_id'],
+                    transaction_guid=d['transaction_guid'],
+                )
+                e.save()
+
+            # update sync_from
+            self.pull_set_sync_from_dict(
+                'event',
+                len(data) < 100,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x Event' % len(data))
+        except:
+            pass
 
     def pull_model_member(self, data, api_lu, sync_from_dict):
         try:
@@ -911,27 +933,6 @@ class Command(BaseCommand):
             )
 
             print('%s x ProductVariantImage' % len(data))
-        except:
-            pass
-
-    def pull_model_transaction_event(self, data, api_lu, sync_from_dict):
-        try:
-            for d in data:
-                te = TransactionEvent(
-                    transaction_guid=d['transaction_guid'],
-                    event=d['event'],
-                )
-                te.save()
-
-            # update sync_from
-            self.pull_set_sync_from_dict(
-                'transaction_event',
-                len(data) < 100,
-                sync_from_dict,
-                api_lu
-            )
-
-            print('%s x TransactionEvent' % len(data))
         except:
             pass
 

@@ -1,6 +1,7 @@
 import requests
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 
 try:
@@ -8,68 +9,37 @@ try:
 except:
     pass
 
-from saleboxdjango.models import TransactionEvent
+from saleboxdjango.models import Event, Member
 
 
 class SaleboxEventHandler:
     def __init__(self):
         # get list of events
-        tes = TransactionEvent \
+        es = Event \
                 .objects \
                 .filter(processed_flag=False) \
                 .order_by('-created')
 
         # loop through and process them
-        for te in tes:
-            if te.event == 'shipping_packed':
-                self.event_shipping_packed(te)
-            elif te.event == 'shipping_picked':
-                self.event_shipping_picked(te)
-            elif te.event == 'shipping_shipped':
-                self.event_shipping_shipped(te)
-            elif te.event == 'transaction_created':
-                self.event_transaction_created(te)
+        for e in es:
+            if e.event == 'member_created':
+                self.event_member_created(e)
+            elif e.event == 'transaction_created':
+                self.event_transaction_created(e)
+            elif e.event == 'transaction_shipping_packed':
+                self.event_transaction_shipping_packed(e)
+            elif e.event == 'transaction_shipping_picked':
+                self.event_transaction_shipping_picked(e)
+            elif e.event == 'transaction_shipping_shipped':
+                self.event_transaction_shipping_shipped(e)
 
-    def event_shipping_packed(self, event):
+    def event_member_created(self, event):
         """
         Add your code here
         Don't forget to set the processed_flag when done
         """
         event.processed_flag=True
         event.save()
-
-    def event_shipping_picked(self, event):
-        """
-        Add your code here
-        Don't forget to set the processed_flag when done
-        """
-        event.processed_flag=True
-        event.save()
-
-    def event_shipping_shipped(self, event):
-        try:
-            t = self._fetch_transaction(event)
-            if t['status'] != 'OK':
-                return
-
-            # queue email
-            self._mailqueue(
-                t['transaction']['member']['email'],
-                render_to_string(
-                    'salebox/email/shipping_shipped/subject.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/shipping_shipped/body.txt',
-                    t['transaction']
-                )
-            )
-
-            # mark as processed
-            event.processed_flag = True
-            event.save()
-        except:
-            pass
 
     def event_transaction_created(self, event):
         try:
@@ -95,6 +65,63 @@ class SaleboxEventHandler:
             event.save()
         except:
             pass
+
+    def event_transaction_shipping_packed(self, event):
+        """
+        Add your code here
+        Don't forget to set the processed_flag when done
+        """
+        event.processed_flag=True
+        event.save()
+
+    def event_transaction_shipping_picked(self, event):
+        """
+        Add your code here
+        Don't forget to set the processed_flag when done
+        """
+        event.processed_flag=True
+        event.save()
+
+    def event_transaction_shipping_shipped(self, event):
+        try:
+            t = self._fetch_transaction(event)
+            if t['status'] != 'OK':
+                return
+
+            # queue email
+            self._mailqueue(
+                t['transaction']['member']['email'],
+                render_to_string(
+                    'salebox/email/shipping_shipped/subject.txt',
+                    t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/shipping_shipped/body.txt',
+                    t['transaction']
+                )
+            )
+
+            # mark as processed
+            event.processed_flag = True
+            event.save()
+        except:
+            pass
+
+    def _fetch_member(self, event):
+        member = Member \
+                    .objects \
+                    .filter(salebox_member_id=event.salebox_member_id) \
+                    .first()
+
+        user = get_user_model() \
+                    .objects \
+                    .filter(salebox_member_id=event.salebox_member_id) \
+                    .first()
+
+        return {
+            'member': member,
+            'user': user
+        }
 
     def _fetch_transaction(self, event):
         post = {

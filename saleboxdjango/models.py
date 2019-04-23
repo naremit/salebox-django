@@ -223,6 +223,32 @@ class DiscountRuleset(models.Model):
         pass
 
 
+class Event(models.Model):
+    event = models.CharField(max_length=50)
+    transaction_guid = models.CharField(max_length=20, blank=True, null=True)
+    salebox_member_id = models.UUIDField(default=uuid.uuid4, blank=True, null=True)
+    processed_flag = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']
+
+    def save(self, *args, **kwargs):
+        # do not add duplicates
+        if self.id is None:
+            duplicate = Event \
+                            .objects \
+                            .filter(event=self.event) \
+                            .filter(transaction_guid=self.transaction_guid) \
+                            .filter(salebox_member_id=self.salebox_member_id) \
+                            .filter(processed_flag=False) \
+                            .count() > 0
+            if duplicate:
+                return
+        super().save(*args, **kwargs)
+
+
 class LastUpdate(models.Model):
     code = models.CharField(max_length=36)
     value = models.FloatField(default=0.0)
@@ -644,30 +670,6 @@ class SaleboxUser(AbstractUser):
             self.salebox_member_sync = {}
         self.salebox_member_sync[key] = value
         self.save()
-
-
-class TransactionEvent(models.Model):
-    transaction_guid = models.CharField(max_length=20)
-    event = models.CharField(max_length=32)
-    processed_flag = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now_add=True)
-    last_update = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-created']
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        # mark unprocessed duplicate events as processed
-        if not self.processed_flag:
-            TransactionEvent \
-                .objects \
-                .filter(transaction_guid=self.transaction_guid) \
-                .filter(event=self.event) \
-                .filter(processed_flag=False) \
-                .exclude(id=self.id) \
-                .update(processed_flag=True)
 
 
 class UserAddress(models.Model):

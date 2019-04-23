@@ -51,6 +51,12 @@ class DiscountGroupAdmin(admin.ModelAdmin):
     list_filter = ('group_type',)
 
 
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('event', 'salebox_member_id', 'transaction_guid', 'processed_flag', 'created')
+    list_filter = ('event', 'processed_flag')
+    readonly_fields = ('event', 'salebox_member_id', 'transaction_guid', 'created')
+
+
 class LastUpdateAdmin(admin.ModelAdmin):
     list_display = ('code', 'value')
 
@@ -85,12 +91,6 @@ class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_filter = ('user',)
 
 
-class TransactionEventAdmin(admin.ModelAdmin):
-    list_display = ('transaction_guid', 'event', 'processed_flag', 'created')
-    list_filter = ('event', 'processed_flag')
-    readonly_fields = ('transaction_guid', 'event', 'processed_flag', 'created')
-
-
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (
         'address_group',
@@ -112,6 +112,7 @@ admin.site.register(CheckoutStore, CheckoutStoreAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(CountryState, CountryStateAdmin)
 admin.site.register(DiscountGroup, DiscountGroupAdmin)
+admin.site.register(Event, EventAdmin)
 admin.site.register(LastUpdate, LastUpdateAdmin)
 admin.site.register(MemberGroup, MemberGroupAdmin)
 admin.site.register(Member, MemberAdmin)
@@ -119,5 +120,4 @@ admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(ProductVariantRating, ProductVariantRatingAdmin)
-admin.site.register(TransactionEvent, TransactionEventAdmin)
 admin.site.register(UserAddress, UserAddressAdmin)
