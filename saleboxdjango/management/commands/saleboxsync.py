@@ -852,6 +852,7 @@ class Command(BaseCommand):
                     'date_1',
                     'date_2',
                     'ecommerce_description',
+                    'ecommerce_low_stock_threshold',
                     'i18n',
                     'image',
                     'int_1',

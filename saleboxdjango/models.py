@@ -567,9 +567,11 @@ class ProductVariant(models.Model):
     attribute_10 = models.ManyToManyField(AttributeItem, related_name='variant_attr_10', blank=True)
     active_flag = models.BooleanField(default=True)
     ecommerce_description = models.TextField(blank=True, null=True)
+    ecommerce_low_stock_threshold = models.IntegerField(default=10)
     bestseller_rank = models.IntegerField(default=0)
     default_image = models.CharField(max_length=35, blank=True, null=True)
     i18n = JSONField(default=dict)
+    stock_count = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
