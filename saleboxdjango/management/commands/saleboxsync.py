@@ -727,6 +727,7 @@ class Command(BaseCommand):
                 for a in [
                     'active_flag',
                     'bestseller_rank',
+                    'i18n',
                     'image',
                     'inventory_flag',
                     'name',
@@ -771,6 +772,7 @@ class Command(BaseCommand):
 
                 o.parent = None
                 o.active_flag = d['active_flag']
+                o.i18n = d['i18n']
                 o.image = d['image']
                 o.name = d['name']
                 o.seasonal_flag = d['seasonal_flag']
@@ -850,6 +852,7 @@ class Command(BaseCommand):
                     'date_1',
                     'date_2',
                     'ecommerce_description',
+                    'i18n',
                     'image',
                     'int_1',
                     'int_2',
