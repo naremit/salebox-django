@@ -110,6 +110,7 @@ class SaleboxCategory:
             output.append({
                 'id': c.id,
                 'children': children,
+                'i18n': c.i18n,
                 'image': c.local_image,
                 'name': c.name,
                 'parent': c.parent.id if c.parent else None,

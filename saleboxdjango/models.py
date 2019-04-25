@@ -8,6 +8,7 @@ from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Avg
+from django.utils.translation import get_language
 
 from mptt.models import MPTTModel, TreeForeignKey
 from saleboxdjango.lib.common import get_rating_display
@@ -373,6 +374,7 @@ class ProductCategory(MPTTModel):
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     slug_path = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     active_flag = models.BooleanField(default=True)
+    i18n = JSONField(default=dict)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -386,6 +388,23 @@ class ProductCategory(MPTTModel):
 
     def delete(self):
         pass
+
+    def get_trans_for_lang(self, lang, field, fallback_to_primary=True, non_primary_fallback=None):
+        if not hasattr(self, field):
+            return '[BAD FIELD NAME]'
+
+        i18n = self.i18n.get(lang, {})
+        if field in i18n:
+            return i18n[field]
+
+        # fallback
+        if fallback_to_primary:
+            return getattr(self, field)
+        else:
+            return non_primary_fallback
+
+    def get_trans(self, field, fallback_to_primary=True, non_primary_fallback=None):
+        return self.get_trans_for_lang(get_language(), field, fallback_to_primary, non_primary_fallback)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -431,6 +450,7 @@ class Product(models.Model):
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     bestseller_rank = models.IntegerField(default=0)
     active_flag = models.BooleanField(default=True)
+    i18n = JSONField(default=dict)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -447,6 +467,23 @@ class Product(models.Model):
 
     def delete(self):
         pass
+
+    def get_trans_for_lang(self, lang, field, fallback_to_primary=True, non_primary_fallback=None):
+        if not hasattr(self, field):
+            return '[BAD FIELD NAME]'
+
+        i18n = self.i18n.get(lang, {})
+        if field in i18n:
+            return i18n[field]
+
+        # fallback
+        if fallback_to_primary:
+            return getattr(self, field)
+        else:
+            return non_primary_fallback
+
+    def get_trans(self, field, fallback_to_primary=True, non_primary_fallback=None):
+        return self.get_trans_for_lang(get_language(), field, fallback_to_primary, non_primary_fallback)
 
     def update_rating(self):
         variant_ids = ProductVariant \
@@ -532,6 +569,7 @@ class ProductVariant(models.Model):
     ecommerce_description = models.TextField(blank=True, null=True)
     bestseller_rank = models.IntegerField(default=0)
     default_image = models.CharField(max_length=35, blank=True, null=True)
+    i18n = JSONField(default=dict)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -559,6 +597,23 @@ class ProductVariant(models.Model):
 
     def delete(self):
         pass
+
+    def get_trans_for_lang(self, lang, field, fallback_to_primary=True, non_primary_fallback=None):
+        if not hasattr(self, field):
+            return '[BAD FIELD NAME]'
+
+        i18n = self.i18n.get(lang, {})
+        if field in i18n:
+            return i18n[field]
+
+        # fallback
+        if fallback_to_primary:
+            return getattr(self, field)
+        else:
+            return non_primary_fallback
+
+    def get_trans(self, field, fallback_to_primary=True, non_primary_fallback=None):
+        return self.get_trans_for_lang(get_language(), field, fallback_to_primary, non_primary_fallback)
 
     def rating_display(self):
         return get_rating_display(self.rating_score, self.rating_vote_count)
