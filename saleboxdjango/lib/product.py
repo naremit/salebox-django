@@ -229,6 +229,9 @@ class SaleboxProduct:
 
         self.query = self.query.filter(product__category__in=id_list)
 
+    def set_discount_only(self):
+        self.query = self.query.filter(sale_price__lt=F('price'))
+
     def set_fetch_user_ratings(self, value):
         self.fetch_user_ratings = value
 
