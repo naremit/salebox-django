@@ -288,6 +288,8 @@ class SaleboxBasket:
             self.data['basket']['orig_price'] += i['variant']['price'] * i['qty']
             self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
 
+        self.data['basket']['saving'] = self.data['basket']['orig_price'] - self.data['basket']['sale_price']
+
         # post_calculate_price
         self._call_external('POST_CALCULATE_PRICE', request)
 
