@@ -48,22 +48,17 @@ class SaleboxEventHandler:
             if t['status'] != 'OK':
                 return
 
-            # the SafeText object was breaking the utf-8 subject line,
-            # not sure why but let's keep this here
-            subject = render_to_string(
-                'salebox/email/transaction_created/subject.txt',
-                t['transaction']
-            )
-            body = render_to_string(
-                'salebox/email/transaction_created/body.txt',
-                t['transaction']
-            )
-
             # queue email
             self._mailqueue(
                 t['transaction']['member']['email'],
-                str(subject + ''),
-                str(body + ''),
+                render_to_string(
+                    'salebox/email/transaction_created/subject.txt',
+                    t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/transaction_created/body.txt',
+                    t['transaction']
+                )
             )
 
             # mark as processed
@@ -162,7 +157,7 @@ class SaleboxEventHandler:
         # create message
         msg = MailerMessage()
         msg.from_address = from_address
-        msg.subject = subject
+        msg.subject = subject.replace('\n', '').strip()
         msg.to_address = to_address
         msg.content = content
         msg.app = 'Salebox'
