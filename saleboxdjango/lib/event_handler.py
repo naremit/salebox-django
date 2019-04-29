@@ -1,3 +1,4 @@
+import datetime
 import requests
 
 from django.conf import settings
@@ -47,17 +48,22 @@ class SaleboxEventHandler:
             if t['status'] != 'OK':
                 return
 
+            # the SafeText object was breaking the utf-8 subject line,
+            # not sure why but let's keep this here
+            subject = render_to_string(
+                'salebox/email/transaction_created/subject.txt',
+                t['transaction']
+            )
+            body = render_to_string(
+                'salebox/email/transaction_created/body.txt',
+                t['transaction']
+            )
+
             # queue email
             self._mailqueue(
                 t['transaction']['member']['email'],
-                render_to_string(
-                    'salebox/email/transaction_created/subject.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/transaction_created/body.txt',
-                    t['transaction']
-                )
+                str(subject + ''),
+                str(body + ''),
             )
 
             # mark as processed
@@ -136,7 +142,9 @@ class SaleboxEventHandler:
         url = '%s/api/pos/v2/transaction/fetch' % settings.SALEBOX['API']['URL']
         try:
             r = requests.post(url, data=post)
-            return r.json()
+            o = r.json()
+            o['transaction']['dt'] = datetime.datetime(*o['transaction']['dt'])
+            return o
         except:
             return None
 

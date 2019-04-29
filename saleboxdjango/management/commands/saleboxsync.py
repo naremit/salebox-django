@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 if len(user_ids) > 0:
                     user_ids = get_user_model() \
                                 .objects \
-                                .filter(id__in=user_ids) \
+                                .filter(id__in=list(set(user_ids))) \
                                 .filter(salebox_member_id__isnull=True) \
                                 .values_list('id', flat=True)
 
