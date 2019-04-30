@@ -399,24 +399,29 @@ class Command(BaseCommand):
             self.timer_set('saleboxsync_inventory_all', time.time())
             self.timer_set('saleboxsync_inventory_recent', time.time())
             post['request'] = 'all'
-
-        # attempt sync 'recent'
-        sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
-        if (time.time() - sync_recent) > (60 * 15):
-            print('Inventory sync recent')
-            self.timer_set('saleboxsync_inventory_recent', time.time())
-            post['request'] = 'recent'
-            post['timestamp'] = 0
         else:
-            # attempt sync 'list'
-            variant_ids = ProductVariant \
-                            .objects \
-                            .filter(stock_count__lte=F('ecommerce_low_stock_threshold')) \
-                            .values_list('id', flat=True)
-            if len(variant_ids) > 0:
-                print('Inventory sync low-stock list')
-                post['request'] = 'list'
-                post['variant_ids'] = ','.join([str(i) for i in variant_ids])
+            # attempt sync 'recent'
+            sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
+            if (time.time() - sync_recent) > (60 * 15):
+                print('Inventory sync recent')
+                self.timer_set('saleboxsync_inventory_recent', time.time())
+                post['request'] = 'recent'
+                post['time_offset'] = (60 * 15)
+            else:
+                # attempt sync 'list'
+                variant_ids = ProductVariant \
+                                .objects \
+                                .filter(active_flag=True) \
+                                .filter(product__active_flag=True) \
+                                .filter(product__category__active_flag=True) \
+                                .filter(available_on_ecom=True) \
+                                .filter(stock_count__gt=0) \
+                                .filter(stock_count__lte=F('ecommerce_low_stock_threshold')) \
+                                .values_list('id', flat=True)
+                if len(variant_ids) > 0:
+                    print('Inventory sync low-stock list')
+                    post['request'] = 'list'
+                    post['variant_ids'] = ','.join([str(i) for i in variant_ids])
 
         # bail if nothing to fetch
         if 'request' not in post:
@@ -433,8 +438,14 @@ class Command(BaseCommand):
 
         # apply results
         if len(inventory) > 0:
-            variant_ids = [i[0] for i in inventory]
-            print(len(variant_ids))
+            for i in inventory:
+                variant_id = i[0]
+                stock_count = i[1]
+                pv = ProductVariant.objects.filter(id=variant_id).first()
+                if pv is not None:
+                    if pv.stock_count != stock_count:
+                        pv.stock_count = stock_count
+                        pv.save()
 
     def pull_loop(self):
         while True:
