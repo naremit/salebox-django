@@ -1,1 +1,30 @@
-{# todo #}
+{% load salebox_utils %}
+
+<table>
+    <thead>
+        <th>Product</th>
+        <th class="align-right">Price</th>
+        <th class="align-right">Qty</th>
+        <th class="align-right">Total Price</th>
+    </thead>
+    <tbody>
+        {% for b in basket %}
+        <tr>
+            <td>{{ b.product.name }}</td>
+            <td class="align-right">{{ b.unit_price|sb_currency }}</td>
+            <td class="align-right">x{{ b.quantity }}</td>
+            <td class="align-right">{{ b.total_price|sb_currency }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tbody>
+        <tr>
+            <td colspan="3">Shipping (via {{ shipping.option.name }})</td>
+            <td class="align-right">{{ shipping.price|sb_currency }}</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <th colspan="3"></th>
+        <th class="align-right">{{ total_price|sb_currency }}</th>
+    </tfoot>
+</table>

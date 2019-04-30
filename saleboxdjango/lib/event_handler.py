@@ -43,7 +43,8 @@ class SaleboxEventHandler:
         event.save()
 
     def event_transaction_created(self, event):
-        try:
+        #try:
+        if True:
             t = self._fetch_transaction(event)
             if t['status'] != 'OK':
                 return
@@ -58,14 +59,18 @@ class SaleboxEventHandler:
                 render_to_string(
                     'salebox/email/transaction_created/body.txt',
                     t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/transaction_created/body.html',
+                    t['transaction']
                 )
             )
 
             # mark as processed
             event.processed_flag = True
             event.save()
-        except:
-            pass
+        #except:
+        #    pass
 
     def event_transaction_shipping_packed(self, event):
         """
@@ -98,6 +103,10 @@ class SaleboxEventHandler:
                 ),
                 render_to_string(
                     'salebox/email/shipping_shipped/body.txt',
+                    t['transaction']
+                ),
+                render_to_string(
+                    'salebox/email/shipping_shipped/body.html',
                     t['transaction']
                 )
             )

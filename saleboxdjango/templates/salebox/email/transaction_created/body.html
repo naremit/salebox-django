@@ -1,1 +1,11 @@
-{# todo #}
+{% extends "salebox/email/_base.html" %}
+
+{% block main %}
+    <p>Hi,</p>
+    <p>we have recieved your order (transaction ID: {{ pos_guid }}). We are processing it now and will send it to you as soon as possible.</p>
+
+    {% include "salebox/email/_basket.html" %}
+
+    <p>Thank you!</p>
+    <p>Love,<br>Salebox</p>
+{% endblock %}
