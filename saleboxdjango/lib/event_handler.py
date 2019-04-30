@@ -121,6 +121,7 @@ class SaleboxEventHandler:
         member = Member \
                     .objects \
                     .filter(salebox_member_id=event.salebox_member_id) \
+                    .select_related('parent') \
                     .first()
 
         user = get_user_model() \
