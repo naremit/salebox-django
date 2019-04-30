@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import F
 from django.utils import timezone
 
 from saleboxdjango.lib.common import update_natural_sort
@@ -99,6 +100,9 @@ class Command(BaseCommand):
             MailerMessage.objects.send_queued(limit=30)
         except:
             pass
+
+        # step 7: update stock levels
+        self.pull_inventory()
 
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
@@ -381,6 +385,56 @@ class Command(BaseCommand):
                 print('.', end='')
                 img.local_img = path
                 img.save()
+
+    def pull_inventory(self):
+        url = '%s/api/pos/v2/inventory' % settings.SALEBOX['API']['URL']
+        post = self.init_post()
+        inventory = []
+
+        # attempt sync 'all'
+        sync_all = int(self.timer_get('saleboxsync_inventory_all'))
+        #sync_all = 0
+        if (time.time() - sync_all) > (60 * 60 * 24):
+            print('Inventory sync all')
+            self.timer_set('saleboxsync_inventory_all', time.time())
+            self.timer_set('saleboxsync_inventory_recent', time.time())
+            post['request'] = 'all'
+
+        # attempt sync 'recent'
+        sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
+        if (time.time() - sync_recent) > (60 * 15):
+            print('Inventory sync recent')
+            self.timer_set('saleboxsync_inventory_recent', time.time())
+            post['request'] = 'recent'
+            post['timestamp'] = 0
+        else:
+            # attempt sync 'list'
+            variant_ids = ProductVariant \
+                            .objects \
+                            .filter(stock_count__lte=F('ecommerce_low_stock_threshold')) \
+                            .values_list('id', flat=True)
+            if len(variant_ids) > 0:
+                print('Inventory sync low-stock list')
+                post['request'] = 'list'
+                post['variant_ids'] = ','.join([str(i) for i in variant_ids])
+
+        # bail if nothing to fetch
+        if 'request' not in post:
+            return
+
+        # fetch from server
+        try:
+            r = requests.post(url, data=post)
+            result = r.json()
+            if result['status'] == 'OK':
+                inventory = result['inventory']
+        except:
+            pass
+
+        # apply results
+        if len(inventory) > 0:
+            variant_ids = [i[0] for i in inventory]
+            print(len(variant_ids))
 
     def pull_loop(self):
         while True:
@@ -1051,7 +1105,9 @@ class Command(BaseCommand):
             return default_value
 
     def timer_set(self, code, value):
-        o = LastUpdate.objects.get(code=code)
+        o = LastUpdate.objects.filter(code=code).first()
+        if o is None:
+            o = LastUpdate(code=code)
         o.value = value
         o.save()
 
