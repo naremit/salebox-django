@@ -1,4 +1,6 @@
-Hi,
+{% extends "salebox/email/_base.text" %}
+
+{% block main %}Hi,
 
 your purchase (transaction ID: {{ pos_guid }}) has been shipped from our warehouse and is on it's way to you now.
 
@@ -9,4 +11,4 @@ Sent by {{ shipping.option.name }} (Reference: {{ shipping.steps.0.reference_cod
 Enjoy your new things!
 
 Love,
-Salebox
+Salebox{% endblock %}

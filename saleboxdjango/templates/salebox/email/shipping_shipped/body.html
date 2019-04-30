@@ -1,1 +1,12 @@
-{# todo #}
+{% extends "salebox/email/_base.html" %}
+
+{% block main %}
+    <p>Hi,</p>
+    <p>your purchase (transaction ID: {{ pos_guid }}) has been shipped from our warehouse and is on it's way to you now.</p>
+    <p>Sent by {{ shipping.option.name }} (Reference: {{ shipping.steps.0.reference_code }})</p>
+
+    {% include "salebox/email/_basket.txt" %}
+
+    <p>Enjoy your new things!</p>
+    <p>Love,<br>Salebox</p>
+{% endblock %}
