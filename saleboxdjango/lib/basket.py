@@ -86,12 +86,21 @@ class SaleboxBasket:
             except:
                 qty = 0
 
+            try:
+                stock_count = self.data['basket']['lookup'][str(variant_id)]['variant']['stock_count']
+            except:
+                # this is a hack to prevent the button showing the
+                # 'out of stock' message. Its works though - if we're
+                # reaching this code, the variant is in stock
+                stock_count = 1
+
             o['basket_html_button'] = render_to_string(
                 'salebox/basket/button_basket.html',
                 {
                     'pv': {
                         'id': variant_id,
-                        'basket_qty': qty
+                        'basket_qty': qty,
+                        'stock_count': stock_count
                     },
                     'request': request
                 },
@@ -453,6 +462,7 @@ class SaleboxBasket:
                 'size_uom': q.variant.size_uom,
                 'sku': q.variant.sku,
                 'slug': q.variant.slug,
+                'stock_count': q.variant.stock_count,
                 'string_1': q.variant.string_1,
                 'string_2': q.variant.string_2,
                 'string_3': q.variant.string_3,
