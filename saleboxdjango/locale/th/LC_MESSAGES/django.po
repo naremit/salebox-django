@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-18 15:15+0700\n"
+"POT-Creation-Date: 2019-05-01 05:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,10 +101,14 @@ msgstr "สั่งซื้อสินค้า"
 msgid "Your basket is empty"
 msgstr "ตะกร้าว่างเปล่า"
 
-#: templates/salebox/basket/button_basket.html:13
+#: templates/salebox/basket/button_basket.html:14
 #: templates/salebox/basket/wishlist_full.html:27
 msgid "Add to basket"
 msgstr ""
+
+#: templates/salebox/basket/button_basket.html:20
+msgid "Sold Out"
+msgstr "ขายหมด"
 
 #: templates/salebox/basket/button_wishlist.html:7
 msgid "In wishlist"
