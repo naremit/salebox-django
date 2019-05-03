@@ -1244,6 +1244,7 @@ class Command(BaseCommand):
 
         # calculate
         total_vat = round(gross_vat_applicable / (1 + (vat_rate / 100)))
+        total_vat = gross_vat_applicable - total_vat
         return {
             'total_gross': gross_total,
             'total_net': gross_total - total_vat,
