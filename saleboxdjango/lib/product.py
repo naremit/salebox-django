@@ -4,6 +4,7 @@ import operator
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Case, F, Q, Value, When
 from django.http import Http404
 
@@ -57,7 +58,7 @@ class SaleboxProduct:
                     .distinct('product__id') \
                     .values_list('id', flat=True)
 
-            variant_ids = self._retrieve_variant_ids()
+            variant_ids = self._retrieve_variant_ids(do_exclude=True)
 
             data = {
                 'variant_ids': variant_ids,
@@ -149,7 +150,7 @@ class SaleboxProduct:
                 .values_list('id', flat=True)
 
         # ensure variant exists
-        variant_ids = self._retrieve_variant_ids()
+        variant_ids = self._retrieve_variant_ids(do_exclude=False)
         if len(variant_ids) == 0:
             raise Http404
 
@@ -447,8 +448,36 @@ class SaleboxProduct:
 
         return qs
 
-    def _retrieve_variant_ids(self):
+    def _retrieve_variant_ids(self, do_exclude=False):
         self.set_active_status()
+
+        if do_exclude:
+            # this is complex:
+            # if we have two sibling variants and one is sold out and one isn't, we need to
+            # make sure we show the in-stock option in the list. Showing 'sold out' for one
+            # variant is misleading as there are other options available the customer may
+            # want
+            sql = """
+                SELECT          id
+                FROM            saleboxdjango_productvariant
+                WHERE           product_id IN (
+                    SELECT          p.id
+                    FROM            saleboxdjango_product AS p
+                    INNER JOIN      saleboxdjango_productvariant AS pv ON pv.product_id = p.id
+                    WHERE           p.active_flag = true
+                    AND             pv.active_flag = true
+                    AND             pv.available_on_ecom = true
+                    GROUP BY        p.id
+                    HAVING          COUNT(pv) > 1
+                    AND             SUM(pv.stock_count) > 0
+                )
+                AND             stock_count <= 0
+            """
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                self.set_exclude_productvariant_ids([row[0] for row in cursor.fetchall()])
+
+        # return variant IDs
         self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
         return list(self.query[:self.max_result_count])
 
