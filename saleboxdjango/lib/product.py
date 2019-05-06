@@ -20,6 +20,7 @@ class SaleboxProduct:
         self.query = ProductVariant.objects
         self.active_status = active_status
         self.exclude_product_ids = []
+        self.exclude_productvariant_ids = []
         self.min_price = None
         self.max_price = None
         self.max_result_count = None
@@ -189,6 +190,11 @@ class SaleboxProduct:
         if isinstance(id_list, int):
             id_list = [id_list]
         self.exclude_product_ids += id_list
+
+    def set_exclude_productvariant_ids(self, id_list):
+        if isinstance(id_list, int):
+            id_list = [id_list]
+        self.exclude_productvariant_ids += id_list
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
@@ -443,6 +449,7 @@ class SaleboxProduct:
 
     def _retrieve_variant_ids(self):
         self.set_active_status()
+        self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
         return list(self.query[:self.max_result_count])
 
 
