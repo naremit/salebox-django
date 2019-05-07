@@ -70,7 +70,11 @@ class SaleboxProduct:
             #
 
         # pagination calculations
-        number_of_pages = math.ceil(len(data['variant_ids']) / self.items_per_page)
+        if self.max_result_count:
+            total_results = min(len(data['variant_ids']), self.max_result_count)
+        else:
+            total_results = len(data['variant_ids'])
+        number_of_pages = math.ceil(total_results / self.items_per_page)
 
         if request is None:
             products = data['qs']
@@ -82,7 +86,8 @@ class SaleboxProduct:
             'count': {
                 'from': self.offset + 1,
                 'to': self.offset + len(data['qs']),
-                'total': len(data['variant_ids']),
+                #'total': len(data['variant_ids']),
+                'total': total_results
             },
             'pagination': {
                 'page_number': self.page_number,
@@ -434,7 +439,10 @@ class SaleboxProduct:
                 qs = qs.order_by(*self.order)
 
             # add offset / limit
-            qs = qs[self.offset:self.limit]
+            if self.max_result_count:
+                qs = qs[self.offset:min(self.limit, self.max_result_count)]
+            else:
+                qs = qs[self.offset:self.limit]
 
             # modify results
             for o in qs:
@@ -479,7 +487,7 @@ class SaleboxProduct:
 
         # return variant IDs
         self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
-        return list(self.query[:self.max_result_count])
+        return list(self.query)
 
 
 def translate_path(path):
