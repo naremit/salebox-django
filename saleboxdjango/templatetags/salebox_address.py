@@ -7,11 +7,10 @@ register = template.Library()
 
 @register.simple_tag
 def sb_country_name(country, default='', lang=None):
-    if country is None:
-        return default
-
     if isinstance(country, int):
         country = Country.objects.get(id=country)
+    if not isinstance(country, Country):
+        return default
 
     if lang is None:
         lang = (get_language()).lower().split('-')[0]
@@ -30,11 +29,10 @@ def sb_country_name(country, default='', lang=None):
 
 @register.simple_tag
 def sb_country_state_name(country_state, default='', lang=None):
-    if country_state is None:
-        return default
-
     if isinstance(country_state, int):
         country_state = CountryState.objects.get(id=country_state)
+    if not isinstance(country_state, CountryState):
+        return default
 
     if lang is None:
         lang = (get_language()).lower().split('-')[0]

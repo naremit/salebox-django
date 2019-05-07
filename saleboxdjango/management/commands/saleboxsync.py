@@ -1044,11 +1044,9 @@ class Command(BaseCommand):
             print('Failed to POST member data')
 
     def push_members(self):
-        cutoff = timezone.now() - datetime.timedelta(seconds=10)
         users = get_user_model() \
                     .objects \
-                    .filter(salebox_member_sync__isnull=False) \
-                    .filter(salebox_last_update__lt=cutoff)
+                    .filter(salebox_member_sync__isnull=False)
         for user in users:
             self.push_member(user)
 
