@@ -1156,9 +1156,14 @@ class Command(BaseCommand):
             'address_3': data['address']['address_3'],
             'address_4': data['address']['address_4'],
             'address_5': data['address']['address_5'],
-            'country_state_id': data['address']['country_state'],
             'country_id': data['address']['country'],
-            'postcode': data['address']['postcode'],
+            'country_state_id': data['address']['country_state'],
+            # 'email': address['address']['email'],
+            # 'phone_1': address['address']['phone_1'],
+            # 'phone_2': address['address']['phone_2'],
+            'postcode': address['address']['postcode'],
+            # 'string_1': address['address']['string_1'],
+            # 'string_2': address['address']['string_2'],
             'recipient_name': data['address']['full_name'],
             'recipient_tax_id': data['address']['tax_id']
         }
@@ -1223,9 +1228,14 @@ class Command(BaseCommand):
             'address_5': address['address']['address_5'],
             'country_id': address['address']['country'],
             'country_state_id': address['address']['country_state'],
+            'email': address['address']['email'],
             'method_id': method['id'],
+            'phone_1': address['address']['phone_1'],
+            'phone_2': address['address']['phone_2'],
             'postcode': address['address']['postcode'],
             'price': method['price'],
+            'string_1': address['address']['string_1'],
+            'string_2': address['address']['string_2'],
             'recipient_name': address['address']['full_name']
         }
 
