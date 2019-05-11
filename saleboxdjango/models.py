@@ -628,6 +628,7 @@ class ProductVariant(models.Model):
                 .objects \
                 .filter(variant=self) \
                 .filter(local_img__isnull=False) \
+                .filter(active_flag=True) \
                 .order_by('order') \
                 .first()
         if pvi is not None:
