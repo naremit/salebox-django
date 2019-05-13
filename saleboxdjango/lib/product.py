@@ -253,14 +253,20 @@ class SaleboxProduct:
     def set_flat_member_discount(self, percent):
         self.flat_member_discount = percent
 
-    def set_max_result_count(self, i):
-        self.max_result_count = i
-
     def set_max_price(self, maximun):
         self.query = self.query.filter(sale_price__lte=maximun)
 
+    def set_max_result_count(self, i):
+        self.max_result_count = i
+
+    def set_max_sale_percent(self, maximum):
+        self.query = self.query.filter(sale_percent__lte=maximun)
+
     def set_min_price(self, minimun):
         self.query = self.query.filter(sale_price__gte=minimum)
+
+    def set_min_sale_percent(self, minimum):
+        self.query = self.query.filter(sale_percent__gte=minimum)
 
     def set_order_custom(self, order):
         self.order = order
