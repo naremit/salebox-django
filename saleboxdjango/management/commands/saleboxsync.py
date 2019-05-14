@@ -1158,12 +1158,12 @@ class Command(BaseCommand):
             'address_5': data['address']['address_5'],
             'country_id': data['address']['country'],
             'country_state_id': data['address']['country_state'],
-            # 'email': address['address']['email'],
-            # 'phone_1': address['address']['phone_1'],
-            # 'phone_2': address['address']['phone_2'],
-            'postcode': address['address']['postcode'],
-            # 'string_1': address['address']['string_1'],
-            # 'string_2': address['address']['string_2'],
+            'email': data['address']['email'],
+            'phone_1': data['address']['phone_1'],
+            'phone_2': data['address']['phone_2'],
+            'postcode': data['address']['postcode'],
+            'string_1': data['address']['string_1'],
+            'string_2': data['address']['string_2'],
             'recipient_name': data['address']['full_name'],
             'recipient_tax_id': data['address']['tax_id']
         }
