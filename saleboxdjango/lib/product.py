@@ -283,8 +283,8 @@ class SaleboxProduct:
             'name_high_to_low': ['-name_sorted'],
             'price_low_to_high': ['sale_price', 'name_sorted'],
             'price_high_to_low': ['-sale_price', 'name_sorted'],
-            'rating_low_to_high': ['rating_score', 'name_sorted'],
-            'rating_high_to_low': ['-rating_score', 'name_sorted'],
+            'rating_low_to_high': ['rating_score', 'rating_vote_count', 'name_sorted'],
+            'rating_high_to_low': ['-rating_score', '-rating_vote_count', 'name_sorted'],
         }[preset]
 
     def set_pagination(self, page_number, items_per_page, url_prefix):
