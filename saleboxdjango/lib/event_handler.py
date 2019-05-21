@@ -19,7 +19,7 @@ class SaleboxEventHandler:
         es = Event \
                 .objects \
                 .filter(processed_flag=False) \
-                .order_by('-created')
+                .order_by('created')
 
         # loop through and process them
         for e in es:
