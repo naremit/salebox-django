@@ -327,6 +327,23 @@ class SaleboxBasket:
 
     def _get_raw_basket(self, request):
         while True:
+            # get basket items
+            basket = self._filter_basket_queryset(
+                request,
+                BasketWishlist.objects.filter(basket_flag=True)
+            )
+
+            # do not allow basket qty to exceed available qty
+            for b in basket:
+                if b.quantity > 0 and b.quantity > b.variant.stock_count:
+                    if b.variant.stock_count < 1:
+                        b.quantity = 1
+                        b.basket_flag = False
+                    else:
+                        b.quantity = b.variant.stock_count
+
+                    b.save()
+
             # get items from db
             qs = self._filter_basket_queryset(
                 request,
