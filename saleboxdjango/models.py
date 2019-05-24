@@ -14,12 +14,12 @@ from mptt.models import MPTTModel, TreeForeignKey
 from saleboxdjango.lib.common import get_rating_display
 
 CHECKOUT_STATUS_CHOICES = (
-    (10, 'New: pending send to gateway'),
+    (10, 'New: Pending send to gateway'),
     (20, 'Pending: Awaiting gateway response'),
-    (30, 'Success: pending POST to Salebox'),
-    (31, 'Success: successfully POSTed to Salebox'),
-    (40, 'Rejected: gateway rejected payment'),
-    (50, 'Timeout: gateway did not respond in an acceptable time period')
+    (30, 'Success: Pending POST to Salebox'),
+    (31, 'Success: Successfully POSTed to Salebox'),
+    (40, 'Rejected: Gateway rejected payment'),
+    (50, 'Timeout: Gateway did not respond in an acceptable time period')
 )
 
 

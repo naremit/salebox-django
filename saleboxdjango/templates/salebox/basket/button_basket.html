@@ -2,8 +2,10 @@
 
 {% load i18n %}
 
-<div class="product-basketbtn{% if pv.stock_count < 1 %} product-basketbtn-soldout{% endif %}">
-    {% if pv.stock_count > 0 %}
+<div class="product-basketbtn{% if pv.product.inventory_flag and pv.stock_count < 1 %} product-basketbtn-soldout{% endif %}">
+    {% if pv.product.inventory_flag and pv.stock_count < 1 %}
+        <div>{% trans "Sold Out" %}</div>
+    {% else %}
         {% if pv.basket_qty > 0 %}
             <div class="product-basketbtn-populated">
                 <button onclick="setBasket({{ pv.id }}, -1, true, this.parentNode.parentNode)"><i class="fas fa-minus"></i></button>
@@ -16,8 +18,6 @@
         <div class="product-basketbtn-loading">
             <i class="fas fa-spinner fa-spin"></i>
         </div>
-    {% else %}
-        <div>{% trans "Sold Out" %}</div>
     {% endif %}
 </div>
 

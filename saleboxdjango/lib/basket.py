@@ -335,14 +335,15 @@ class SaleboxBasket:
 
             # do not allow basket qty to exceed available qty
             for b in basket:
-                if b.quantity > 0 and b.quantity > b.variant.stock_count:
-                    if b.variant.stock_count < 1:
-                        b.quantity = 1
-                        b.basket_flag = False
-                    else:
-                        b.quantity = b.variant.stock_count
+                if b.variant.product.inventory_flag:
+                    if b.quantity > 0 and b.quantity > b.variant.stock_count:
+                        if b.variant.stock_count < 1:
+                            b.quantity = 1
+                            b.basket_flag = False
+                        else:
+                            b.quantity = b.variant.stock_count
 
-                    b.save()
+                        b.save()
 
             # get items from db
             qs = self._filter_basket_queryset(
