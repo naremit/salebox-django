@@ -243,7 +243,10 @@ class SaleboxProduct:
                         .get_descendants(include_self=True) \
                         .values_list('id', flat=True)
         else:
-            id_list = [category.id]
+            if isinstance(category, int):
+                id_list = [category]
+            else:
+                id_list = [category.id]
 
         self.query = self.query.filter(product__category__in=id_list)
 
