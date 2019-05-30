@@ -481,13 +481,15 @@ class SaleboxProduct:
             # variant is misleading as there are other options available the customer may
             # want
             sql = """
-                SELECT          id
-                FROM            saleboxdjango_productvariant
-                WHERE           product_id IN (
+                SELECT          pv.id
+                FROM            saleboxdjango_productvariant AS pv
+                INNER JOIN      saleboxdjango_product AS p ON pv.product_id = p.id
+                WHERE           p.id IN (
                     SELECT          p.id
                     FROM            saleboxdjango_product AS p
                     INNER JOIN      saleboxdjango_productvariant AS pv ON pv.product_id = p.id
                     WHERE           p.active_flag = true
+                    AND             p.inventory_flag = True
                     AND             pv.active_flag = true
                     AND             pv.available_on_ecom = true
                     GROUP BY        p.id
@@ -495,6 +497,8 @@ class SaleboxProduct:
                     AND             SUM(pv.stock_count) > 0
                 )
                 AND             stock_count <= 0
+                AND             p.inventory_flag = False
+                ORDER BY        id
             """
             with connection.cursor() as cursor:
                 cursor.execute(sql)
