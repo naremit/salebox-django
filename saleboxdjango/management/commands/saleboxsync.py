@@ -415,8 +415,8 @@ class Command(BaseCommand):
                                 .filter(product__active_flag=True) \
                                 .filter(product__category__active_flag=True) \
                                 .filter(available_on_ecom=True) \
-                                .filter(stock_count__gt=0) \
-                                .filter(stock_count__lte=F('ecommerce_low_stock_threshold')) \
+                                .filter(stock_total__gt=0) \
+                                .filter(stock_total__lte=F('ecommerce_low_stock_threshold')) \
                                 .values_list('id', flat=True)
                 if len(variant_ids) > 0:
                     print('Inventory sync low-stock list')

@@ -640,7 +640,7 @@ class ProductVariant(models.Model):
         if self.default_image is None and self.local_image is not None:
             self.default_image = 'pospv/%s' % self.local_image
 
-        # set stock_count_total
+        # set stock_total
         self.stock_total = min((self.stock_count - self.stock_checked_out), 0)
 
         # save

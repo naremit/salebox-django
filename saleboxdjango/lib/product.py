@@ -202,9 +202,9 @@ class SaleboxProduct:
             id_list = [id_list]
         self.exclude_productvariant_ids += id_list
 
-    def set_minimum_stock_count(self, minimum_stock):
+    def set_minimum_stock_total(self, minimum_stock):
         self.query = self.query.filter(
-            Q(stock_count__gte=minimum_stock) |
+            Q(stock_total__gte=minimum_stock) |
             Q(product__inventory_flag=False)
         )
 
@@ -494,9 +494,9 @@ class SaleboxProduct:
                     AND             pv.available_on_ecom = true
                     GROUP BY        p.id
                     HAVING          COUNT(pv) > 1
-                    AND             SUM(pv.stock_count) > 0
+                    AND             SUM(pv.stock_total) > 0
                 )
-                AND             stock_count <= 0
+                AND             stock_total <= 0
                 AND             p.inventory_flag = False
                 ORDER BY        id
             """
