@@ -104,6 +104,11 @@ class Command(BaseCommand):
         # step 7: update stock levels
         self.pull_inventory()
 
+        # step 8: check for timed-out checkout stores
+        css = CheckoutStore.objects.filter(status__lt=30)
+        for cs in css:
+            cs.check_for_timeout()
+
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
         print('Finished in %.3fs' % (time.time() - now))

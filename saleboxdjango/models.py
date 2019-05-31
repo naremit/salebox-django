@@ -8,6 +8,7 @@ from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Avg
+from django.utils.timezone import now
 from django.utils.translation import get_language
 
 from mptt.models import MPTTModel, TreeForeignKey
@@ -86,6 +87,21 @@ class CheckoutStore(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now_add=True)
 
+    def check_for_timeout(self):
+        if self.status < 30:
+            age = (now() - self.created).total_seconds()
+            sb = getattr(settings, 'SALEBOX', {})
+            cutoff = sb.get('GATEWAY_TIMEOUT', 60 * 60 * 24 * 3)
+
+            # do update if applicable
+            if age > cutoff:
+                self.status = 50
+                self.save()
+                return True
+
+        # fallback
+        return False
+
     def save(self, *args, **kwargs):
         if self.uuid is None:
             self.uuid = str(uuid.uuid4())
@@ -101,6 +117,34 @@ class CheckoutStore(models.Model):
                 )
 
         super().save(*args, **kwargs)
+
+        # update inventory counts
+        exclude_ids = []
+        variants = {}
+
+        # fetch all pending checkouts
+        checkouts = CheckoutStore.objects.filter(status__lt=30)
+        for c in checkouts:
+            for b in c.data['basket']['items']:
+                pvid = b['variant']['id']
+                if pvid not in variants:
+                    variants[pvid] = 0
+                variants[pvid] += b['qty']
+
+        # update stock levels for all products
+        for v in variants:
+            pv = ProductVariant.objects.filter(id=v).first()
+            if pv:
+                exclude_ids.append(pv.id)
+                pv.set_stock_checked_out(variants[v])
+
+        # "reset" all the other checked out stock levels
+        pvs = ProductVariant \
+                .objects \
+                .exclude(id__in=exclude_ids) \
+                .filter(stock_checked_out__gt=0)
+        for pv in pvs:
+            pv.set_stock_checked_out(0)
 
 
 class CheckoutStoreUpdate(models.Model):
@@ -653,7 +697,7 @@ class ProductVariant(models.Model):
                 .filter(id=self.id) \
                 .update(
                     stock_checked_out=qty,
-                    stock_total=max((self.stock_count - self.stock_checked_out), 0)
+                    stock_total=max((self.stock_count - qty), 0)
                 )
 
     def update_rating(self):
