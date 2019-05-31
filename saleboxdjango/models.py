@@ -641,19 +641,19 @@ class ProductVariant(models.Model):
             self.default_image = 'pospv/%s' % self.local_image
 
         # set stock_total
-        self.stock_total = min((self.stock_count - self.stock_checked_out), 0)
+        self.stock_total = max((self.stock_count - self.stock_checked_out), 0)
 
         # save
         super(ProductVariant, self).save(*args, **kwargs)
 
-    def set_stock_checked_out(self, qty):
-        if self.id and qty != self.stock_checked_out:
+    def set_stock_checked_out(self, qty=0):
+        if self.id:
             ProductVariant \
                 .objects \
                 .filter(id=self.id) \
                 .update(
                     stock_checked_out=qty,
-                    stock_total=min((self.stock_count - self.stock_checked_out), 0)
+                    stock_total=max((self.stock_count - self.stock_checked_out), 0)
                 )
 
     def update_rating(self):

@@ -87,12 +87,12 @@ class SaleboxBasket:
                 qty = 0
 
             try:
-                stock_count = self.data['basket']['lookup'][str(variant_id)]['variant']['stock_count']
+                stock_total = self.data['basket']['lookup'][str(variant_id)]['variant']['stock_total']
             except:
                 # this is a hack to prevent the button showing the
                 # 'out of stock' message. Its works though - if we're
                 # reaching this code, the variant is in stock
-                stock_count = 1
+                stock_total = 1
 
             o['basket_html_button'] = render_to_string(
                 'salebox/basket/button_basket.html',
@@ -100,7 +100,7 @@ class SaleboxBasket:
                     'pv': {
                         'id': variant_id,
                         'basket_qty': qty,
-                        'stock_count': stock_count
+                        'stock_total': stock_total
                     },
                     'request': request
                 },
@@ -336,12 +336,12 @@ class SaleboxBasket:
             # do not allow basket qty to exceed available qty
             for b in basket:
                 if b.variant.product.inventory_flag:
-                    if b.quantity > 0 and b.quantity > b.variant.stock_count:
-                        if b.variant.stock_count < 1:
+                    if b.quantity > 0 and b.quantity > b.variant.stock_total:
+                        if b.variant.stock_total < 1:
                             b.quantity = 1
                             b.basket_flag = False
                         else:
-                            b.quantity = b.variant.stock_count
+                            b.quantity = b.variant.stock_total
 
                         b.save()
 
@@ -480,7 +480,7 @@ class SaleboxBasket:
                 'size_uom': q.variant.size_uom,
                 'sku': q.variant.sku,
                 'slug': q.variant.slug,
-                'stock_count': q.variant.stock_count,
+                'stock_total': q.variant.stock_total,
                 'string_1': q.variant.string_1,
                 'string_2': q.variant.string_2,
                 'string_3': q.variant.string_3,
