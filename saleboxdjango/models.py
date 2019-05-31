@@ -572,6 +572,8 @@ class ProductVariant(models.Model):
     default_image = models.CharField(max_length=35, blank=True, null=True)
     i18n = JSONField(default=dict)
     stock_count = models.IntegerField(default=0)
+    stock_checked_out = models.IntegerField(default=0)
+    stock_total = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -638,8 +640,21 @@ class ProductVariant(models.Model):
         if self.default_image is None and self.local_image is not None:
             self.default_image = 'pospv/%s' % self.local_image
 
+        # set stock_count_total
+        self.stock_total = min((self.stock_count - self.stock_checked_out), 0)
+
         # save
         super(ProductVariant, self).save(*args, **kwargs)
+
+    def set_stock_checked_out(self, qty):
+        if self.id and qty != self.stock_checked_out:
+            ProductVariant \
+                .objects \
+                .filter(id=self.id) \
+                .update(
+                    stock_checked_out=qty,
+                    stock_total=min((self.stock_count - self.stock_checked_out), 0)
+                )
 
     def update_rating(self):
         self.rating_score = 0
