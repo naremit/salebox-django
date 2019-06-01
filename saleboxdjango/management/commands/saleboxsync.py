@@ -1132,7 +1132,7 @@ class Command(BaseCommand):
 
             basket.append({
                 'discount_ruleset': None,
-                'qty_loyalty': v['qty_loyalty'],
+                'qty_loyalty': v.get('qty_loyalty', None),
                 'price_original': v['qty_price'],
                 'price_modified': v['qty_sale_price'],
                 'product_weight': None,
