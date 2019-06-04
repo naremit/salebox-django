@@ -497,7 +497,7 @@ class SaleboxProduct:
                     AND             SUM(pv.stock_total) > 0
                 )
                 AND             stock_total <= 0
-                AND             p.inventory_flag = False
+                AND             p.inventory_flag = True
                 ORDER BY        id
             """
             with connection.cursor() as cursor:
@@ -505,7 +505,8 @@ class SaleboxProduct:
                 self.set_exclude_productvariant_ids([row[0] for row in cursor.fetchall()])
 
         # return variant IDs
-        self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
+        if len(self.exclude_productvariant_ids) > 0:
+            self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
         return list(self.query)
 
 
