@@ -26,6 +26,7 @@ class SaleboxProduct:
         self.max_price = None
         self.max_result_count = None
         self.order = []
+        self.order_related = []
         self.prefetch_product_attributes = []
         self.prefetch_variant_attributes = []
 
@@ -60,9 +61,12 @@ class SaleboxProduct:
 
             variant_ids = self._retrieve_variant_ids(do_exclude=True)
 
+            if len(self.order_related) > 0:
+                variant_ids = self._sort_by_related_items(variant_ids)
+
             data = {
                 'variant_ids': variant_ids,
-                'qs': self._retrieve_results(variant_ids)
+                'qs': self._retrieve_results(variant_ids, preserve_order=len(self.order_related) > 0)
             }
 
             # TODO: save data to cache
@@ -103,7 +107,10 @@ class SaleboxProduct:
             'products': products
         }
 
+    """
     def get_related(self, request, variant, sequence):
+        return self.get_list(request)
+
         variant_ids = []
         exclude_product_ids = [variant.product.id]
         number_of_items = self.max_result_count or 1
@@ -146,6 +153,7 @@ class SaleboxProduct:
             request,
             self._retrieve_results(variant_ids, True)
         )
+    """
 
     def get_single(self, request, id, slug):
         self.query = \
@@ -283,8 +291,6 @@ class SaleboxProduct:
             self.order = [self.order]
 
     def set_order_preset(self, preset):
-        # so... it turns out having multiple ORDER BYs with a LIMIT
-        # clause slows things down a lot.
         self.order = {
             'bestseller_low_to_high': ['bestseller_rank', 'name_sorted'],
             'bestseller_high_to_low': ['-bestseller_rank', 'name_sorted'],
@@ -295,6 +301,26 @@ class SaleboxProduct:
             'rating_low_to_high': ['rating_score', 'rating_vote_count', 'name_sorted'],
             'rating_high_to_low': ['-rating_score', '-rating_vote_count', 'name_sorted'],
         }[preset]
+
+    def set_order_related(self, fields):
+        self.order_related = fields
+
+    def set_order_related_from_variant(self, variant, fields):
+        # exclude this variant
+        self.set_exclude_productvariant_ids([variant.id])
+
+        # generate sequence
+        for f in fields:
+            if f['type'] == 'product':
+                f['values'] = list(getattr(variant.product, 'attribute_%s' % f['id']).all().values_list('id', flat=True))
+            if f['type'] == 'variant':
+                f['values'] = list(getattr(variant, 'attribute_%s' % f['id']).all().values_list('id', flat=True))
+
+        # remove "empties"
+        fields = [f for f in fields if len(f['values']) > 0]
+
+        # pass to main function
+        self.set_order_related(fields)
 
     def set_pagination(self, page_number, items_per_page, url_prefix):
         self.page_number = page_number
@@ -508,6 +534,40 @@ class SaleboxProduct:
         if len(self.exclude_productvariant_ids) > 0:
             self.query = self.query.exclude(id__in=self.exclude_productvariant_ids)
         return list(self.query)
+
+    def _sort_by_related_items(self, variant_ids):
+        subquery = []
+        for f in self.order_related:
+            if f['type'] == 'product':
+                subquery.append('((SELECT COUNT(*) FROM saleboxdjango_product_attribute_%s WHERE product_id = p.id AND attributeitem_id IN (%s)) * %s)' % (
+                    f['id'],
+                    ','.join(str(i) for i in f['values']),
+                    f['weight']
+                ))
+            if f['type'] == 'variant':
+                subquery.append('((SELECT COUNT(*) FROM saleboxdjango_productvariant_attribute_%s WHERE productvariant_id = p.id AND attributeitem_id IN (%s)) * %s)' % (
+                    f['id'],
+                    ','.join(str(i) for i in f['values']),
+                    f['weight']
+                ))
+
+        sql = """
+            SELECT              pv.id
+            FROM                saleboxdjango_productvariant AS pv
+            INNER JOIN          saleboxdjango_product AS p ON pv.product_id = p.id
+            WHERE               pv.id IN (%s)
+            ORDER BY            (%s) DESC, name_sorted
+        """ % (
+            ','.join(str(i) for i in variant_ids),
+            ' + '.join(subquery)
+        )
+
+        # do query
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            variant_ids = [row[0] for row in cursor.fetchall()]
+
+        return variant_ids
 
 
 def translate_path(path):
