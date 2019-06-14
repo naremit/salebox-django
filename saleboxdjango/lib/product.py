@@ -107,52 +107,6 @@ class SaleboxProduct:
             'products': products
         }
 
-    """
-    def get_related(self, request, variant, sequence):
-        variant_ids = []
-        exclude_product_ids = [variant.product.id]
-        number_of_items = self.max_result_count or 1
-
-        # loop through options
-        sequence.append(None)
-        for seq in sequence:
-            if seq and seq[0] == 'product':
-                key = 'product__attribute_%s' % seq[1]
-                value = getattr(variant.product, 'attribute_%s' % seq[1]).first()
-            elif seq and seq[0] == 'variant':
-                key = 'attribute_%s' % seq[1]
-                value = getattr(variant, 'attribute_%s' % seq[1]).first()
-            else:
-                key = None
-                value = None
-
-            for category in [variant.product.category, None]:
-                res = self._retrieve_related(
-                    key,
-                    value,
-                    category,
-                    exclude_product_ids,
-                    number_of_items - len(variant_ids)
-                )
-                for r in res:
-                    variant_ids.append(r[0])
-                    exclude_product_ids.append(r[1])
-                    if len(variant_ids) == number_of_items:
-                        break
-
-                if len(variant_ids) == number_of_items:
-                    break
-
-            if len(variant_ids) == number_of_items:
-                break
-
-        # return results
-        return self.retrieve_user_interaction(
-            request,
-            self._retrieve_results(variant_ids, True)
-        )
-    """
-
     def get_single(self, request, id, slug):
         self.query = \
             self.query \
@@ -300,10 +254,14 @@ class SaleboxProduct:
             'rating_high_to_low': ['-rating_score', '-rating_vote_count', 'name_sorted'],
         }[preset]
 
-    def set_order_related(self, root_category, fields):
+    def set_order_related(self, root_category, fields, string=None, string_weight=10):
         self.order_related = {
             'category_ids': list(root_category.get_descendants(include_self=True).values_list('id', flat=True)),
-            'fields': fields
+            'fields': fields,
+            'string': {
+                'string': string,
+                'weight': string_weight
+            }
         }
 
     def set_order_related_from_variant(self, variant, fields):
@@ -325,7 +283,8 @@ class SaleboxProduct:
         # pass to main function
         self.set_order_related(
             variant.product.category.get_root(),
-            fields
+            fields,
+            variant.name
         )
 
     def set_pagination(self, page_number, items_per_page, url_prefix):
@@ -415,26 +374,6 @@ class SaleboxProduct:
         if field_modifier is not None:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
-
-    def _retrieve_related(self, key, value, category, exclude_ids, limit):
-        qs = ProductVariant \
-                .objects \
-                .distinct('product__id') \
-                .filter(active_flag=True) \
-                .filter(available_on_ecom=True) \
-                .filter(product__active_flag=True) \
-                .filter(product__category__active_flag=True) \
-                .exclude(product__in=exclude_ids)
-
-        if key is not None:
-            qs = qs.filter(**{key: value})
-
-        if category is not None:
-            qs = qs.filter(product__category=category)
-
-        return qs.select_related('product') \
-                 .order_by('product__id', 'product__name') \
-                 .values_list('id', 'product_id')[0:limit]
 
     def _retrieve_results(self, variant_ids, preserve_order=False):
         qs = []
@@ -544,6 +483,12 @@ class SaleboxProduct:
     def _sort_by_related_items(self, variant_ids):
         # generate 'order by' subquery
         subquery = []
+        if self.order_related['string']['string']:
+            subquery.append('SIMILARITY(pv.name, \'%s\') * %s' % (
+                self.order_related['string']['string'],
+                self.order_related['string']['weight']
+            ))
+
         for f in self.order_related['fields']:
             if f['type'] == 'category':
                 subquery.append('(CASE WHEN p.category_id = %s THEN %s ELSE 0 END)' % (
