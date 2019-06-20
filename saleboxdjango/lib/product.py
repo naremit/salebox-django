@@ -1,6 +1,7 @@
 from functools import reduce
 import math
 import operator
+import re
 
 from django.conf import settings
 from django.core.cache import cache
@@ -485,7 +486,7 @@ class SaleboxProduct:
         subquery = []
         if self.order_related['string']['string']:
             subquery.append('SIMILARITY(pv.name, \'%s\') * %s' % (
-                self.order_related['string']['string'],
+                self.order_related['string']['string'].replace("'", "''"),
                 self.order_related['string']['weight']
             ))
 
