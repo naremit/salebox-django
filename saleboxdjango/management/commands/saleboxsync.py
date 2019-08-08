@@ -208,15 +208,15 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
-                    elif value['code'] == 'discount_seasonal_group':
-                        self.pull_model_discount_seasonal_group(
+                    elif value['code'] == 'discount_group':
+                        self.pull_model_discount_group(
                             value['data'],
                             value['lu'],
                             sync_from_dict
                         )
 
-                    elif value['code'] == 'discount_seasonal_ruleset':
-                        self.pull_model_discount_seasonal_ruleset(
+                    elif value['code'] == 'discount_ruleset':
+                        self.pull_model_discount_ruleset(
                             value['data'],
                             value['lu'],
                             sync_from_dict
@@ -296,8 +296,8 @@ class Command(BaseCommand):
             'country_state',
             'country_state_translation',
             'country_translation',
-            # 'discount_seasonal_group',
-            # 'discount_seasonal_ruleset',
+            # 'discount_group',
+            # 'discount_ruleset',
             'event',
             'member',
             'member_group',
@@ -596,7 +596,7 @@ class Command(BaseCommand):
         except:
             pass
 
-    def pull_model_discount_seasonal_group(self, data, api_lu, sync_from_dict):
+    def pull_model_discount_group(self, data, api_lu, sync_from_dict):
         # for d in data
         #
         #
@@ -604,14 +604,14 @@ class Command(BaseCommand):
         # update sync_from
         """
         self.pull_set_sync_from_dict(
-            'discount_seasonal_group',
+            'discount_group',
             len(data) < 100,
             sync_from_dict,
             api_lu
         )
         """
 
-    def pull_model_discount_seasonal_ruleset(self, data, api_lu, sync_from_dict):
+    def pull_model_discount_ruleset(self, data, api_lu, sync_from_dict):
         # for d in data
         #
         #
@@ -619,7 +619,7 @@ class Command(BaseCommand):
         # update sync_from
         """
         self.pull_set_sync_from_dict(
-            'discount_seasonal_ruleset',
+            'discount_ruleset',
             len(data) < 100,
             sync_from_dict,
             api_lu
