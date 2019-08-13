@@ -797,6 +797,10 @@ class Command(BaseCommand):
                 for a in [
                     'active_flag',
                     'bestseller_rank',
+                    'boolean_1',
+                    'boolean_2',
+                    'boolean_3',
+                    'boolean_4',
                     'i18n',
                     'image',
                     'inventory_flag',
@@ -842,6 +846,10 @@ class Command(BaseCommand):
 
                 o.parent = None
                 o.active_flag = d['active_flag']
+                o.boolean_1 = d['boolean_1']
+                o.boolean_2 = d['boolean_2']
+                o.boolean_3 = d['boolean_3']
+                o.boolean_4 = d['boolean_4']
                 o.i18n = d['i18n']
                 o.image = d['image']
                 o.name = d['name']
@@ -918,6 +926,10 @@ class Command(BaseCommand):
                     'bestseller_rank',
                     'barcode',
                     'bo_name',
+                    'boolean_1',
+                    'boolean_2',
+                    'boolean_3',
+                    'boolean_4',
                     'color',
                     'date_1',
                     'date_2',
