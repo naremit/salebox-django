@@ -171,8 +171,9 @@ class SaleboxCheckout:
         self.data['shipping_address']['required'] = required
         self._write_session(request)
 
-    def set_shipping_method(self, id, label, price, meta, request):
+    def set_shipping_method(self, id, code, label, price, meta, request):
         self.data['shipping_method'] = {
+            'code': code,
             'id': id,
             'label': label,
             'price': price,

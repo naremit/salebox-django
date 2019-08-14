@@ -97,6 +97,7 @@ class SaleboxShippingOptions:
     def init_option(
             self,
             id,
+            code,
             label,
             remarks,
             service,
@@ -104,6 +105,7 @@ class SaleboxShippingOptions:
         ):
         return {
             'available': True,
+            'code': code,
             'id': id,
             'label': {
                 'label': label,  # e.g. 'Post Office'
@@ -141,6 +143,7 @@ class SaleboxShippingOptions:
     def _example_option_1(self):
         method = self.init_option(
             1,
+            'postoffice',
             'Post Office',
             '2-4 days',
             'Surface mail'
@@ -152,6 +155,7 @@ class SaleboxShippingOptions:
     def _example_option_2(self):
         method = self.init_option(
             2,
+            'postofficeexpress',
             'Post Office',
             '1 day',
             'NextDay'
