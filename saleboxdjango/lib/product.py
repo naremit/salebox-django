@@ -209,7 +209,10 @@ class SaleboxProduct:
             else:
                 id_list = [category.id]
 
-        self.query = self.query.filter(product__category__in=id_list)
+        self.set_categories(id_list)
+
+    def set_categories(self, category_list):
+        self.query = self.query.filter(product__category__in=category_list)
 
     def set_discount_only(self):
         self.query = self.query.filter(sale_price__lt=F('price'))
