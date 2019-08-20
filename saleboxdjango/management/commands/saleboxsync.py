@@ -1033,9 +1033,7 @@ class Command(BaseCommand):
             lu = LastUpdate.objects.get(code=code)
             lu.value = float(api_lu)
             lu.save()
-            cache.clear()  # TODO, this probably wants to be a setting, and
-                           # better still, have a list of cache keys to
-                           # void, rather than all
+            cache.clear()
 
     def push_member(self, user):
         self.timer_set('saleboxsync_sync_start', time.time())

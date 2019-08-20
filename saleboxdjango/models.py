@@ -39,6 +39,9 @@ class Attribute(models.Model):
     def delete(self):
         pass
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
 class AttributeItem(models.Model):
     attribute = models.ForeignKey(Attribute, blank=True, null=True, on_delete=models.CASCADE)
@@ -58,6 +61,9 @@ class AttributeItem(models.Model):
     def delete(self):
         pass
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
 class BasketWishlist(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
@@ -241,6 +247,9 @@ class DiscountGroup(models.Model):
     def delete(self):
         pass
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
 class DiscountRuleset(models.Model):
     TYPE_CHOICES = (
@@ -267,6 +276,9 @@ class DiscountRuleset(models.Model):
     def delete(self):
         pass
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
 class Event(models.Model):
     event = models.CharField(max_length=50)
@@ -325,6 +337,9 @@ class MemberGroup(models.Model):
     def delete(self):
         pass
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
 class Member(models.Model):
     TITLE_CHOICES = (
@@ -464,7 +479,7 @@ class ProductCategory(MPTTModel):
             slug_path = '/'.join(slugs)
             if node.slug_path != slug_path:
                 ProductCategory.objects.filter(id=node.id).update(slug_path=slug_path)
-        cache.delete('category_tree')
+        cache.clear()
 
 
 class Product(models.Model):
@@ -536,6 +551,10 @@ class Product(models.Model):
 
     def get_trans(self, field, fallback_to_primary=True, non_primary_fallback=None):
         return self.get_trans_for_lang(get_language(), field, fallback_to_primary, non_primary_fallback)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
 
     def update_rating(self):
         variant_ids = ProductVariant \
@@ -701,6 +720,7 @@ class ProductVariant(models.Model):
 
         # save
         super(ProductVariant, self).save(*args, **kwargs)
+        cache.clear()
 
     def set_stock_checked_out(self, qty=0):
         if self.id:
