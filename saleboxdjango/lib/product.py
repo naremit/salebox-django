@@ -541,18 +541,35 @@ class SaleboxProduct:
 
 
 def translate_path(path):
-    o = {}
-    o['path_list'] = path.strip('/').split('/')
+    path = path.strip('/')
+    condensed_path = re.sub('/+', '/', path)
 
-    try:
-        o['page_number'] = int(o['path_list'][-1])
-        if o['page_number'] < 1:
-            raise Http404()
-        o['path_list'] = o['path_list'][:-1]
-        if len(o['path_list']) == 0:
-            o['path_list'].append('')
-    except:
-        o['page_number'] = 1
+    # 404 on double slashes
+    if condensed_path != path.replace('//', '/'):
+        raise Http404()
 
-    o['path'] = '/'.join(o['path_list'])
+    # create empty object
+    o = {
+        'page_number': 1,
+        'path': condensed_path,
+        'path_list': condensed_path.split('/')
+    }
+
+    # strip empty path
+    if o['path'] == '':
+        o['path_list'] = []
+    else:
+        try:
+            # is the last url segment a page number?
+            o['page_number'] = int(o['path_list'][-1])
+            del o['path_list'][-1]
+            o['path'] = '/'.join(o['path_list'])
+
+            # 404 if invalid page number
+            if o['page_number'] < 1:
+                raise Http404()
+        except:
+            pass
+
+    #
     return o
