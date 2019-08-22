@@ -21,8 +21,10 @@ class SaleboxProduct:
         # product filters
         self.query = ProductVariant.objects
         self.active_status = active_status
+        self.excludes = {}
         self.exclude_product_ids = []
         self.exclude_productvariant_ids = []
+        self.filters = {}
         self.min_price = None
         self.max_price = None
         self.max_result_count = None
@@ -56,6 +58,8 @@ class SaleboxProduct:
             self.query = \
                 self.query \
                     .exclude(product__id__in=self.exclude_product_ids) \
+                    .exclude(**self.excludes) \
+                    .filter(**self.filters) \
                     .order_by('product__id', 'price') \
                     .distinct('product__id') \
                     .values_list('id', flat=True)
@@ -329,6 +333,26 @@ class SaleboxProduct:
         if field_modifier is not None:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
+
+    def set_product_exclude(self, field, value, lookups=[]):
+        if isinstance(lookups, str):
+            lookups = [lookups]
+        self.excludes['__'.join(['product', field] + lookups)] = value
+
+    def set_product_filter(self, field, value, lookups=[]):
+        if isinstance(lookups, str):
+            lookups = [lookups]
+        self.filters['__'.join(['product', field] + lookups)] = value
+
+    def set_variant_exclude(self, field, value, lookups=[]):
+        if isinstance(lookups, str):
+            lookups = [lookups]
+        self.excludes['__'.join([field] + lookups)] = value
+
+    def set_variant_filter(self, field, value, lookups=[]):
+        if isinstance(lookups, str):
+            lookups = [lookups]
+        self.filters['__'.join([field] + lookups)] = value
 
     def set_search(self, s):
         # create default list
