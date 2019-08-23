@@ -334,25 +334,11 @@ class SaleboxProduct:
             key = '%s__%s' % (key, field_modifier)
         self.query = self.query.exclude(**{key: field_value})
 
-    def set_product_exclude(self, field, value, lookups=[]):
-        if isinstance(lookups, str):
-            lookups = [lookups]
-        self.excludes['__'.join(['product', field] + lookups)] = value
+    def set_exclude(self, lookup, value):
+        self.excludes[lookup] = value
 
-    def set_product_filter(self, field, value, lookups=[]):
-        if isinstance(lookups, str):
-            lookups = [lookups]
-        self.filters['__'.join(['product', field] + lookups)] = value
-
-    def set_variant_exclude(self, field, value, lookups=[]):
-        if isinstance(lookups, str):
-            lookups = [lookups]
-        self.excludes['__'.join([field] + lookups)] = value
-
-    def set_variant_filter(self, field, value, lookups=[]):
-        if isinstance(lookups, str):
-            lookups = [lookups]
-        self.filters['__'.join([field] + lookups)] = value
+    def set_filter(self, lookup, value):
+        self.filters[lookup] = value
 
     def set_search(self, s):
         # create default list
