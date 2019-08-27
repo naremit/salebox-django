@@ -8,8 +8,8 @@ class SaleboxRatingRemoveView(SaleboxRatingView):
 
     def form_valid(self, request):
         try:
-            self.sr.set_variant(self.form.cleaned_data['variant_id'])
-            self.sr.remove_rating()
+            self.sr.set_variant_from_id(self.form.cleaned_data['variant_id'])
+            self.sr.rating_remove()
 
             self.status = 'success'
             self.results = self.sr.get_data(self.results_csv)
