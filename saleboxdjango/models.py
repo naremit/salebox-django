@@ -782,6 +782,18 @@ class ProductVariantRating(models.Model):
         super().save(*args, **kwargs)
         self.variant.update_rating()
 
+    def rating_10(self):
+        try:
+            return round(self.rating / 10)
+        except:
+            return None
+
+    def rating_5(self):
+        try:
+            return round(self.rating / 20)
+        except:
+            return None
+
 class SaleboxUser(AbstractUser):
     salebox_member_id = models.UUIDField(blank=True, db_index=True, editable=True, null=True)
     salebox_member_sync = JSONField(blank=True, null=True)

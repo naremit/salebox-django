@@ -53,6 +53,7 @@ class SaleboxBasketMigrateForm(SaleboxBaseForm):
 class SaleboxRatingAddForm(SaleboxBaseForm):
     variant_id = forms.IntegerField()
     rating = forms.IntegerField(min_value=0, max_value=100)
+    review = forms.CharField(required=False)
 
 
 class SaleboxRatingRemoveForm(SaleboxBaseForm):

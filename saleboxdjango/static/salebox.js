@@ -130,12 +130,13 @@ var salebox = {
     },
 
     rating: {
-        addAjax: function(variantId, rating, results, callback, fail) {
+        addAjax: function(variantId, rating, review, results, callback, fail) {
             salebox.utils.ajax(
                 '/salebox/rating/add/',
                 {
                     variant_id: variantId,
                     rating: rating,
+                    review: review,
                     results: results
                 },
                 callback,

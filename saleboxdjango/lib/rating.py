@@ -55,6 +55,7 @@ class SaleboxRating:
                 .filter(review__inull=False) \
                 .filter(active_flag=True) \
                 .filter(review_qc_flag=False) \
+                .select_related('user') \
                 .order_by(order)
 
     # get the score for a single variant (votes from all users)
@@ -75,8 +76,9 @@ class SaleboxRating:
                 .objects \
                 .filter(variant=self.variant.id) \
                 .filter(active_flag=True) \
-                .filter(review__inull=False) \
+                .filter(review__isnull=False) \
                 .filter(review_qc_flag=False) \
+                .select_related('user') \
                 .order_by(order)
 
     # get the score for a single variant (current user's vote only)
@@ -99,18 +101,19 @@ class SaleboxRating:
         return None
 
     # add (or update an existing) variant rating
-    def rating_add(self, rating):
+    def rating_add(self, rating, review=None):
         if self.user is not None:
             if self.variant is None:
                 raise ValueError('SaleboxRating product variant not set')
 
-            pvr = ProductVariantRating \
+            pvs = ProductVariantRating \
                     .objects \
                     .filter(variant=self.variant) \
                     .filter(user=self.user)
 
             if len(pvs) > 0:
                 pvs[0].rating = rating
+                pvs[0].review = review
                 pvs[0].save()
                 for pv in pvs[1:]:
                     pv.delete()
@@ -118,7 +121,8 @@ class SaleboxRating:
                 pv = ProductVariantRating(
                     user=self.user,
                     variant=self.variant,
-                    rating=rating
+                    rating=rating,
+                    review=review
                 )
                 pv.save()
 
