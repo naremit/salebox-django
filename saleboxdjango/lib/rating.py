@@ -28,19 +28,56 @@ class SaleboxRating:
 
         return o
 
-    # get the score for a single product (all votes)
+    # get the score for a single product (votes from all users)
     def get_global_product_rating(self):
         if self.variant is None:
             raise ValueError('SaleboxRating product variant not set')
+
         p = Product.objects.get(id=self.variant.product.id)
         return self._return_rating(p.rating_vote_count, p.rating_score)
 
-    # get the score for a single variant (all votes)
+    # get reviews (ratings with review text) for a single product (votes from all users)
+    # TODO: pagination
+    def get_global_product_reviews(self, order='-created'):
+        if self.variant is None:
+            raise ValueError('SaleboxRating product variant not set')
+
+        # get variant IDs
+        variant_ids = ProductVariant \
+                        .objects \
+                        .filter(product=self.variant.product) \
+                        .values_list('id', flat=True)
+
+        # return all reviews for all variants in above list
+        return ProductVariantRating \
+                .objects \
+                .filter(variant=variant_ids) \
+                .filter(review__inull=False) \
+                .filter(active_flag=True) \
+                .filter(review_qc_flag=False) \
+                .order_by(order)
+
+    # get the score for a single variant (votes from all users)
     def get_global_variant_rating(self):
         if self.variant is None:
             raise ValueError('SaleboxRating product variant not set')
+
         pv = ProductVariant.objects.get(id=self.variant.id)
         return self._return_rating(pv.rating_vote_count, pv.rating_score)
+
+    # get reviews (ratings with review text) for a single variant (votes from all users)
+    # TODO: pagination
+    def get_global_variant_reviews(self, order='-created'):
+        if self.variant is None:
+            raise ValueError('SaleboxRating product variant not set')
+
+        return ProductVariantRating \
+                .objects \
+                .filter(variant=self.variant.id) \
+                .filter(active_flag=True) \
+                .filter(review__inull=False) \
+                .filter(review_qc_flag=False) \
+                .order_by(order)
 
     # get the score for a single variant (current user's vote only)
     def get_user_variant_rating(self):

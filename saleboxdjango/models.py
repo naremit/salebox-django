@@ -760,6 +760,9 @@ class ProductVariantRating(models.Model):
     variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     rating = models.IntegerField(default=50)
+    review = models.TextField(blank=True, null=True)
+    review_qc_flag = models.BooleanField(default=False)
+    active_flag = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -772,6 +775,10 @@ class ProductVariantRating(models.Model):
         variant.update_rating()
 
     def save(self, *args, **kwargs):
+        if self.review is not None:
+            self.review = self.review.strip()
+            if len(self.review) == 0:
+                self.review = None
         super().save(*args, **kwargs)
         self.variant.update_rating()
 
