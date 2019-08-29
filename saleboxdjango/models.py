@@ -1,4 +1,5 @@
 from random import randint
+import datetime
 import time
 import uuid
 
@@ -398,6 +399,11 @@ class Member(models.Model):
     boolean_5 = models.BooleanField(default=False)
     boolean_6 = models.BooleanField(default=False)
     group_when_created = models.ForeignKey(MemberGroup, blank=True, null=True, related_name='group_when_created', on_delete=models.CASCADE)
+
+    salebox_transactionhistory_request_dt = models.DateTimeField(default=datetime.datetime.now, blank=True, null=True)
+    salebox_transactionhistory_count = models.IntegerField(default=0)
+    salebox_transactionhistory_data = JSONField(blank=True, null=True)
+
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -410,6 +416,16 @@ class Member(models.Model):
 
     def delete(self):
         pass
+
+    def transactionhistory_request_sync(self):
+        self.sync_requested_dt = datetime.datetime.now()
+        self.save()
+
+    def transactionhistory_update_data(self, data):
+        self.salebox_transactionhistory_data = data
+        self.salebox_transactionhistory_count = 0  # TODO
+        self.salebox_transactionhistory_request_dt = None
+        self.save()
 
 class ProductCategory(MPTTModel):
     short_name = models.CharField(max_length=30)

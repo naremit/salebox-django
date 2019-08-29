@@ -39,12 +39,12 @@ class SaleboxEventHandler:
         Add your code here
         Don't forget to set the processed_flag when done
         """
-        event.processed_flag=True
+        event.processed_flag = True
         event.save()
+        self._sync_member_history(event)
 
     def event_transaction_created(self, event):
-        #try:
-        if True:
+        try:
             t = self._fetch_transaction(event)
             if t['status'] != 'OK':
                 return
@@ -69,24 +69,27 @@ class SaleboxEventHandler:
             # mark as processed
             event.processed_flag = True
             event.save()
-        #except:
-        #    pass
+            self._sync_member_history(event)
+        except:
+            pass
 
     def event_transaction_shipping_packed(self, event):
         """
         Add your code here
         Don't forget to set the processed_flag when done
         """
-        event.processed_flag=True
+        event.processed_flag = True
         event.save()
+        self._sync_member_history(event)
 
     def event_transaction_shipping_picked(self, event):
         """
         Add your code here
         Don't forget to set the processed_flag when done
         """
-        event.processed_flag=True
+        event.processed_flag = True
         event.save()
+        self._sync_member_history(event)
 
     def event_transaction_shipping_shipped(self, event):
         try:
@@ -114,6 +117,7 @@ class SaleboxEventHandler:
             # mark as processed
             event.processed_flag = True
             event.save()
+            self._sync_member_history(event)
         except:
             pass
 
@@ -152,6 +156,14 @@ class SaleboxEventHandler:
             return o
         except:
             return None
+
+    def _sync_member_history(self, event):
+        if event.salebox_member_id:
+            try:
+                m = Member.objects.get(salebox_member_id=event.salebox_member_id)
+                m.transactionhistory_request_sync()
+            except:
+                pass
 
     # optional: for use with django-mail-queue
     def _mailqueue(self, to_address, subject, content, html=None, cc=None, bcc=None, from_address=None):
