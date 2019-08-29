@@ -104,7 +104,10 @@ class Command(BaseCommand):
         # step 7: update stock levels
         self.pull_inventory()
 
-        # step 8: check for timed-out checkout stores
+        # step 8: pull latest member transaction history
+        self.pull_transaction_history()
+
+        # step 9: check for timed-out checkout stores
         css = CheckoutStore.objects.filter(status__lt=30)
         for cs in css:
             cs.check_for_timeout()
@@ -1034,6 +1037,29 @@ class Command(BaseCommand):
             lu.value = float(api_lu)
             lu.save()
             cache.clear()
+
+    def pull_transaction_history(self):
+        members = Member \
+                    .objects \
+                    .filter(salebox_transactionhistory_request_dt__isnull=False) \
+                    .order_by('salebox_transactionhistory_request_dt')[0:100]
+
+        for m in members:
+            self.timer_set('saleboxsync_sync_start', time.time())
+            url = '%s/api/pos/v2/member-transaction-history' % (
+                settings.SALEBOX['API']['URL'],
+            )
+            post = self.init_post()
+            post['salebox_member_id'] = str(m.salebox_member_id)
+
+            # fetch from server
+            try:
+                r = requests.post(url, data=post)
+                result = r.json()
+                if 'transactions' in result:
+                    m.transactionhistory_update_data(result['transactions'])
+            except:
+                pass
 
     def push_member(self, user):
         self.timer_set('saleboxsync_sync_start', time.time())

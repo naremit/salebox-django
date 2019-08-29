@@ -421,9 +421,11 @@ class Member(models.Model):
         self.sync_requested_dt = datetime.datetime.now()
         self.save()
 
-    def transactionhistory_update_data(self, data):
-        self.salebox_transactionhistory_data = data
-        self.salebox_transactionhistory_count = 0  # TODO
+    def transactionhistory_update_data(self, transaction_list):
+        for t in transaction_list:
+            del t['member']
+        self.salebox_transactionhistory_data = transaction_list
+        self.salebox_transactionhistory_count = len(transaction_list)
         self.salebox_transactionhistory_request_dt = None
         self.save()
 
