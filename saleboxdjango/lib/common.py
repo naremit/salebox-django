@@ -1,7 +1,10 @@
+import datetime
+import pytz
 import re
 
 from django.conf import settings
 from django.db import connection
+from django.utils.timezone import localtime
 
 
 def dictfetchall(sql):
@@ -13,16 +16,13 @@ def dictfetchall(sql):
             for row in cursor.fetchall()
         ]
 
-
 def fetchflatlist(sql):
     with connection.cursor() as cursor:
         cursor.execute(sql)
         return [row[0] for row in cursor.fetchall()]
 
-
 def fetchsinglevalue(sql):
     return fetchflatlist(sql)[0]
-
 
 def get_rating_display(score, vote_count):
     if vote_count > 0:
@@ -34,6 +34,11 @@ def get_rating_display(score, vote_count):
     else:
         return {'100': 0, '5': 0, '10': 0}
 
+def json_to_datetime_local(value):
+    return localtime(json_to_datetime_utc(value))
+
+def json_to_datetime_utc(value):
+    return datetime.datetime(*value, tzinfo=pytz.UTC)
 
 def update_natural_sort(model, str_column, sort_column):
     # retrieve all rows

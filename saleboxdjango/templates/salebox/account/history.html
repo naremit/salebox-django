@@ -1,0 +1,18 @@
+{% load i18n salebox_utils %}
+
+<p><a href="../">My Account</a></p>
+<h1>{% trans "My purchase history" %}</h1>
+{% if member.salebox_transactionhistory_count > 0 %}
+    <table>
+        {% for t in member.salebox_transactionhistory_data %}
+        <tr>
+            <td>{{ t.dt|date:"d M Y H:i" }}</td>
+            <td><a href="{{ t.pos_guid }}/">{{ t.pos_guid }}</a></td>
+            <td>x{{ t.basket_size }}</td>
+            <td>{{ t.total_price_plus_shipping|sb_currency }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No transactions found</p>
+{% endif %}

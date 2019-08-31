@@ -13,7 +13,7 @@ from django.utils.timezone import now
 from django.utils.translation import get_language
 
 from mptt.models import MPTTModel, TreeForeignKey
-from saleboxdjango.lib.common import get_rating_display
+from saleboxdjango.lib.common import get_rating_display, json_to_datetime_local, json_to_datetime_utc
 
 CHECKOUT_STATUS_CHOICES = (
     (10, 'New: Pending send to gateway'),
@@ -428,6 +428,16 @@ class Member(models.Model):
         self.salebox_transactionhistory_count = len(transaction_list)
         self.salebox_transactionhistory_request_dt = None
         self.save()
+
+    def transactionhistory_get_data(self):
+        transactions = self.salebox_transactionhistory_data
+        for t in transactions:
+            t['dt'] = json_to_datetime_local(t['dt'])
+            t['basket_size'] = 0
+            for b in t['basket']:
+                t['basket_size'] += b['quantity']
+
+        return transactions
 
 class ProductCategory(MPTTModel):
     short_name = models.CharField(max_length=30)
