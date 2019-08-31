@@ -439,6 +439,14 @@ class Member(models.Model):
 
         return transactions
 
+    def transactionhistory_get_single_transaction(self, pos_guid):
+        pos_guid = pos_guid.lower()
+        for t in self.salebox_transactionhistory_data:
+            if t['pos_guid'].lower() == pos_guid:
+                return t
+
+        return None
+
 class ProductCategory(MPTTModel):
     short_name = models.CharField(max_length=30)
     name = models.CharField(max_length=100)

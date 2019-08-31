@@ -1,0 +1,9 @@
+{% load i18n salebox_utils %}
+
+<p>
+    <a href="../../">My account</a>
+    &gt;
+    <a href="../">My purchase history</a>
+</p>
+<h1>{{ transaction.pos_guid }}</h1>
+<pre>{{ transaction|pprint }}</pre>
