@@ -9,7 +9,7 @@
             <td>{{ t.dt|date:"d M Y H:i" }}</td>
             <td><a href="{{ t.pos_guid }}/">{{ t.pos_guid }}</a></td>
             <td>x{{ t.basket_size }}</td>
-            <td>{{ t.total_price_plus_shipping|sb_currency }}</td>
+            <td class="basket-price">{{ t.total_price_plus_shipping|sb_currency }}</td>
         </tr>
         {% endfor %}
     </table>

@@ -1042,7 +1042,7 @@ class Command(BaseCommand):
         members = Member \
                     .objects \
                     .filter(salebox_transactionhistory_request_dt__isnull=False) \
-                    .order_by('salebox_transactionhistory_request_dt')[0:100]
+                    .order_by('salebox_transactionhistory_request_dt')[0:1000]
 
         for m in members:
             self.timer_set('saleboxsync_sync_start', time.time())

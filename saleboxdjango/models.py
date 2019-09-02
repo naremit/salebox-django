@@ -435,6 +435,17 @@ class Member(models.Model):
             t['dt'] = json_to_datetime_local(t['dt'])
             t['basket_size'] = 0
             for b in t['basket']:
+                try:
+                    pv = ProductVariant \
+                            .objects \
+                            .filter(id=b['product_variant']['id']) \
+                            .select_related('product', 'product__category') \
+                            .first()
+                    b['product_variant'] = pv
+                    b['product'] = pv.product
+                    b['category'] = pv.product.category
+                except:
+                    pass
                 t['basket_size'] += b['quantity']
 
         return transactions
