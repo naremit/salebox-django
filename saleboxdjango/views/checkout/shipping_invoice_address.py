@@ -20,6 +20,7 @@ class SaleboxFormNameForm(forms.Form):
         ('add_invoice', 'add_invoice'),
     ))
 
+
 class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
     initial = {}
     checkout_step = 'shipping_invoice_address'
@@ -36,21 +37,34 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
 
         # shipping form
         context['shipping_form'] = self.shipping_form
-        context['shipping_addresses'] = sa.get(
-            selected_id=self.sc.data['shipping_address']['id'],
-            force_selected=True
-        )
+        if self.request.user.is_authenticated:
+            context['shipping_addresses'] = sa.get(
+                selected_id=self.sc.data['shipping_address']['id'],
+                force_selected=True
+            )
+        else:
+            context['shipping_addresses'] = []
+            if self.sc.data['shipping_address']['address']:
+                context['shipping_addresses'].append(self.sc.data['shipping_address']['address'])
+                context['shipping_addresses'][0]['selected'] = True
+
         context['shipping_address_extras'] = sa.form_extras(
             country_id=self.shipping_form['country'].value()
         )
 
         # invoice form
         context['invoice_form'] = self.invoice_form
-        context['invoice_addresses'] = sa.get(
-            selected_id=self.sc.data['invoice_address']['id'],
-            non_null_fields=['tax_id'],
-            force_selected=True
-        )
+        if self.request.user.is_authenticated:
+            context['invoice_addresses'] = sa.get(
+                selected_id=self.sc.data['invoice_address']['id'],
+                non_null_fields=['tax_id'],
+                force_selected=True
+            )
+        else:
+            context['invoice_addresses'] = []
+            if self.sc.data['invoice_address']['address']:
+                context['invoice_addresses'].append(self.sc.data['invoice_address']['address'])
+                context['invoice_addresses'][0]['selected'] = True
         context['invoice_address_extras'] = sa.form_extras(
             country_id=self.invoice_form['country'].value()
         )
@@ -105,7 +119,7 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
                 # add address to db
                 sa = SaleboxAddress(request.user)
                 address = sa.add(self.shipping_form.cleaned_data)
-                self.sc.set_shipping_address(True, address.id, None, request)
+                self.sc.set_shipping_address(True, address, None, request)
 
                 # redirect to self to prevent refresh
                 return redirect(request.get_full_path())
@@ -122,7 +136,7 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
                     # add address to db
                     sa = SaleboxAddress(request.user)
                     address = sa.add(self.invoice_form.cleaned_data)
-                    self.sc.set_invoice_address(True, address.id, None, request)
+                    self.sc.set_invoice_address(True, address, None, request)
 
                     # redirect to self to prevent refresh
                     return redirect(request.get_full_path())

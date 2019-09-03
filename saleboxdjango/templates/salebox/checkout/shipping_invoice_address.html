@@ -10,8 +10,10 @@
 
         <h3>Pick a shipping address:</h3>
         {% include "salebox/address/list_radio.html" with addresses=shipping_addresses field_name='shipping_address_id' %}
+        {% if request.user.is_authenticated %}
         <hr>
         <p>Or <span class="text-primary" onclick="salebox.checkout.shippingInvoiceAddress.showAddForm(true)">add a new one</span></p>
+        {% endif %}
 
         <hr>
         <h3>Do you need a tax invoice?</h3>

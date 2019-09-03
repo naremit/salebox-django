@@ -13,12 +13,13 @@ from saleboxdjango.models import Country, CountryState, CountryTranslation, \
 class SaleboxAddress:
     def __init__(self, user, address_group='default'):
         self.user = user
-        self.query = UserAddress \
-                        .objects \
-                        .filter(user=user) \
-                        .filter(address_group=address_group) \
-                        .filter(active_flag=True) \
-                        .select_related('country', 'country_state')
+        if self.user.is_authenticated:
+            self.query = UserAddress \
+                            .objects \
+                            .filter(user=user) \
+                            .filter(address_group=address_group) \
+                            .filter(active_flag=True) \
+                            .select_related('country', 'country_state')
 
     def add(self, values):
         # get country
@@ -31,8 +32,8 @@ class SaleboxAddress:
             values['country_state'] = \
                 CountryState.objects.get(id=values['country_state'])
 
+        # create address instance
         address = UserAddress(
-            user=self.user,
             default=values['default'] or False,
             address_group=values['address_group'] or 'default',
             full_name=values['full_name'],
@@ -51,7 +52,12 @@ class SaleboxAddress:
             string_2=values['string_2'],
             tax_id=values['tax_id']
         )
-        address.save()
+
+        # save to db if user is authenticated
+        if self.user.is_authenticated:
+            address.user=self.user
+            address.save()
+
         return address
 
     def form_extras(self, country_id=None):
@@ -83,6 +89,10 @@ class SaleboxAddress:
             force_selected=False,
             non_null_fields=[]
         ):
+            # return an empty list for non-authenticated users
+            if not self.user.is_authenticated:
+                return []
+
             # get addresses
             addresses = self.query.all()
             if 'tax_id' in non_null_fields:

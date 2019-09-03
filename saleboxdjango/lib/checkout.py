@@ -147,12 +147,36 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
-    def set_invoice_address(self, required, id, meta, request):
-        if id is None:
+    def set_invoice_address(self, required, address_or_id, meta, request):
+        if address_or_id is None:
             self.data['invoice_address']['address'] = None
         else:
-            self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
-        self.data['invoice_address']['id'] = id
+            if isinstance(address_or_id, int):
+                self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
+                self.data['invoice_address']['id'] = id
+            else:
+                self.data['invoice_address']['address'] = {
+                    'default': address_or_id.default,
+                    'address_group': address_or_id.address_group,
+                    'full_name': address_or_id.full_name,
+                    'address_1': address_or_id.address_1,
+                    'address_2': address_or_id.address_2,
+                    'address_3': address_or_id.address_3,
+                    'address_4': address_or_id.address_4,
+                    'address_5': address_or_id.address_5,
+                    'country_state': model_to_dict(address_or_id.country_state) if address_or_id.country_state else None,
+                    'country': model_to_dict(address_or_id.country) if address_or_id.country else None,
+                    'id': None,
+                    'postcode': address_or_id.postcode,
+                    'phone_1': address_or_id.phone_1,
+                    'phone_2': address_or_id.phone_2,
+                    'email': address_or_id.email,
+                    'string_1': address_or_id.string_1,
+                    'string_2': address_or_id.string_2,
+                    'tax_id': address_or_id.tax_id
+                }
+                self.data['invoice_address']['id'] = None
+
         self.data['invoice_address']['meta'] = meta
         self.data['invoice_address']['required'] = required
         self._write_session(request)
@@ -164,9 +188,33 @@ class SaleboxCheckout:
         }
         self._write_session(request)
 
-    def set_shipping_address(self, required, id, meta, request):
-        self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
-        self.data['shipping_address']['id'] = id
+    def set_shipping_address(self, required, address_or_id, meta, request):
+        if isinstance(address_or_id, int):
+            self.data['shipping_address']['address'] = model_to_dict(UserAddress.objects.get(id=address_or_id))
+            self.data['shipping_address']['id'] = address_or_id
+        else:
+            self.data['shipping_address']['address'] = {
+                'default': address_or_id.default,
+                'address_group': address_or_id.address_group,
+                'full_name': address_or_id.full_name,
+                'address_1': address_or_id.address_1,
+                'address_2': address_or_id.address_2,
+                'address_3': address_or_id.address_3,
+                'address_4': address_or_id.address_4,
+                'address_5': address_or_id.address_5,
+                'country_state': model_to_dict(address_or_id.country_state) if address_or_id.country_state else None,
+                'country': model_to_dict(address_or_id.country) if address_or_id.country else None,
+                'id': None,
+                'postcode': address_or_id.postcode,
+                'phone_1': address_or_id.phone_1,
+                'phone_2': address_or_id.phone_2,
+                'email': address_or_id.email,
+                'string_1': address_or_id.string_1,
+                'string_2': address_or_id.string_2,
+                'tax_id': address_or_id.tax_id
+            }
+            self.data['shipping_address']['id'] = None
+
         self.data['shipping_address']['meta'] = meta
         self.data['shipping_address']['required'] = required
         self._write_session(request)
