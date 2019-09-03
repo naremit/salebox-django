@@ -88,21 +88,30 @@ class SaleboxCheckoutShippingInvoiceAddressView(SaleboxCheckoutBaseView):
 
         # action: user has selected an option
         if action == 'select_address':
-            form = self.form_class(request.POST)
-            if form.is_valid():
-                self.sc.set_shipping_address(
-                    True,
-                    form.cleaned_data['shipping_address_id'],
-                    None,
-                    request
-                )
-                self.sc.set_invoice_address(
-                    form.cleaned_data['invoice_required'],
-                    form.cleaned_data['invoice_address_id'],
-                    None,
-                    request
-                )
+            if request.user.is_authenticated:
+                form = self.form_class(request.POST)
+                if form.is_valid():
+                    self.sc.set_shipping_address(
+                        True,
+                        form.cleaned_data['shipping_address_id'],
+                        None,
+                        request
+                    )
+                    self.sc.set_invoice_address(
+                        form.cleaned_data['invoice_required'],
+                        form.cleaned_data['invoice_address_id'],
+                        None,
+                        request
+                    )
 
+                    r = self.sc.set_completed(self.checkout_step, request)
+                    if r is None:
+                        raise Exception('There is no next checkout step to redirect to...')
+                    else:
+                        return redirect(r)
+
+            # unathenticated users
+            if not request.user.is_authenticated and self.sc.data['shipping_address']:
                 r = self.sc.set_completed(self.checkout_step, request)
                 if r is None:
                     raise Exception('There is no next checkout step to redirect to...')

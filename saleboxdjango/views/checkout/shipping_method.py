@@ -7,6 +7,7 @@ from saleboxdjango.views.checkout.base import SaleboxCheckoutBaseView
 class SaleboxCheckoutShippingMethodForm(forms.Form):
     shipping_method = forms.IntegerField()
 
+
 class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
     shipping_options_class = SaleboxShippingOptions
     checkout_step = 'shipping_method'
