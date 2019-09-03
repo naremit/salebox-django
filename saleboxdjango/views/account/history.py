@@ -1,3 +1,5 @@
+import math
+
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.utils.decorators import method_decorator
@@ -15,17 +17,15 @@ class SaleboxAccountHistoryListView(TemplateView):
         context = self.get_context_data(**kwargs)
         context['user'] = request.user
         context['member'] = request.user.get_member()
-
-        """
-        # ---
-        from apps.user.models import User
-        u = User.objects.get(id=19)
-        context['user'] = u
-        context['member'] = u.get_member()
-        # ---
-        """
-
         context['member'].transactionhistory_get_data()
+
+        # filter data depenent on search
+        s = request.GET.get('filter', '').lower()
+        if len(s) > 0:
+            context['member'].salebox_transactionhistory_data = [
+                d for d in context['member'].salebox_transactionhistory_data if s in d['pos_guid'].lower()
+            ]
+
         return self.render_to_response(context)
 
 
@@ -39,13 +39,6 @@ class SaleboxAccountHistoryDetailView(TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         context['user'] = request.user
-
-        """
-        # ---
-        from apps.user.models import User
-        context['user'] = User.objects.get(id=19)
-        # ---
-        """
 
         try:
             member = context['user'].get_member()
