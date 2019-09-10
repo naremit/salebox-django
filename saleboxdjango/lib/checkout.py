@@ -152,8 +152,8 @@ class SaleboxCheckout:
             self.data['invoice_address']['address'] = None
         else:
             if isinstance(address_or_id, int):
-                self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=id))
-                self.data['invoice_address']['id'] = id
+                self.data['invoice_address']['address'] = model_to_dict(UserAddress.objects.get(id=address_or_id))
+                self.data['invoice_address']['id'] = address_or_id
             else:
                 self.data['invoice_address']['address'] = {
                     'default': address_or_id.default,
