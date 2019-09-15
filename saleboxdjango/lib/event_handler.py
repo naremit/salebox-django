@@ -50,21 +50,22 @@ class SaleboxEventHandler:
                 return
 
             # queue email
-            self._mailqueue(
-                t['transaction']['member']['email'],
-                render_to_string(
-                    'salebox/email/transaction_created/subject.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/transaction_created/body.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/transaction_created/body.html',
-                    t['transaction']
+            if t['transaction']['member'] is not None and 'email' in t['transaction']['member']:
+                self._mailqueue(
+                    t['transaction']['member']['email'],
+                    render_to_string(
+                        'salebox/email/transaction_created/subject.txt',
+                        t['transaction']
+                    ),
+                    render_to_string(
+                        'salebox/email/transaction_created/body.txt',
+                        t['transaction']
+                    ),
+                    render_to_string(
+                        'salebox/email/transaction_created/body.html',
+                        t['transaction']
+                    )
                 )
-            )
 
             # mark as processed
             event.processed_flag = True
@@ -98,21 +99,22 @@ class SaleboxEventHandler:
                 return
 
             # queue email
-            self._mailqueue(
-                t['transaction']['member']['email'],
-                render_to_string(
-                    'salebox/email/shipping_shipped/subject.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/shipping_shipped/body.txt',
-                    t['transaction']
-                ),
-                render_to_string(
-                    'salebox/email/shipping_shipped/body.html',
-                    t['transaction']
+            if t['transaction']['member'] is not None and 'email' in t['transaction']['member']:
+                self._mailqueue(
+                    t['transaction']['member']['email'],
+                    render_to_string(
+                        'salebox/email/shipping_shipped/subject.txt',
+                        t['transaction']
+                    ),
+                    render_to_string(
+                        'salebox/email/shipping_shipped/body.txt',
+                        t['transaction']
+                    ),
+                    render_to_string(
+                        'salebox/email/shipping_shipped/body.html',
+                        t['transaction']
+                    )
                 )
-            )
 
             # mark as processed
             event.processed_flag = True
