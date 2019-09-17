@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import inspect
 import json
 import os
 import requests
@@ -10,6 +11,7 @@ from pprint import pprint
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.core.mail import mail_admins
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
 from django.utils import timezone
@@ -143,7 +145,7 @@ class Command(BaseCommand):
             r = requests.post(url, data=post)
             have_response = True
         except:
-            print('Something went wrong: ConnectionError')
+            self.send_admin_email('Could not connect to Salebox POSv2 API')
             have_response = False
 
         try:
@@ -280,7 +282,7 @@ class Command(BaseCommand):
                 return response['resync_now']
                 # return False
         except:
-            print('Something went wrong')
+            self.send_admin_email()
             return False
 
     def pull_get_sync_from_dict(self):
@@ -324,7 +326,7 @@ class Command(BaseCommand):
         try:
             os.makedirs(target_dir)
         except:
-            pass
+            self.send_admin_email()
 
         # fetch image
         try:
@@ -337,7 +339,7 @@ class Command(BaseCommand):
                 open(target, 'wb').write(r.content)
                 return filename, True
         except:
-            pass
+            self.send_admin_email()
 
         return None, False
 
@@ -442,7 +444,7 @@ class Command(BaseCommand):
             if result['status'] == 'OK':
                 inventory = result['inventory']
         except:
-            pass
+            self.send_admin_email('Could not connect to Salebox POSv2 API')
 
         # apply results
         if len(inventory) > 0:
@@ -491,7 +493,7 @@ class Command(BaseCommand):
 
             print('%s x Attribute' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_attribute_item(self, data, api_lu, sync_from_dict):
         try:
@@ -512,7 +514,7 @@ class Command(BaseCommand):
 
             print('%s x AttributeItem' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_country(self, data, api_lu, sync_from_dict):
         try:
@@ -534,7 +536,7 @@ class Command(BaseCommand):
 
             print('%s x Country' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_country_state(self, data, api_lu, sync_from_dict):
         try:
@@ -555,7 +557,7 @@ class Command(BaseCommand):
 
             print('%s x CountryState' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_country_state_translation(self, data, api_lu, sync_from_dict):
         try:
@@ -576,7 +578,7 @@ class Command(BaseCommand):
 
             print('%s x CountryStateTranslation' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_country_translation(self, data, api_lu, sync_from_dict):
         try:
@@ -597,7 +599,7 @@ class Command(BaseCommand):
 
             print('%s x CountryTranslation' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_discount_group(self, data, api_lu, sync_from_dict):
         # for d in data
@@ -649,7 +651,7 @@ class Command(BaseCommand):
 
             print('%s x Event' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_member(self, data, api_lu, sync_from_dict):
         try:
@@ -740,7 +742,7 @@ class Command(BaseCommand):
 
             print('%s x Member' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_member_group(self, data, api_lu, sync_from_dict):
         try:
@@ -763,7 +765,7 @@ class Command(BaseCommand):
 
             print('%s x MemberGroup' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_product(self, data, api_lu, sync_from_dict):
         def sync_attributes(product, attribute_number, id_list):
@@ -835,7 +837,7 @@ class Command(BaseCommand):
 
             print('%s x Product' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_product_category(self, data, api_lu, sync_from_dict):
         try:
@@ -887,7 +889,7 @@ class Command(BaseCommand):
 
             print('%s x ProductCategory' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_product_variant(self, data, api_lu, sync_from_dict):
         def sync_attributes(variant, attribute_number, id_list):
@@ -987,7 +989,7 @@ class Command(BaseCommand):
 
             print('%s x ProductVariant' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_model_product_variant_image(self, data, api_lu, sync_from_dict):
         try:
@@ -1022,7 +1024,7 @@ class Command(BaseCommand):
 
             print('%s x ProductVariantImage' % len(data))
         except:
-            pass
+            self.send_admin_email()
 
     def pull_set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
         if increment:
@@ -1059,7 +1061,7 @@ class Command(BaseCommand):
                 if 'transactions' in result:
                     m.transactionhistory_update_data(result['transactions'])
             except:
-                pass
+                self.send_admin_email('Could not connect to Salebox POSv2 API')
 
     def push_member(self, user):
         self.timer_set('saleboxsync_sync_start', time.time())
@@ -1082,7 +1084,7 @@ class Command(BaseCommand):
                 user.save()
                 self.timer_set('saleboxsync_pull_start', 0.0)
         except:
-            print('Failed to POST member data')
+            self.send_admin_email('Failed to POST member data')
 
     def push_members(self):
         users = get_user_model() \
@@ -1113,7 +1115,7 @@ class Command(BaseCommand):
             r = requests.post(url, data=data)
             have_response = True
         except:
-            print('Something went wrong: ConnectionError')
+            self.send_admin_email()
             have_response = False
 
         # check response
@@ -1146,6 +1148,30 @@ class Command(BaseCommand):
             transactions_pushed = True
 
         return transactions_pushed
+
+    def send_admin_email(self, extra=None):
+        caller = inspect.currentframe().f_back
+        msg = [
+            'saleboxsync error occurred:',
+            '',
+            '         Website: %s' % settings.ALLOWED_HOSTS[0],
+            '      Backoffice: %s' % settings.SALEBOX['API']['URL'],
+            '  Error function: %s' % caller.f_code.co_name,
+            '    Error lineno: %s' % caller.f_lineno,
+        ]
+
+        if extra is not None:
+            msg.append('           Notes: %s' % extra)
+
+        if settings.DEBUG:
+            print('--------------------------------------------------------------------------')
+            print('\n'.join(msg))
+            print('--------------------------------------------------------------------------')
+        else:
+            mail_admins(
+                'saleboxsync error: %s' % settings.ALLOWED_HOSTS[0],
+                '\n'.join(msg)
+            )
 
     def timer_get(self, code, default_value=0.0):
         try:
