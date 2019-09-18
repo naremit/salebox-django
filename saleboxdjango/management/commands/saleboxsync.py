@@ -440,11 +440,18 @@ class Command(BaseCommand):
         # fetch from server
         try:
             r = requests.post(url, data=post)
+            if r.status_code != 200:
+                self.send_admin_email('API response status code: ' % r.status_code)
             result = r.json()
             if result['status'] == 'OK':
-                inventory = result['inventory']
+                if 'inventory' in result:
+                    inventory = result['inventory']
+                else:
+                    self.send_admin_email('API response recieved but inventory missing')
+            else:
+                self.send_admin_email('API response recieved but status not OK')
         except:
-            self.send_admin_email('Could not connect to Salebox POSv2 API')
+            self.send_admin_email('Unknown error connecting to Salebox POSv2 API')
 
         # apply results
         if len(inventory) > 0:
