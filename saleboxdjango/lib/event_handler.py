@@ -50,9 +50,10 @@ class SaleboxEventHandler:
                 return
 
             # queue email
-            if t['transaction']['member'] is not None and 'email' in t['transaction']['member']:
+            email = self._fetch_transaction_email(t)
+            if email is not None:
                 self._mailqueue(
-                    t['transaction']['member']['email'],
+                    email,
                     render_to_string(
                         'salebox/email/transaction_created/subject.txt',
                         t['transaction']
@@ -99,9 +100,10 @@ class SaleboxEventHandler:
                 return
 
             # queue email
-            if t['transaction']['member'] is not None and 'email' in t['transaction']['member']:
+            email = self._fetch_transaction_email(t)
+            if email is not None:
                 self._mailqueue(
-                    t['transaction']['member']['email'],
+                    email,
                     render_to_string(
                         'salebox/email/shipping_shipped/subject.txt',
                         t['transaction']
@@ -158,6 +160,15 @@ class SaleboxEventHandler:
             return o
         except:
             return None
+
+    def _fetch_transaction_email(self, transaction):
+        if transaction['transaction']['customer_email'] is not None:
+            return transaction['transaction']['customer_email']
+
+        if transaction['transaction']['member'] is not None and 'email' in transaction['transaction']['member']:
+            return transaction['transaction']['member']['email']
+
+        return None
 
     def _sync_member_history(self, event):
         if event.salebox_member_id:
