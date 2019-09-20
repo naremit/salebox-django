@@ -1215,7 +1215,11 @@ class Command(BaseCommand):
         return basket
 
     def transaction_customer(self, store):
-        return store.data.get('customer', None)
+        # w/c 30 september 2019 uncomment this line...
+        # return store.data['customer']
+
+        # ... send delete the following
+        return store.data.get('customer', { 'email': None })
 
     def transaction_extras(self, store):
         return store.data.get('extras', None)

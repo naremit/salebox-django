@@ -147,7 +147,7 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
-    def set_customer_email(self, email):
+    def set_customer_email(self, email, request):
         self.data['customer']['email'] = email
         self._write_session(request)
 
