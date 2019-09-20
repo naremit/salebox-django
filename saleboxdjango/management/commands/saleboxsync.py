@@ -1105,6 +1105,7 @@ class Command(BaseCommand):
         data = self.init_post()
         data['transaction'] = json.dumps({
             'basket': self.transaction_basket(store),
+            'customer': self.transaction_customer(store),
             'extras': self.transaction_extras(store),
             'invoice': self.transaction_invoice(store),
             'manual_discount': None,
@@ -1212,6 +1213,9 @@ class Command(BaseCommand):
             })
 
         return basket
+
+    def transaction_customer(self, store):
+        return store.data.get('customer', None)
 
     def transaction_extras(self, store):
         return store.data.get('extras', None)

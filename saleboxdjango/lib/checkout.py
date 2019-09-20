@@ -147,6 +147,10 @@ class SaleboxCheckout:
         self._write_session(request)
         return self.get_next_page(page_name)
 
+    def set_customer_email(self, email):
+        self.data['customer']['email'] = email
+        self._write_session(request)
+
     def set_invoice_address(self, required, address_or_id, meta, request):
         if address_or_id is None:
             self.data['invoice_address']['address'] = None
@@ -233,6 +237,9 @@ class SaleboxCheckout:
         self.data = {
             'basket': {},
             'completed': [],
+            'customer': {
+                'email': None
+            },
             'data': {},
             'invoice_address': {
                 'address': None,
