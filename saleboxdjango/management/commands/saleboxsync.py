@@ -403,18 +403,15 @@ class Command(BaseCommand):
 
         # attempt sync 'all'
         sync_all = int(self.timer_get('saleboxsync_inventory_all'))
-        #sync_all = 0
+        # sync_all = 0
         if (time.time() - sync_all) > (60 * 60 * 24):
             print('Inventory sync all')
-            self.timer_set('saleboxsync_inventory_all', time.time())
-            self.timer_set('saleboxsync_inventory_recent', time.time())
             post['request'] = 'all'
         else:
             # attempt sync 'recent'
             sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
             if (time.time() - sync_recent) > (60 * 15):
                 print('Inventory sync recent')
-                self.timer_set('saleboxsync_inventory_recent', time.time())
                 post['request'] = 'recent'
                 post['time_offset'] = (60 * 15)
             else:
@@ -440,18 +437,19 @@ class Command(BaseCommand):
         # fetch from server
         try:
             r = requests.post(url, data=post)
-            if r.status_code != 200:
-                self.send_admin_email('API response status code: ' % r.status_code)
-            result = r.json()
-            if result['status'] == 'OK':
-                if 'inventory' in result:
-                    inventory = result['inventory']
+            if r.status_code == 200:
+                result = r.json()
+                if result['status'] == 'OK':
+                    if 'inventory' in result:
+                        inventory = result['inventory']
+                    else:
+                        self.send_admin_email('API response recieved but inventory missing (request type: %s)' % post['request'])
                 else:
-                    self.send_admin_email('API response recieved but inventory missing')
+                    self.send_admin_email('API response recieved but status not OK (request type: %s)' % post['request'])
             else:
-                self.send_admin_email('API response recieved but status not OK')
+                self.send_admin_email('API response status code: %s (request type: %s)' % (r.status_code, post['request']))
         except:
-            self.send_admin_email('Unknown error connecting to Salebox POSv2 API')
+            self.send_admin_email('Unknown error connecting to Salebox POSv2 API (request type: %s)' % post['request'])
 
         # apply results
         if len(inventory) > 0:
@@ -463,6 +461,13 @@ class Command(BaseCommand):
                     if pv.stock_count != stock_count:
                         pv.stock_count = stock_count
                         pv.save()
+
+            # set timers
+            if post['request'] == 'all':
+                self.timer_set('saleboxsync_inventory_all', time.time())
+                self.timer_set('saleboxsync_inventory_recent', time.time())
+            elif post['request'] == 'recent':
+                self.timer_set('saleboxsync_inventory_recent', time.time())
 
     def pull_loop(self):
         while True:
