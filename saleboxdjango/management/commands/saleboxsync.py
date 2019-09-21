@@ -647,12 +647,11 @@ class Command(BaseCommand):
     def pull_model_event(self, data, api_lu, sync_from_dict):
         try:
             for d in data:
-                e = Event(
-                    event=d['event'],
-                    salebox_member_id=d['salebox_member_id'],
-                    transaction_guid=d['transaction_guid'],
-                )
-                e.save()
+                o, created = Event.objects.get_or_create(id=d['id'])
+                o.event = d['event']
+                o.salebox_member_id = d['salebox_member_id']
+                o.transaction_guid = d['transaction_guid']
+                o.save()
 
             # update sync_from
             self.pull_set_sync_from_dict(
