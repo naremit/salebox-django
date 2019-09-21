@@ -410,12 +410,13 @@ class Command(BaseCommand):
         else:
             # attempt sync 'recent'
             sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
+            # sync_recent = 999
             if (time.time() - sync_recent) > (60 * 15):
                 print('Inventory sync recent')
                 post['request'] = 'recent'
                 post['time_offset'] = (60 * 15)
             else:
-                # attempt sync 'list'
+                # attempt sync 'lowstock'
                 variant_ids = ProductVariant \
                                 .objects \
                                 .filter(active_flag=True) \
@@ -426,8 +427,8 @@ class Command(BaseCommand):
                                 .filter(stock_total__lte=F('ecommerce_low_stock_threshold')) \
                                 .values_list('id', flat=True)
                 if len(variant_ids) > 0:
-                    print('Inventory sync low-stock list')
-                    post['request'] = 'list'
+                    print('Inventory sync low-stock')
+                    post['request'] = 'lowstock'
                     post['variant_ids'] = ','.join([str(i) for i in variant_ids])
 
         # bail if nothing to fetch
