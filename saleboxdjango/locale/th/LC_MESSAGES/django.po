@@ -136,8 +136,8 @@ msgid "Next"
 msgstr "ถัดไป"
 
 #: templates/salebox/checkout/gateway.html:15
-msgid "One moment please..."
-msgstr "กรุณารอซักครู่..."
+msgid "One moment please"
+msgstr "กรุณารอสักครู่"
 
 #: templates/salebox/product/product_list.html:8
 #, python-format
