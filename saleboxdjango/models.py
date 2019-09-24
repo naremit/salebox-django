@@ -679,6 +679,7 @@ class ProductVariant(models.Model):
     bestseller_rank = models.IntegerField(default=0)
     default_image = models.CharField(max_length=35, blank=True, null=True)
     i18n = JSONField(default=dict)
+    preorder_flag = models.BooleanField(default=False)
     stock_count = models.IntegerField(default=0)
     stock_checked_out = models.IntegerField(default=0)
     stock_total = models.IntegerField(default=0)

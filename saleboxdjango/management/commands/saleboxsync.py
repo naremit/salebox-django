@@ -962,6 +962,7 @@ class Command(BaseCommand):
                     'member_discount_applicable',
                     'name',
                     'plu',
+                    'preorder_flag',
                     'price',
                     'sale_percent',
                     'sale_price',
