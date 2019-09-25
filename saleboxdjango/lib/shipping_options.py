@@ -38,8 +38,14 @@ class SaleboxShippingOptions:
         # get packages into a handy list for bin packing
         self.meta = {
             'total_items': 0,
+            'total_items_onshelf': 0,
+            'total_items_preorder': 0,
             'total_weight': 0,
-            'items': []
+            'total_weight_onshelf': 0,
+            'total_weight_preorder': 0,
+            'items': [],
+            'items_onshelf': [],
+            'items_preorder': []
         }
         for b in checkout['basket']['items']:
             for i in range(0, b['qty']):
@@ -52,6 +58,27 @@ class SaleboxShippingOptions:
                     'depth': b['variant'][self.SHIPPING_DEPTH],
                     'weight': b['variant'][self.SHIPPING_WEIGHT],
                 })
+
+                if b['variant']['preorder_flag']:
+                    self.meta['total_items_preorder'] += 1
+                    self.meta['total_weight_preorder'] += b['variant'][self.SHIPPING_WEIGHT] or 0
+                    self.meta['items_preorder'].append({
+                        'variant_id': b['variant']['id'],
+                        'width': b['variant'][self.SHIPPING_WIDTH],
+                        'height': b['variant'][self.SHIPPING_HEIGHT],
+                        'depth': b['variant'][self.SHIPPING_DEPTH],
+                        'weight': b['variant'][self.SHIPPING_WEIGHT],
+                    })
+                else:
+                    self.meta['total_items_onshelf'] += 1
+                    self.meta['total_weight_onshelf'] += b['variant'][self.SHIPPING_WEIGHT] or 0
+                    self.meta['items_onshelf'].append({
+                        'variant_id': b['variant']['id'],
+                        'width': b['variant'][self.SHIPPING_WIDTH],
+                        'height': b['variant'][self.SHIPPING_HEIGHT],
+                        'depth': b['variant'][self.SHIPPING_DEPTH],
+                        'weight': b['variant'][self.SHIPPING_WEIGHT],
+                    })
 
         # build options
         opts = self.get_options()

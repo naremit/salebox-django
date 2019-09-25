@@ -296,6 +296,12 @@ class SaleboxBasket:
             i['variant']['qty_sale_price'] = i['variant']['sale_price'] * i['qty']
             self.data['basket']['orig_price'] += i['variant']['price'] * i['qty']
             self.data['basket']['sale_price'] += i['variant']['sale_price'] * i['qty']
+            if i['variant']['preorder_flag']:
+                self.data['basket']['orig_price_preorder'] += i['variant']['price'] * i['qty']
+                self.data['basket']['sale_price_preorder'] += i['variant']['sale_price'] * i['qty']
+            else:
+                self.data['basket']['orig_price_onshelf'] += i['variant']['price'] * i['qty']
+                self.data['basket']['sale_price_onshelf'] += i['variant']['sale_price'] * i['qty']
 
         self.data['basket']['saving'] = self.data['basket']['orig_price'] - self.data['basket']['sale_price']
 
@@ -422,7 +428,11 @@ class SaleboxBasket:
                 'qty_onshelf': 0,
                 'qty_preorder': 0,
                 'orig_price': 0,
+                'orig_price_onshelf': 0,
+                'orig_price_preorder': 0,
                 'sale_price': 0,
+                'sale_price_onshelf': 0,
+                'sale_price_preorder': 0,
                 'loyalty': 0,
                 'items': [],
                 'order': [],
