@@ -419,6 +419,8 @@ class SaleboxBasket:
             'created': int(time.time()),
             'basket': {
                 'qty': 0,
+                'qty_onshelf': 0,
+                'qty_preorder': 0,
                 'orig_price': 0,
                 'sale_price': 0,
                 'loyalty': 0,
@@ -428,6 +430,8 @@ class SaleboxBasket:
             },
             'wishlist': {
                 'qty': 0,
+                'qty_onshelf': 0,
+                'qty_preorder': 0,
                 'order': [],
                 'items': [],
                 'lookup': {}
@@ -453,6 +457,7 @@ class SaleboxBasket:
                 'member_discount_applicable': q.variant.member_discount_applicable,
                 'name': q.variant.name,
                 'plu': q.variant.plu,
+                'preorder_flag': q.variant.preorder_flag,
                 'price': q.variant.price,
                 'product': {
                     'category': {
@@ -489,6 +494,10 @@ class SaleboxBasket:
 
             if q.basket_flag:
                 self.data['basket']['qty'] += q.quantity
+                if q.variant.preorder_flag:
+                    self.data['basket']['qty_preorder'] += q.quantity
+                else:
+                    self.data['basket']['qty_onshelf'] += q.quantity
                 self.data['basket']['order'].append(str(q.variant.id))
                 self.data['basket']['lookup'][str(q.variant.id)] = {
                     'qty': q.quantity,
@@ -496,6 +505,10 @@ class SaleboxBasket:
                 }
             else:
                 self.data['wishlist']['qty'] += q.quantity
+                if q.variant.preorder_flag:
+                    self.data['wishlist']['qty_preorder'] += q.quantity
+                else:
+                    self.data['wishlist']['qty_onshelf'] += q.quantity
                 self.data['wishlist']['order'].append(str(q.variant.id))
                 self.data['wishlist']['lookup'][str(q.variant.id)] = pv
 

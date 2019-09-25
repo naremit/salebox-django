@@ -17,7 +17,7 @@
                                 <span>n/a</span>
                             {% endif %}
                         </td>
-                        <td>{{ item.variant.name }}</td>
+                        <td>{{ item.variant.name }}{% if item.variant.preorder_flag %} <span>PREORDER</span>{% endif %}</td>
                         <td>{{ item.variant|sb_currency }}</td>
                         <td>
                             {% if disable_qty_change is not True %}
