@@ -326,7 +326,7 @@ class Command(BaseCommand):
         try:
             os.makedirs(target_dir)
         except:
-            self.send_admin_email()
+            pass
 
         # fetch image
         try:
