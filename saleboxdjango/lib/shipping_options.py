@@ -105,13 +105,14 @@ class SaleboxShippingOptions:
             opts = sorted(opts, key=lambda k: k['label']['label'])
 
         # optional: default select
-        if self.DEFAULT_SELECT == 'CHEAPEST':
-            tmp = sorted(opts, key=lambda k: k['price'])
-            id = tmp[0]['id']
-            option = next(o for o in opts if o['id'] == id)
-            option['selected'] = True
-        elif self.DEFAULT_SELECT == 'FIRST':
-            opts[0]['selected'] = True
+        if len(opts) > 0:
+            if self.DEFAULT_SELECT == 'CHEAPEST':
+                tmp = sorted(opts, key=lambda k: k['price'])
+                id = tmp[0]['id']
+                option = next(o for o in opts if o['id'] == id)
+                option['selected'] = True
+            elif self.DEFAULT_SELECT == 'FIRST':
+                opts[0]['selected'] = True
 
         # calculate combined_price
         for o in opts:

@@ -17,6 +17,8 @@ class SaleboxCheckoutShippingMethodView(SaleboxCheckoutBaseView):
     def get_additional_context_data(self, context):
         context = self._get_shipping_options(context)
 
+        # print(context['shipping_options'])
+
         combined_price = None
 
         # use selected option if exists
