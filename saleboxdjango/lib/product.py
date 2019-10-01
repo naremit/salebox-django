@@ -167,11 +167,18 @@ class SaleboxProduct:
             id_list = [id_list]
         self.exclude_productvariant_ids += id_list
 
-    def set_minimum_stock_total(self, minimum_stock):
-        self.query = self.query.filter(
-            Q(stock_total__gte=minimum_stock) |
-            Q(product__inventory_flag=False)
-        )
+    def set_minimum_stock_total(self, minimum_stock, allow_preorder=True):
+        if allow_preorder:
+            self.query = self.query.filter(
+                Q(stock_total__gte=minimum_stock) |
+                Q(preorder_flag=True) |
+                Q(product__inventory_flag=False)
+            )
+        else:
+            self.query = self.query.filter(
+                Q(stock_total__gte=minimum_stock) |
+                Q(product__inventory_flag=False)
+            )
 
     def set_prefetch_product_attributes(self, numbers):
         if isinstance(numbers, int):
