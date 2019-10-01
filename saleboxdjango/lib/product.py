@@ -246,7 +246,7 @@ class SaleboxProduct:
         self.query = self.query.filter(sale_percent__gte=minimum)
 
     def set_order_custom(self, order):
-        self.order = order
+        self.order = list(order)
         if isinstance(self.order, str):
             self.order = [self.order]
 

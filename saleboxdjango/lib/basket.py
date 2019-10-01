@@ -94,12 +94,18 @@ class SaleboxBasket:
                 # reaching this code, the variant is in stock
                 stock_total = 1
 
+            try:
+                preorder_flag = self.data['basket']['lookup'][str(variant_id)]['variant']['preorder_flag']
+            except:
+                preorder_flag = False
+
             o['basket_html_button'] = render_to_string(
                 'salebox/basket/button_basket.html',
                 {
                     'pv': {
                         'id': variant_id,
                         'basket_qty': qty,
+                        'preorder_flag': preorder_flag,
                         'stock_total': stock_total
                     },
                     'request': request
@@ -341,7 +347,7 @@ class SaleboxBasket:
 
             # do not allow basket qty to exceed available qty
             for b in basket:
-                if b.variant.product.inventory_flag:
+                if not b.variant.preorder_flag and b.variant.product.inventory_flag:
                     if b.quantity > 0 and b.quantity > b.variant.stock_total:
                         if b.variant.stock_total < 1:
                             b.quantity = 1
