@@ -171,12 +171,13 @@ class SaleboxEventHandler:
         return None
 
     def _sync_member_history(self, event):
-        if event.salebox_member_id:
-            try:
-                m = Member.objects.get(salebox_member_id=event.salebox_member_id)
+        if event.salebox_member_id is not None:
+            m = Member \
+                    .objects \
+                    .filter(salebox_member_id=event.salebox_member_id) \
+                    .first()
+            if m is not None:
                 m.transactionhistory_request_sync()
-            except:
-                pass
 
     # optional: for use with django-mail-queue
     def _mailqueue(self, to_address, subject, content, html=None, cc=None, bcc=None, from_address=None):

@@ -418,7 +418,7 @@ class Member(models.Model):
         pass
 
     def transactionhistory_request_sync(self):
-        self.sync_requested_dt = datetime.datetime.now()
+        self.salebox_transactionhistory_request_dt = datetime.datetime.now()
         self.save()
 
     def transactionhistory_update_data(self, transaction_list):
