@@ -17,6 +17,8 @@ from saleboxdjango.views.image.image import salebox_image_view
 from .views.rating.add import SaleboxRatingAddView
 from .views.rating.remove import SaleboxRatingRemoveView
 
+# sync
+from .views.sync.sync import SaleboxSyncView
 
 urlpatterns = [
     # address
@@ -35,4 +37,7 @@ urlpatterns = [
     # rating
     path('rating/add/', SaleboxRatingAddView.as_view()),
     path('rating/remove/', SaleboxRatingRemoveView.as_view()),
+
+    # sync
+    path('rating/add/', SaleboxSyncView.as_view()),
 ]
