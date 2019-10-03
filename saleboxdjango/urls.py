@@ -39,5 +39,5 @@ urlpatterns = [
     path('rating/remove/', SaleboxRatingRemoveView.as_view()),
 
     # sync
-    path('rating/add/', SaleboxSyncView.as_view()),
+    path('sync/', SaleboxSyncView),
 ]
