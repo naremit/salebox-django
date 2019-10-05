@@ -234,6 +234,13 @@ class Command(BaseCommand):
                             sync_from_dict
                         )
 
+                    elif value['code'] == 'i18n':
+                        self.pull_model_translation(
+                            value['data'],
+                            value['lu'],
+                            sync_from_dict
+                        )
+
                     elif value['code'] == 'member':
                         self.pull_model_member(
                             value['data'],
@@ -304,6 +311,7 @@ class Command(BaseCommand):
             # 'discount_group',
             # 'discount_ruleset',
             'event',
+            'i18n',
             'member',
             'member_group',
             'product',
@@ -1038,6 +1046,36 @@ class Command(BaseCommand):
             print('%s x ProductVariantImage' % len(data))
         except:
             self.send_admin_email()
+
+    def pull_model_translation(self, data, api_lu, sync_from_dict):
+        try:
+            if 'translations' in data:
+                for language_code in data['translations']:
+                    self.pull_model_translation_recurse(language_code, data['translations'][language_code])
+
+            # update sync_from
+            self.pull_set_sync_from_dict(
+                'i18n',
+                True,
+                sync_from_dict,
+                api_lu
+            )
+
+            print('%s x Translation' % len(data))
+        except:
+            self.send_admin_email()
+
+    def pull_model_translation_recurse(self, language_code, data, prefix=''):
+        for d in data:
+            if isinstance(data[d], str):
+                t, created = Translation.objects.get_or_create(
+                    language_code=language_code,
+                    key='%s%s' % (prefix, d)
+                )
+                t.value = data[d]
+                t.save()
+            else:
+                self.pull_model_translation_recurse(language_code, data[d], '%s.' % d)
 
     def pull_set_sync_from_dict(self, code, increment, sync_from_dict, api_lu):
         if increment:

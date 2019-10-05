@@ -91,6 +91,10 @@ class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_filter = ('user',)
 
 
+class TranslationAdmin(admin.ModelAdmin):
+    list_display = ('language_code', 'key', 'value')
+
+
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (
         'address_group',
@@ -120,4 +124,5 @@ admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(ProductVariantRating, ProductVariantRatingAdmin)
+admin.site.register(Translation, TranslationAdmin)
 admin.site.register(UserAddress, UserAddressAdmin)

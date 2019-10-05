@@ -870,6 +870,28 @@ class SaleboxUser(AbstractUser):
         self.salebox_member_sync[key] = value
         self.save()
 
+class Translation(models.Model):
+    language_code = models.CharField(max_length=7)
+    key = models.CharField(max_length=255)
+    value = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['language_code', 'key']
+        verbose_name = 'Translation'
+
+    def delete(self):
+        super().delete(*args, **kwargs)
+        cache.clear()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.clear()
+
 class UserAddress(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
