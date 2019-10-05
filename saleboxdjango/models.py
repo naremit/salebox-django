@@ -15,6 +15,7 @@ from django.utils.translation import get_language
 from mptt.models import MPTTModel, TreeForeignKey
 from saleboxdjango.lib.common import get_rating_display, json_to_datetime_local, json_to_datetime_utc
 
+
 CHECKOUT_STATUS_CHOICES = (
     (10, 'New: Pending send to gateway'),
     (20, 'Pending: Awaiting gateway response'),
