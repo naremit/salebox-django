@@ -158,32 +158,30 @@ class CheckoutStoreUpdate(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 class Country(models.Model):
-    code_2 = models.CharField(max_length=2, blank=True, null=True)
-    code_3 = models.CharField(max_length=3, blank=True, null=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=2, blank=True, null=True)
     default = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.code
 
     class Meta:
-        ordering = ['name']
+        ordering = ['code']
         verbose_name_plural = 'Countries'
 
 class CountryState(models.Model):
     country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
-    code_2 = models.CharField(max_length=2, blank=True, null=True)
-    name = models.CharField(max_length=50)
+    code = models.CharField(max_length=5, blank=True, null=True)
+    full_code = models.CharField(max_length=8, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.full_code
 
     class Meta:
-        ordering = ['name']
+        ordering = ['full_code']
         verbose_name_plural = 'Country States'
 
 class CountryStateTranslation(models.Model):

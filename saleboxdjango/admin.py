@@ -38,11 +38,11 @@ class CheckoutStoreAdmin(admin.ModelAdmin):
 
 
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('code_2', 'code_3', 'name')
+    list_display = ('code', 'default')
 
 
 class CountryStateAdmin(admin.ModelAdmin):
-    list_display = ('country', 'code_2', 'name')
+    list_display = ('country', 'code', 'full_code')
 
 
 class DiscountGroupAdmin(admin.ModelAdmin):
