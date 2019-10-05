@@ -1,7 +1,8 @@
 from django import template
 from django.utils.translation import get_language
 
-from saleboxdjango.models import Country, CountryState, CountryTranslation, CountryStateTranslation
+from saleboxdjango.lib.translation import get_translation
+from saleboxdjango.models import Country, CountryState
 
 register = template.Library()
 
@@ -17,17 +18,12 @@ def sb_country_name(country, default='', lang=None):
     if lang is None:
         lang = (get_language()).lower().split('-')[0]
 
-    if lang != 'en':
-        i18n = CountryTranslation \
-                .objects \
-                .filter(language=lang) \
-                .filter(country=country) \
-                .first()
-        if i18n is not None:
-            return i18n.value
+    return get_translation(
+        lang,
+        'place.%s' % country.code,
+        default
+    )
 
-    # fallback to English
-    return country.name
 
 @register.simple_tag
 def sb_country_state_name(country_state, default='', lang=None):
@@ -41,14 +37,8 @@ def sb_country_state_name(country_state, default='', lang=None):
     if lang is None:
         lang = (get_language()).lower().split('-')[0]
 
-    if lang != 'en':
-        i18n = CountryStateTranslation \
-                .objects \
-                .filter(language=lang) \
-                .filter(state=country_state) \
-                .first()
-        if i18n is not None:
-            return i18n.value
-
-    # fallback to English
-    return country_state.name
+    return get_translation(
+        lang,
+        'place.%s' % country_state.full_code,
+        default
+    )

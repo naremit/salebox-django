@@ -2,6 +2,22 @@ from django.core.cache import cache
 from saleboxdjango.models import Translation
 
 
+def get_translation(lang, key, default='', translations=None):
+    if translations is None:
+        translations = get_translations()
+
+    try:
+        return translations[lang][key]
+    except:
+        if lang == 'en':
+            try:
+                return translations['en-US'][key]
+            except:
+                pass
+
+        # fallback
+        return default
+
 def get_translations(rebuild=False):
     cache_key = 'salebox_translations'
 

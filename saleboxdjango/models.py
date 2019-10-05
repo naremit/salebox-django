@@ -184,28 +184,6 @@ class CountryState(models.Model):
         ordering = ['full_code']
         verbose_name_plural = 'Country States'
 
-class CountryStateTranslation(models.Model):
-    language = models.CharField(max_length=7)
-    state = models.ForeignKey(CountryState, blank=True, null=True, on_delete=models.CASCADE)
-    value = models.TextField(blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['language', 'state']
-        verbose_name = 'Country State Translations'
-
-class CountryTranslation(models.Model):
-    language = models.CharField(max_length=7)
-    country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
-    value = models.TextField(blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['language', 'country']
-        verbose_name = 'Country Translations'
-
 class DiscountGroup(models.Model):
     GROUP_TYPE_CHOICES = (
         ('S', 'Seasonal'),

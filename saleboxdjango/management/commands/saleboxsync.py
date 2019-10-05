@@ -526,10 +526,8 @@ class Command(BaseCommand):
         try:
             for d in data:
                 o, created = Country.objects.get_or_create(id=d['id'])
-                o.code_2 = d['code_2']
-                o.code_3 = d['code_3']
+                o.code = d['code']
                 o.default = d['default']
-                o.name = d['name']
                 o.save()
 
             # update sync_from
@@ -549,8 +547,8 @@ class Command(BaseCommand):
             for d in data:
                 o, created = CountryState.objects.get_or_create(id=d['id'])
                 o.country = Country.objects.get(id=d['country'])
-                o.code_2 = d['code_2']
-                o.name = d['name']
+                o.code = d['code']
+                o.full_code = d['full_code']
                 o.save()
 
             # update sync_from

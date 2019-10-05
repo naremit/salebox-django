@@ -6,8 +6,8 @@ from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.utils.translation import get_language
 
-from saleboxdjango.models import Country, CountryState, CountryTranslation, \
-    CountryStateTranslation, UserAddress
+from saleboxdjango.lib.translation import get_translation, get_translations
+from saleboxdjango.models import Country, CountryState, UserAddress
 
 
 class SaleboxAddress:
@@ -158,54 +158,42 @@ class SaleboxAddress:
         allowed_countries = self._get_allowed_countries()
         if len(allowed_countries) > 0:
             countries = countries.filter(id__in=allowed_countries)
-        countries = list(countries.values('id', 'name'))
+        countries = list(countries.values('id', 'code'))
 
-        # translate if req'd
-        if not lang.startswith('en'):
-            # get translations from database
-            lookup = {}
-            i18n = CountryTranslation \
-                    .objects \
-                    .filter(language=lang) \
-                    .values('country__id', 'value')
-            for c in i18n:
-                lookup[c['country__id']] = c['value']
+        # get translated name
+        for c in countries:
+            c['name'] = get_translation(
+                lang,
+                'place.%s' % c['code'],
+                c['code']
+            )
+            del c['code']
 
-            # replace labels
-            for c in countries:
-                if c['id'] in lookup:
-                    c['name'] = lookup[c['id']]
-
-            # sort
-            countries = sorted(countries, key=lambda k: k['name'])
-
+        # sort
+        countries = sorted(countries, key=lambda k: k['name'])
         return countries
 
     def _get_country_state_lookup(self):
         lang = get_language()
+        i18n = get_translations()
 
         states_list = CountryState.objects.all()
         allowed_countries = self._get_allowed_countries()
         if len(allowed_countries) > 0:
             states_list = states_list.filter(country__id__in=allowed_countries)
-        states_list = list(states_list.values('id', 'country__id', 'name'))
+        states_list = list(states_list.values('id', 'country__id', 'full_code'))
 
         # create a lookup
         lookup = {}
         for s in states_list:
             lookup[s['id']] = {
                 'country': s['country__id'],
-                'name': s['name']
+                'name': get_translation(
+                    lang,
+                    'place.%s' % s['full_code'],
+                    translations=i18n
+                )
             }
-
-        # translate if req'd
-        if not lang.startswith('en'):
-            i18n = CountryStateTranslation \
-                        .objects \
-                        .filter(language=lang) \
-                        .values('state__id', 'value')
-            for i in i18n:
-                lookup[i['state__id']]['name'] = i['value']
 
         # create dict of states per country
         countries = {}
