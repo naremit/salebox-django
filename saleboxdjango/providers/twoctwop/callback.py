@@ -28,13 +28,11 @@ class SaleboxProviders2C2PCallbackView(SaleboxCallbackView):
 
                     # success
                     if status == '000':
-                        cs.status = 30
-                        cs.save()
+                        cs.set_status(30)
 
                     # reject
                     if status in ['002', '003', '999']:
-                        cs.status = 40
-                        cs.save()
+                        cs.set_status(40)
 
                 # save update
                 self._save_store_update(cs, cs.status, request.POST)

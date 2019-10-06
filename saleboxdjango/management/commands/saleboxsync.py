@@ -1253,18 +1253,42 @@ class Command(BaseCommand):
         }
 
     def transaction_meta(self, store):
+        checkout_dt = None
+        transaction_dt = [
+            store.created.year,
+            store.created.month,
+            store.created.day,
+            store.created.hour,
+            store.created.minute,
+            store.created.second,
+            store.created.microsecond
+        ]
+
+        if store.payment_received is not None:
+            checkout_dt = [
+                store.created.year,
+                store.created.month,
+                store.created.day,
+                store.created.hour,
+                store.created.minute,
+                store.created.second,
+                store.created.microsecond
+            ]
+            transaction_dt = [
+                store.payment_received.year,
+                store.payment_received.month,
+                store.payment_received.day,
+                store.payment_received.hour,
+                store.payment_received.minute,
+                store.payment_received.second,
+                store.payment_received.microsecond
+            ]
+
         return {
             'guid': store.visible_id,
+            'checkout_dt': checkout_dt,
             'user_id': settings.SALEBOX['MISC']['POS_USER_ID'],
-            'utc': [
-                store.last_updated.year,
-                store.last_updated.month,
-                store.last_updated.day,
-                store.last_updated.hour,
-                store.last_updated.minute,
-                store.last_updated.second,
-                store.last_updated.microsecond,
-            ]
+            'utc': transaction_dt
         }
 
     def transaction_payment(self, store):

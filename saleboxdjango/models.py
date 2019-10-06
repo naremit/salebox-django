@@ -1,5 +1,6 @@
 from random import randint
 import datetime
+import pytz
 import time
 import uuid
 
@@ -89,8 +90,9 @@ class CheckoutStore(models.Model):
     gateway_code = models.CharField(max_length=12)
     status = models.IntegerField(choices=CHECKOUT_STATUS_CHOICES)
     data = JSONField()
+    payment_received = models.DateTimeField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def check_for_timeout(self):
         if self.status < 30:
@@ -150,6 +152,13 @@ class CheckoutStore(models.Model):
                 .filter(stock_checked_out__gt=0)
         for pv in pvs:
             pv.set_stock_checked_out(0)
+
+    def set_status(self, status):
+        if status == 30:
+            if settings.SALEBOX['CHECKOUT']['TRANSACTION_DATE'] == 'payment':
+                self.payment_received = datetime.datetime.now(tz=pytz.utc)
+        self.status = status
+        self.save()
 
 class CheckoutStoreUpdate(models.Model):
     store = models.ForeignKey(CheckoutStore, on_delete=models.CASCADE)

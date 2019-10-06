@@ -39,7 +39,7 @@ class CheckoutStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'status', 'uuid', 'visible_id', 'user', 'gateway_code')
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'gateway_code')
-    readonly_fields = ('uuid', 'visible_id', 'user', 'gateway_code', 'status', 'data')
+    readonly_fields = ('uuid', 'visible_id', 'user', 'gateway_code', 'status', 'data', 'payment_received')
     search_fields = ('visible_id',)
 
 
