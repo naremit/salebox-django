@@ -4,8 +4,11 @@ from saleboxdjango.models import *
 
 class CheckoutStoreUpdateInline(admin.TabularInline):
     model = CheckoutStoreUpdate
+    readonly_fields = ('status', 'created', 'data')
     extra = 0
 
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 class DiscountRulesetInline(admin.TabularInline):
     model = DiscountRuleset
@@ -23,8 +26,9 @@ class AttributeItemAdmin(admin.ModelAdmin):
 
 
 class BasketWishlistAdmin(admin.ModelAdmin):
-    list_display = ('user', 'session', 'variant', 'quantity', 'weight', 'basket_flag')
-    list_filter = ('user', 'session', 'basket_flag')
+    list_display = ('id', 'user', 'session', 'variant', 'quantity', 'weight', 'basket_flag')
+    list_filter = ('basket_flag',)
+    search_fields = ('user__email',)
 
 
 class CallbackStoreAdmin(admin.ModelAdmin):
@@ -35,6 +39,8 @@ class CheckoutStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'status', 'uuid', 'visible_id', 'user', 'gateway_code')
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'gateway_code')
+    readonly_fields = ('uuid', 'visible_id', 'user', 'gateway_code', 'status', 'data')
+    search_fields = ('visible_id',)
 
 
 class CountryAdmin(admin.ModelAdmin):
@@ -55,6 +61,7 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ('event', 'salebox_member_id', 'transaction_guid', 'processed_flag', 'created')
     list_filter = ('event', 'processed_flag')
     readonly_fields = ('event', 'salebox_member_id', 'transaction_guid', 'created')
+    search_fields = ('salebox_member_id', 'transaction_guid')
 
 
 class LastUpdateAdmin(admin.ModelAdmin):
@@ -66,19 +73,21 @@ class MemberGroupAdmin(admin.ModelAdmin):
 
 
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('guid', 'name_first', 'name_last', 'group')
+    list_display = ('guid', 'email', 'name_first', 'name_last', 'group')
     list_filter = ('group',)
     readonly_fields = ('parent',)
+    search_fields = ('guid', 'email')
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug_path')
+    search_fields = ('name', 'slug_path')
 
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'sold_by', 'slug')
     list_filter = ('sold_by', 'category')
-    search_fields = ('name',)
+    search_fields = ('name', 'slug', 'plu', 'sku')
 
 
 class ProductVariantAdmin(admin.ModelAdmin):
@@ -88,12 +97,13 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 class ProductVariantRatingAdmin(admin.ModelAdmin):
     list_display = ('user', 'variant', 'rating', 'created')
-    list_filter = ('user',)
+    search_fields = ('user__email',)
 
 
 class TranslationAdmin(admin.ModelAdmin):
     list_display = ('language_code', 'key', 'value')
-
+    list_filter = ('language_code',)
+    search_fields = ('key',)
 
 class UserAddressAdmin(admin.ModelAdmin):
     list_display = (
@@ -107,6 +117,15 @@ class UserAddressAdmin(admin.ModelAdmin):
         'postcode'
     )
     list_filter = ('address_group',)
+    search_fields = (
+        'user__email',
+        'full_name',
+        'address_1',
+        'address_2',
+        'address_3',
+        'postcode'
+    )
+
 
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
