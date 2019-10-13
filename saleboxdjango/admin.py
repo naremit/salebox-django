@@ -33,6 +33,7 @@ class BasketWishlistAdmin(admin.ModelAdmin):
 
 class CallbackStoreAdmin(admin.ModelAdmin):
     list_display = ('created', 'ip_address', 'method')
+    search_fields = ('post',)
 
 
 class CheckoutStoreAdmin(admin.ModelAdmin):
@@ -40,7 +41,7 @@ class CheckoutStoreAdmin(admin.ModelAdmin):
     inlines = [CheckoutStoreUpdateInline]
     list_filter = ('status', 'gateway_code')
     readonly_fields = ('uuid', 'visible_id', 'user', 'gateway_code', 'status', 'data', 'payment_received')
-    search_fields = ('visible_id',)
+    search_fields = ('visible_id', 'data')
 
 
 class CountryAdmin(admin.ModelAdmin):
