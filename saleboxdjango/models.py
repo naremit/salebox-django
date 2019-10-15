@@ -738,6 +738,10 @@ class ProductVariant(models.Model):
         # set stock_total
         self.stock_total = max((self.stock_count - self.stock_checked_out), 0)
 
+        # remove basket/wishlist item if varaint now unavailable
+        if not self.available_on_ecom or not self.active_flag:
+            BasketWishlist.objects.filter(variant=self).delete()
+
         # save
         super(ProductVariant, self).save(*args, **kwargs)
         cache.clear()
