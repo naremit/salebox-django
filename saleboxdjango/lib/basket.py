@@ -460,6 +460,10 @@ class SaleboxBasket:
         # populate data
         for q in qs:
             pv = {
+                'boolean_1': q.variant.boolean_1,
+                'boolean_2': q.variant.boolean_2,
+                'boolean_3': q.variant.boolean_3,
+                'boolean_4': q.variant.boolean_4,
                 'default_image': q.variant.default_image,
                 'ecommerce_description': q.variant.ecommerce_description,
                 'id': q.variant.id,
