@@ -23,7 +23,8 @@ class SaleboxProviders2C2PCallbackView(SaleboxCallbackView):
             )
 
             if cs is not None:
-                if cs.status < 30:
+                # WARNING: be aware 2c2p send rejections followed by successes
+                if cs.status not in [30, 31]:
                     status = form.cleaned_data['payment_status']
 
                     # success
