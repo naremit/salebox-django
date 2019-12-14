@@ -83,7 +83,40 @@ class CallbackStore(models.Model):
     post = JSONField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+class CheckoutStoreManager(models.Manager):
+    def update_checked_out_stock(self):
+        stock = {}
+
+        # find the quantities of stock checked-out
+        stores = CheckoutStore \
+                    .objects \
+                    .filter(status__lt=31)
+        for store in stores:
+            for item in store.data['basket']['items']:
+                variant_id = item['variant']['id']
+                if variant_id not in stock:
+                    stock[variant_id] = 0
+                stock[variant_id] += item['qty']
+
+        # update the positive quantities in the DB
+        variants = ProductVariant \
+                    .objects \
+                    .filter(id__in=list(stock.keys()))
+        for pv in variants:
+            if pv.stock_checked_out != stock[pv.id]:
+                pv.set_stock_checked_out(stock[pv.id])
+
+        # update the zero quantities in the DB
+        variants = ProductVariant \
+                    .objects \
+                    .exclude(id__in=list(stock.keys())) \
+                    .exclude(stock_checked_out=0)
+        for pv in variants:
+            pv.set_stock_checked_out(0)
+
 class CheckoutStore(models.Model):
+    objects = CheckoutStoreManager()
+
     uuid = models.UUIDField(db_index=True)
     visible_id = models.CharField(max_length=14, unique=True)
     user = models.IntegerField(blank=True, null=True)
@@ -123,35 +156,11 @@ class CheckoutStore(models.Model):
                     chars[randint(1, len(chars)) - 1]
                 )
 
+        # save
         super().save(*args, **kwargs)
 
-        # update inventory counts
-        exclude_ids = []
-        variants = {}
-
-        # fetch all pending checkouts
-        checkouts = CheckoutStore.objects.filter(status__lt=30)
-        for c in checkouts:
-            for b in c.data['basket']['items']:
-                pvid = b['variant']['id']
-                if pvid not in variants:
-                    variants[pvid] = 0
-                variants[pvid] += b['qty']
-
-        # update stock levels for all products
-        for v in variants:
-            pv = ProductVariant.objects.filter(id=v).first()
-            if pv:
-                exclude_ids.append(pv.id)
-                pv.set_stock_checked_out(variants[v])
-
-        # "reset" all the other checked out stock levels
-        pvs = ProductVariant \
-                .objects \
-                .exclude(id__in=exclude_ids) \
-                .filter(stock_checked_out__gt=0)
-        for pv in pvs:
-            pv.set_stock_checked_out(0)
+        # update checked out stock
+        CheckoutStore.objects.update_checked_out_stock()
 
     def set_status(self, status):
         if status == 30:
