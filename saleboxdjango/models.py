@@ -84,6 +84,23 @@ class CallbackStore(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 class CheckoutStoreManager(models.Manager):
+    def apply_timeout(self):
+        sb = getattr(settings, 'SALEBOX', {})
+        seconds = sb.get('GATEWAY_TIMEOUT', 60 * 60 * 24 * 3)
+        cutoff = now() - datetime.timedelta(seconds=seconds)
+
+        # timeout old checkout stores
+        updated = CheckoutStore \
+                    .objects \
+                    .filter(status__lt=30) \
+                    .filter(created__lt=cutoff) \
+                    .update(status=50)
+
+        # if any checkout stores were updated, recalculate the
+        # checkout stock levels
+        if updated > 0:
+            CheckoutStore.objects.update_checked_out_stock()
+
     def update_checked_out_stock(self):
         stock = {}
 
@@ -127,25 +144,12 @@ class CheckoutStore(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
-    def check_for_timeout(self):
-        if self.status < 30:
-            age = (now() - self.created).total_seconds()
-            sb = getattr(settings, 'SALEBOX', {})
-            cutoff = sb.get('GATEWAY_TIMEOUT', 60 * 60 * 24 * 3)
-
-            # do update if applicable
-            if age > cutoff:
-                self.status = 50
-                self.save()
-                return True
-
-        # fallback
-        return False
-
     def save(self, *args, **kwargs):
+        # create a uuid if none exists
         if self.uuid is None:
             self.uuid = str(uuid.uuid4())
 
+        # create a visible_id if none exists
         if self.visible_id is None:
             self.visible_id = '%.2f' % time.time()
             self.visible_id = self.visible_id.replace('.', '')
@@ -159,15 +163,19 @@ class CheckoutStore(models.Model):
         # save
         super().save(*args, **kwargs)
 
-        # update checked out stock
+        # update checked-out stock levels
         CheckoutStore.objects.update_checked_out_stock()
 
     def set_status(self, status):
-        if status == 30:
-            if settings.SALEBOX['CHECKOUT']['TRANSACTION_DATE'] == 'payment':
-                self.payment_received = datetime.datetime.now(tz=pytz.utc)
-        self.status = status
-        self.save()
+        if self.status != status:
+            # set the payment_recieved datetime if applicable
+            if status == 30:
+                if settings.SALEBOX['CHECKOUT']['TRANSACTION_DATE'] == 'payment':
+                    self.payment_received = datetime.datetime.now(tz=pytz.utc)
+
+            # update the status
+            self.status = status
+            self.save()
 
 class CheckoutStoreUpdate(models.Model):
     store = models.ForeignKey(CheckoutStore, on_delete=models.CASCADE)

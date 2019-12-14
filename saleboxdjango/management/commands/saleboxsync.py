@@ -111,9 +111,7 @@ class Command(BaseCommand):
         self.pull_transaction_history()
 
         # step 9: check for timed-out checkout stores
-        css = CheckoutStore.objects.filter(status__lt=30)
-        for cs in css:
-            cs.check_for_timeout()
+        CheckoutStore.objects.apply_timeout()
 
         # finished: reset the clock
         self.timer_set('saleboxsync_sync_start', 0.0)
@@ -400,6 +398,10 @@ class Command(BaseCommand):
         if (time.time() - sync_all) > (60 * 60 * 24):
             print('Inventory sync all')
             post['request'] = 'all'
+
+            # update checked-out stock
+            # this shouldn't be needed, but a once-a-day-tidy up won't hurt
+            CheckoutStore.objects.update_checked_out_stock()
         else:
             # attempt sync 'recent'
             sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
