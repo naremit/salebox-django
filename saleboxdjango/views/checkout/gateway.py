@@ -18,13 +18,7 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
     form_class = SaleboxCheckoutGatewayForm
     template_name = 'salebox/checkout/gateway.html'
 
-    def get(self, request, *args, **kwargs):
-        return self.validate(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.validate(request, *args, **kwargs)
-
-    def render_gateway(self, request, *args, **kwargs):
+    def gateway(self, request, *args, **kwargs):
         context = self.get_context_data()
         store = self.sc.save_to_store(request.user)
 
@@ -40,6 +34,12 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
 
         # render the gateway redirect
         return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        return self.validate(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.validate(request, *args, **kwargs)
 
     def validate(self, request, *args, **kwargs):
         # check everything in the basket is in stock
@@ -69,7 +69,7 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
             return redirect(settings.SALEBOX['CHECKOUT']['PRE_URL'])
 
         # everything ok, proceed to payment gateway
-        return self.render_gateway(request, *args, **kwargs)
+        return self.gateway(request, *args, **kwargs)
 
     def validate_discounts(self):
         # todo
