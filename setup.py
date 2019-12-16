@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'django-mptt',
         'django-opposable-thumbs',
+        'geoip2',
         'pyShipping-python3',
         'pyyaml',
         'requests',
