@@ -38,6 +38,46 @@ var salebox = {
         },
     },
 
+    analytics: {
+        getKey: function() {
+            cookies = document.cookie.split('; ').filter(function(c) {
+                return c.startsWith('salebox=');
+            });
+
+            if (cookies.length > 0) {
+                return cookies[0].replace('salebox=', '');
+            } else {
+                // generate uuid
+                var d = new Date().getTime();
+                var d2 = (performance && performance.now && (performance.now()*1000)) || 0;
+                var key = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16;
+                    if(d > 0){
+                        r = (d + r)%16 | 0;
+                        d = Math.floor(d/16);
+                    } else {
+                        r = (d2 + r)%16 | 0;
+                        d2 = Math.floor(d2/16);
+                    }
+                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+
+                // write to cookie
+                document.cookie = 'salebox=' + key + '; path=/';
+
+                // return
+                return key;
+            }
+        },
+
+        init: function() {
+            setTimeout(function() {
+                var key = salebox.analytics.getKey();
+                salebox.utils.ajax('/salebox/analytics/', { 'key': key}, function() {}, function() {});
+            }, 1000);
+        }
+    },
+
     basket: {
         basketAjax: function(variantId, qty, relative, results, callback, fail) {
             salebox.utils.ajax(
@@ -230,4 +270,6 @@ $(function() {
             }
         }
     });
+
+    salebox.analytics.init();
 });
