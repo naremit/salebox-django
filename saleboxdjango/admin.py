@@ -16,6 +16,11 @@ class DiscountRulesetInline(admin.TabularInline):
     extra = 0
 
 
+class AnalyticAdmin(admin.ModelAdmin):
+    list_display = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_address', 'ua_browser_family', 'ua_os_family', 'ua_is_mobile', 'ua_is_tablet', 'ua_is_pc', 'ua_is_bot')
+    readonly_fields = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_address', 'ua_browser_family', 'ua_browser_version', 'ua_os_family', 'ua_os_version', 'ua_device_family', 'ua_device_brand','ua_device_model',  'ua_is_mobile', 'ua_is_tablet', 'ua_is_touch_capable', 'ua_is_pc', 'ua_is_bot')
+
+
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('code',)
 
@@ -128,6 +133,7 @@ class UserAddressAdmin(admin.ModelAdmin):
     )
 
 
+admin.site.register(Analytic, AnalyticAdmin)
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(AttributeItem, AttributeItemAdmin)
 admin.site.register(BasketWishlist, BasketWishlistAdmin)

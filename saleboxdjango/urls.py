@@ -5,6 +5,9 @@ from .views.address.add import SaleboxAddressAddView
 from .views.address.remove import SaleboxAddressRemoveView
 from .views.address.set_default import SaleboxAddressSetDefaultView
 
+# analytics
+from .views.analytics.analytics import SaleboxAnalyticsView
+
 # basket
 from .views.basket.basket import SaleboxBasketBasketView
 from .views.basket.migrate import SaleboxBasketMigrateView
@@ -25,6 +28,9 @@ urlpatterns = [
     path('address/add/', SaleboxAddressAddView.as_view()),
     path('address/remove/', SaleboxAddressRemoveView.as_view()),
     path('address/set-default/', SaleboxAddressSetDefaultView.as_view()),
+
+    # analytics
+    path('analytics/', SaleboxAnalyticsView.as_view()),
 
     # basket
     path('basket/basket/', SaleboxBasketBasketView.as_view()),

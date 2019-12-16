@@ -26,6 +26,25 @@ CHECKOUT_STATUS_CHOICES = (
     (50, 'Timeout: Gateway did not respond in an acceptable time period')
 )
 
+class Analytic(models.Model):
+    key = models.UUIDField(db_index=True, editable=False)
+    first_seen = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_seen = models.DateTimeField(auto_now=True)
+    page_views = models.IntegerField(default=1)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    ua_browser_family = models.CharField(max_length=20, blank=True, null=True, verbose_name="Browser family")
+    ua_browser_version = models.CharField(max_length=20, blank=True, null=True, verbose_name="Browser version")
+    ua_os_family = models.CharField(max_length=20, blank=True, null=True, verbose_name="OS family")
+    ua_os_version = models.CharField(max_length=20, blank=True, null=True, verbose_name="OS version")
+    ua_device_family = models.CharField(max_length=20, blank=True, null=True, verbose_name="Device family")
+    ua_device_brand = models.CharField(max_length=20, blank=True, null=True, verbose_name="Device brand")
+    ua_device_model = models.CharField(max_length=20, blank=True, null=True, verbose_name="Device model")
+    ua_is_mobile = models.BooleanField(null=True, verbose_name="Is mobile?")
+    ua_is_tablet = models.BooleanField(null=True, verbose_name="Is tablet?")
+    ua_is_touch_capable = models.BooleanField(null=True, verbose_name="Is touchscreen?")
+    ua_is_pc = models.BooleanField(null=True, verbose_name="Is PC?")
+    ua_is_bot = models.BooleanField(null=True, verbose_name="Is bot?")
+
 class Attribute(models.Model):
     code = models.CharField(max_length=20)
     created = models.DateTimeField(auto_now_add=True)
