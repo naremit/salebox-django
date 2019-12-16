@@ -16,7 +16,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
 from django.utils import timezone
 
-from saleboxdjango.lib.common import update_natural_sort
+from saleboxdjango.lib.common import dictfetchall, update_natural_sort
 from saleboxdjango.lib.translation import get_translations
 from saleboxdjango.models import *
 
@@ -110,7 +110,10 @@ class Command(BaseCommand):
         # step 8: pull latest member transaction history
         self.pull_transaction_history()
 
-        # step 9: check for timed-out checkout stores
+        # step 9: send analytics
+        self.push_footfall()
+
+        # step 10: check for timed-out checkout stores
         CheckoutStore.objects.apply_timeout()
 
         # finished: reset the clock
@@ -1059,6 +1062,38 @@ class Command(BaseCommand):
                     m.transactionhistory_update_data(result['transactions'])
             except:
                 self.send_admin_email('Could not connect to Salebox POSv2 API')
+
+    def push_footfall(self):
+        if settings.SALEBOX['FOOTFALL']['SEND']:
+            sql = """
+                SELECT          COUNT(*) AS in
+                                ,DATE_PART('hour', first_seen AT TIME ZONE 'UTC') AS hour
+                                ,DATE_PART('day', first_seen AT TIME ZONE 'UTC') AS day
+                                ,DATE_PART('month', first_seen AT TIME ZONE 'UTC') AS month
+                                ,DATE_PART('year', first_seen AT TIME ZONE 'UTC') AS year
+                FROM            saleboxdjango_analytic
+                WHERE           first_seen >= TIMESTAMP 'yesterday' AT TIME ZONE 'UTC'
+                AND             ua_is_bot = false
+                GROUP BY        hour, day, month, year;
+            """
+
+            # create list of dicts
+            footfall = dictfetchall(sql)
+            for f in footfall:
+                for key in f.keys():
+                    f[key] = int(f[key])
+
+            # send
+            data = self.init_post()
+            data['footfall'] = json.dumps({
+                'footfall': footfall,
+                'user': settings.SALEBOX['MISC']['POS_USER_ID']
+            })
+            url = '%s/api/pos/v2/footfall' % settings.SALEBOX['API']['URL']
+            try:
+                r = requests.post(url, data=data)
+            except:
+                self.send_admin_email()
 
     def push_member(self, user):
         self.timer_set('saleboxsync_sync_start', time.time())
