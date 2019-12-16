@@ -70,10 +70,28 @@ var salebox = {
             }
         },
 
+        getLanguage: function() {
+            return (
+                navigator.languages && navigator.languages[0] || // Chrome / Firefox
+                navigator.language ||   // All browsers
+                navigator.userLanguage
+            );
+        },
+
         init: function() {
             setTimeout(function() {
                 var key = salebox.analytics.getKey();
-                salebox.utils.ajax('/salebox/analytics/', { 'key': key}, function() {}, function() {});
+                salebox.utils.ajax(
+                    '/salebox/analytics/',
+                    {
+                        'key': key,
+                        'height': screen.height || null,
+                        'lang': salebox.analytics.getLanguage() || null,
+                        'width': screen.width || null
+                    },
+                    function() {},
+                    function() {}
+                );
             }, 1000);
         }
     },

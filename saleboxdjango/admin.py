@@ -17,9 +17,14 @@ class DiscountRulesetInline(admin.TabularInline):
 
 
 class AnalyticAdmin(admin.ModelAdmin):
-    list_display = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_address', 'ua_browser_family', 'ua_os_family', 'ua_is_mobile', 'ua_is_tablet', 'ua_is_pc', 'ua_is_bot')
-    readonly_fields = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_address', 'ua_browser_family', 'ua_browser_version', 'ua_os_family', 'ua_os_version', 'ua_device_family', 'ua_device_brand','ua_device_model',  'ua_is_mobile', 'ua_is_tablet', 'ua_is_touch_capable', 'ua_is_pc', 'ua_is_bot')
+    list_display = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_country', 'ip_city', 'ip_address', 'ua_browser_family', 'ua_os_family', 'language', 'screen_size', 'ua_is_mobile', 'ua_is_tablet', 'ua_is_pc', 'ua_is_bot')
+    readonly_fields = ('key', 'first_seen', 'last_seen', 'page_views', 'ip_address', 'ip_country', 'ip_city', 'ip_tz', 'ip_lat', 'ip_lng', 'ua_browser_family', 'ua_browser_version', 'ua_os_family', 'ua_os_version', 'ua_device_family', 'ua_device_brand','ua_device_model',  'ua_is_mobile', 'ua_is_tablet', 'ua_is_touch_capable', 'ua_is_pc', 'ua_is_bot', 'language', 'screen_width', 'screen_height')
 
+    def screen_size(self, obj):
+        if obj.screen_height and obj.screen_width:
+            return '%sx%s' % (obj.screen_width, obj.screen_height)
+        else:
+            return '-'
 
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('code',)
