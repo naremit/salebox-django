@@ -14,7 +14,7 @@ setup(
         'django-opposable-thumbs',
         'pyShipping-python3',
         'pyyaml',
-        'requests'
+        'requests',
         'ua-parser',
         'user-agents'
     ],
