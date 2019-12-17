@@ -1064,9 +1064,9 @@ class Command(BaseCommand):
                 self.send_admin_email('Could not connect to Salebox POSv2 API')
 
     def push_footfall(self):
-        if settings.SALEBOX['FOOTFALL']['SEND']:
+        if settings.SALEBOX['ANALYTICS']['SEND']:
             sql = """
-                SELECT          COUNT(*) AS in
+                SELECT          COUNT(*) AS visitor_count
                                 ,DATE_PART('hour', first_seen AT TIME ZONE 'UTC') AS hour
                                 ,DATE_PART('day', first_seen AT TIME ZONE 'UTC') AS day
                                 ,DATE_PART('month', first_seen AT TIME ZONE 'UTC') AS month
@@ -1078,18 +1078,15 @@ class Command(BaseCommand):
             """
 
             # create list of dicts
-            footfall = dictfetchall(sql)
-            for f in footfall:
-                for key in f.keys():
-                    f[key] = int(f[key])
+            visitors = dictfetchall(sql)
+            for v in visitors:
+                for key in v.keys():
+                    v[key] = int(v[key])
 
             # send
             data = self.init_post()
-            data['footfall'] = json.dumps({
-                'footfall': footfall,
-                'user': settings.SALEBOX['MISC']['POS_USER_ID']
-            })
-            url = '%s/api/pos/v2/footfall' % settings.SALEBOX['API']['URL']
+            data['visitors'] = json.dumps({ 'visitors': visitors })
+            url = '%s/api/pos/v2/ecommerce-visitors' % settings.SALEBOX['API']['URL']
             try:
                 r = requests.post(url, data=data)
             except:
