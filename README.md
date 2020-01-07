@@ -1,9 +1,10 @@
-salebox-ecom-django
+salebox-django
 ===================
 
 Connect a standalone Django ecommerce website to a GetSalebox.com backoffice.
 
-### Get the latest Maxmind GeoLite2 City database
+
+### New: Get the latest Maxmind GeoLite2 City database
 
 `cd` to your `/var/www/[my project]` folder, then:
 
