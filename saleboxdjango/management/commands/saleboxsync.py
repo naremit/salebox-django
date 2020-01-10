@@ -409,10 +409,10 @@ class Command(BaseCommand):
             # attempt sync 'recent'
             sync_recent = int(self.timer_get('saleboxsync_inventory_recent'))
             # sync_recent = 999
-            if (time.time() - sync_recent) > (60 * 15):
+            if (time.time() - sync_recent) > (60 * 5):
                 print('Inventory sync recent')
                 post['request'] = 'recent'
-                post['time_offset'] = (60 * 15)
+                post['time_offset'] = (60 * 5)
             else:
                 # attempt sync 'lowstock'
                 variant_ids = ProductVariant \
