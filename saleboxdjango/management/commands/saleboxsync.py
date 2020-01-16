@@ -412,7 +412,7 @@ class Command(BaseCommand):
             if (time.time() - sync_recent) > (60 * 5):
                 print('Inventory sync recent')
                 post['request'] = 'recent'
-                post['time_offset'] = (60 * 5)
+                post['time_offset'] = (60 * 30)  # everything that changed in the last 30 minutes
             else:
                 # attempt sync 'lowstock'
                 variant_ids = ProductVariant \
