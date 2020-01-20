@@ -1102,7 +1102,7 @@ class Command(BaseCommand):
         # build post
         post = self.init_post()
         post['salebox_member_id'] = user.salebox_member_id
-        post['salebox_member_sync'] = json.dumps(user.salebox_member_sync)
+        post['salebox_member_sync'] = json.dumps(user.salebox_member_sync, ensure_ascii=False)
 
         # do request
         url = '%s/api/pos/v2/member-update' % settings.SALEBOX['API']['URL']
@@ -1137,7 +1137,7 @@ class Command(BaseCommand):
             'shipping': self.transaction_shipping(store),
             'stored_value_load': None,
             'total': self.transaction_total(store)
-        })
+        }, ensure_ascii=False)
 
         # send
         url = '%s/api/pos/v2/transaction/create' % settings.SALEBOX['API']['URL']
