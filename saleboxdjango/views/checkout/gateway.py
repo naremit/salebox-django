@@ -88,6 +88,15 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
                 basket[item['variant']['id']] = 0
             basket[item['variant']['id']] += item['qty']
 
+        # ignore non-inventory basket items
+        non_inventory_ids = ProductVariant \
+                                .objects \
+                                .filter(id__in=list(basket.keys())) \
+                                .filter(product__inventory_flag=False) \
+                                .values_list('id', flat=True)
+        for id in non_inventory_ids:
+            del basket[id]
+
         # return False if there are more items in the basket
         # than there are available in stock
         variants = ProductVariant \
