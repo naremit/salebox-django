@@ -1116,11 +1116,14 @@ class Command(BaseCommand):
             self.send_admin_email('Failed to POST member data')
 
     def push_members(self):
-        users = get_user_model() \
-                    .objects \
-                    .filter(salebox_member_sync__isnull=False)
-        for user in users:
-            self.push_member(user)
+        if hasattr(get_user_model(), 'salebox_member_sync'):
+            users = get_user_model() \
+                        .objects \
+                        .filter(salebox_member_sync__isnull=False)
+            for user in users:
+                self.push_member(user)
+        else:
+            print('SaleboxUser class not in use')
 
     def push_transaction(self, store):
         # build POST
