@@ -101,7 +101,8 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
         # than there are available in stock
         variants = ProductVariant \
                     .objects \
-                    .filter(id__in=list(basket.keys()))
+                    .filter(id__in=list(basket.keys())) \
+                    .filter(preorder_flag=False)
         for pv in variants:
             if pv.stock_total < basket[pv.id]:
                 return False
