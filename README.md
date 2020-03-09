@@ -19,6 +19,7 @@ Edit `www/settings/base.py`:
  * Add `'saleboxdjango'` to `INSTALLED_APPS`
  * Add `'saleboxdjango.middleware.SaleboxMiddleware'` to the end of `MIDDLEWARE`
  * Add `'saleboxdjango.middleware.SaleboxI18NSessionStoreMiddleware'` to the end of `MIDDLEWARE` if this is a multi-language site
+ * Add `'saleboxdjango.context_processor.salebox'` to `TEMPLATES > OPTIONS`
 
 Make sure we are using postgres:
 
