@@ -20,6 +20,18 @@ Edit `www/settings/base.py`:
  * Add `'saleboxdjango.middleware.SaleboxMiddleware'` to the end of `MIDDLEWARE`
  * Add `'saleboxdjango.middleware.SaleboxI18NSessionStoreMiddleware'` to the end of `MIDDLEWARE` if this is a multi-language site
 
+Make sure we are using postgres:
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': '<DATABASE_NAME>',
+            'USER': '<DATABASE_USER>',
+            'PASSWORD': '<DATABASE_PASSWORD>',
+            'HOST': 'localhost',
+        }
+    }
+
 Add the following to `www/settings/base.py` and fill in the blanks:
 
     SALEBOX = {
