@@ -23,8 +23,7 @@
 <div class="product_list">
     {% if products.count.total > 0 %}
         {% for pv in products.products %}
-            {% include 'salebox/product/
-            product_list_single.html' %}
+            {% include 'salebox/product/product_list_single.html' %}
         {% endfor %}
     {% else %}
         <p>{% trans "No products found" %}</p>
