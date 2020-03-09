@@ -1064,7 +1064,7 @@ class Command(BaseCommand):
                 self.send_admin_email('Could not connect to Salebox POSv2 API')
 
     def push_footfall(self):
-        if settings.SALEBOX['ANALYTICS']['SEND']:
+        if settings.SALEBOX['ANALYTICS']['SEND'] and 'postgres' in settings.DATABASES['default']['ENGINE']:
             sql = """
                 SELECT          COUNT(*) AS visitor_count
                                 ,DATE_PART('hour', first_seen AT TIME ZONE 'UTC') AS hour
