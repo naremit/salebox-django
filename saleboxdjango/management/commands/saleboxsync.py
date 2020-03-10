@@ -341,9 +341,9 @@ class Command(BaseCommand):
         # product category
         imgs = ProductCategory \
                 .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
+                .filter(active_flag=True) \
+                .filter(image__isnull=False) \
+                .filter(local_image__isnull=True)
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'pospc')
             if success:
@@ -354,9 +354,9 @@ class Command(BaseCommand):
         # product
         imgs = Product \
                 .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
+                .filter(active_flag=True) \
+                .filter(image__isnull=False) \
+                .filter(local_image__isnull=True)
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'posp')
             if success:
@@ -367,9 +367,9 @@ class Command(BaseCommand):
         # product variant
         imgs = ProductVariant \
                 .objects \
-                .exclude(image__isnull=True) \
-                .filter(local_image__isnull=True) \
-                .filter(active_flag=True)
+                .filter(active_flag=True) \
+                .filter(image__isnull=False) \
+                .filter(local_image__isnull=True)
         for img in imgs:
             path, success = self.pull_image(img.id, img.image[1:], 'pospv')
             if success:

@@ -3,8 +3,8 @@
 <div class="product">
     <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">
         <div class="img">
-            {% if pv.image or pv.product.image %}
-                <img src="{% if pv.image %}{{ pv.image }}{% else %}{{ pv.product.image }}{% endif %}">
+            {% if pv.default_image %}
+                <img src="/media/salebox/{{ pv.default_image }}" style="height: 80px; width: 80px">
             {% else %}
                 <div>{% trans "No picture available" %}</div>
             {% endif %}
