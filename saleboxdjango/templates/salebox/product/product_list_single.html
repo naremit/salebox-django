@@ -1,8 +1,13 @@
 {% load i18n salebox_utils %}
 
-<div class="product">
+<div class="product-list-single">
+    <a href="/product/{{ pv.id }}-{{ pv.slug }}/">
+        <div class="product-image" {% if pv.default_image %}style="background-image: url('/media/salebox/{{ pv.default_image }}')"{% endif %}></div>
+    </a>
+
+    <!--
     <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">
-        <div class="img">
+        <div class="product-image" >
             {% if pv.default_image %}
                 <img src="/media/salebox/{{ pv.default_image }}" style="height: 80px; width: 80px">
             {% else %}
@@ -11,7 +16,7 @@
         </div>
     </a>
     <div>
-        <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">{{ p.p_name }}</a>
+        <a href="/product/{{ pv.id }}-{{ pv.slug }}/">{{ p.name }}</a>
     </div>
     {% if pv.sale_price != pv.price %}
         <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price|sb_currency }}</div>
@@ -23,4 +28,5 @@
     {% endif %}
 
     {% include 'salebox/basket/button_basket.html' %}
+    -->
 </div>
