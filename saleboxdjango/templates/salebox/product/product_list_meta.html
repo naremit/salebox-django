@@ -9,7 +9,7 @@
         {% endif %}
     {% endif %}
 
-    <select style="float: right" onchange="setOrder(this.value)">
+    <select style="float: right" {% if onchange %}onchange="{{ onchange }}"{% endif %}>
         <option value="bestseller_high_to_low"{% if request.session.product_list_order == "bestseller_high_to_low" %} selected{% endif %}>{% trans "Bestselling high to low" %}</option>
         <option value="bestseller_low_to_high"{% if request.session.product_list_order == "bestseller_low_to_high" %} selected{% endif %}>{% trans "Bestselling low to high" %}</option>
         <option value="rating_high_to_low"{% if request.session.product_list_order == "rating_high_to_low" %} selected{% endif %}>{% trans "Rating high to low" %}</option>

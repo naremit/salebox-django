@@ -2,31 +2,15 @@
 
 <div class="product-list-single">
     <a href="/product/{{ pv.id }}-{{ pv.slug }}/">
-        <div class="product-image" {% if pv.default_image %}style="background-image: url('/media/salebox/{{ pv.default_image }}')"{% endif %}></div>
-    </a>
-
-    <!--
-    <a href="/product/{{ pv.id }}-{{ pv.slug }}/" style="text-decoration: none">
-        <div class="product-image" >
-            {% if pv.default_image %}
-                <img src="/media/salebox/{{ pv.default_image }}" style="height: 80px; width: 80px">
-            {% else %}
-                <div>{% trans "No picture available" %}</div>
+        <div class="image" {% if pv.default_image %}style="background-image: url('/media/salebox/{{ pv.default_image }}')"{% endif %}></div>
+        <div class="name">{{ pv.product.name }}</div>
+        <div class="price">
+            <span class="currency">{{ pv.sale_price|sb_currency }}</span>
+            {% if pv.sale_price != pv.price %}
+                <span class="currency currency-prev">{{ pv.price|sb_currency }}</span>
             {% endif %}
+            {% include "salebox/utils/rating.html" with readonly=True rating=pv.rating_display.10 %}
         </div>
     </a>
-    <div>
-        <a href="/product/{{ pv.id }}-{{ pv.slug }}/">{{ p.name }}</a>
-    </div>
-    {% if pv.sale_price != pv.price %}
-        <div class="price price-orig" style="text-decoration: line-through;">{{ pv.price|sb_currency }}</div>
-    {% endif %}
-    <div class="price">{{ pv.sale_price|sb_currency }}</div>
-
-    {% if pv.rating_display.10 is not None %}
-        {% include "salebox/utils/rating.html" with readonly=True rating=pv.rating_display.10 %}
-    {% endif %}
-
     {% include 'salebox/basket/button_basket.html' %}
-    -->
 </div>
