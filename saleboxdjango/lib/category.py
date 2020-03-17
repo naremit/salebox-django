@@ -14,25 +14,33 @@ class SaleboxCategory:
         self.valid_ids = []
 
     def get_tree(self, cache_key=None, cache_timeout=86400, category_id=None):
-        tree = None
+        # attempt to get the complete tree dict from cache
         if cache_key is not None:
-            tree = cache.get(cache_key)
+            detail_key = '%s::%s' % (cache_key, category_id)
+            complete_tree = cache.get(detail_key)
+            if complete_tree is not None:
+                return complete_tree
 
-        # build tree
-        if tree is None:
-            tree = self._get_tree(self._get_root_categories())
-            if cache_key is not None:
-                cache.set(cache_key, tree, cache_timeout)
-
-        # create output
-        current = self._find_node(tree, category_id) if category_id else None
+        # complete tree does not exist, constuct it
+        inner_tree = self._get_tree(cache_key, cache_timeout)
+        current = self._find_node(inner_tree, category_id) if category_id else None
         output = {
-            'tree': tree,
+            'tree': inner_tree,
             'current': current,
-            'ancestors': self._find_ancestors(tree, [], current['parent'] if current else None)
+            'ancestors': self._find_ancestors(
+                inner_tree,
+                [],
+                current['parent'] if current else None
+            )
         }
 
+        # store the complete tree dict in the cache
+        if cache_key is not None:
+            cache.set(detail_key, output, cache_timeout)
+
+        # return
         return output
+
 
     def _find_ancestors(self, tree, ancestors, id):
         if id is not None:
@@ -49,7 +57,7 @@ class SaleboxCategory:
         for c in tree:
             if id == c['id']:
                 return c
-            else:
+            elif len(c['children']) > 0:
                 res = self._find_node(c['children'], id)
                 if res is not None:
                     return res
@@ -95,7 +103,23 @@ class SaleboxCategory:
                 .distinct('product__id') \
                 .count()
 
-    def _get_tree(self, categories):
+    def _get_tree(self, cache_key, cache_timeout):
+        tree = None
+
+        # attempt to retrieve from the cache if a key is defined
+        if cache_key is not None:
+            tree = cache.get(cache_key)
+
+        # build tree if not in cache
+        if tree is None:
+            tree = self._get_tree_recurse(self._get_root_categories())
+            if cache_key is not None:
+                cache.set(cache_key, tree, cache_timeout)
+
+        #
+        return tree
+
+    def _get_tree_recurse(self, categories):
         output = []
 
         for c in categories:
@@ -103,7 +127,7 @@ class SaleboxCategory:
             if self.populated_categories_only and count == 0:
                 continue
 
-            children = self._get_tree(
+            children = self._get_tree_recurse(
                 c.get_children().filter(active_flag=True)
             )
 
