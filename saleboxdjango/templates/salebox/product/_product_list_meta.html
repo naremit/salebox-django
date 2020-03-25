@@ -1,0 +1,20 @@
+{% load i18n %}
+
+<div>
+    {% if products.count.total > 0 %}
+        {% if products.count.total > 1 %}
+        <span>{% blocktrans with from=products.count.from to=products.count.to total=products.count.total %}Showing {{ from }} to {{ to }} of {{ total }}{% endblocktrans %}</span>
+        {% else %}
+        <span>{% blocktrans with from=products.count.from total=products.count.total %}Showing {{ from }} to {{ total }}{% endblocktrans %}</span>
+        {% endif %}
+    {% endif %}
+
+    <select style="float: right" {% if onchange %}onchange="{{ onchange }}"{% endif %}>
+        <option value="bestseller_high_to_low"{% if request.session.product_list_order == "bestseller_high_to_low" %} selected{% endif %}>{% trans "Bestselling high to low" %}</option>
+        <option value="bestseller_low_to_high"{% if request.session.product_list_order == "bestseller_low_to_high" %} selected{% endif %}>{% trans "Bestselling low to high" %}</option>
+        <option value="rating_high_to_low"{% if request.session.product_list_order == "rating_high_to_low" %} selected{% endif %}>{% trans "Rating high to low" %}</option>
+        <option value="rating_low_to_high"{% if request.session.product_list_order == "rating_low_to_high" %} selected{% endif %}>{% trans "Rating low to high" %}</option>
+        <option value="price_high_to_low"{% if request.session.product_list_order == "rating_high_to_low" %} selected{% endif %}>{% trans "Price high to low" %}</option>
+        <option value="price_low_to_high"{% if request.session.product_list_order == "price_low_to_high" %} selected{% endif %}>{% trans "Price low to high" %}</option>
+    </select>
+</div>

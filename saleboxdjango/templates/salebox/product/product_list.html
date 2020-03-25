@@ -1,11 +1,3 @@
-{% load i18n %}
-
-<div class="product-list">
-    {% if products.count.total > 0 %}
-        {% for pv in products.products %}
-            {% include 'salebox/product/product_list_single.html' %}
-        {% endfor %}
-    {% else %}
-        <div class="product-list-empty">{% trans "No products found" %}</div>
-    {% endif %}
-</div>
+{% include "salebox/product/_product_list_meta.html" %}
+{% include "salebox/product/_product_list.html" %}
+{% include "salebox/utils/pagination.html" %}

@@ -1,0 +1,6 @@
+{% for t in categories.tree %}
+    <a href="/shop/{{ t.slug_path }}/" style="white-space: nowrap">{{ t.name }}</a>
+    {% if not forloop.last %}
+        &nbsp;<span>/</span>&nbsp;
+    {% endif %}
+{% endfor %}

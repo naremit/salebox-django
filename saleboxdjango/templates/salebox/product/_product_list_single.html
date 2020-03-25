@@ -1,0 +1,16 @@
+{% load i18n salebox_utils %}
+
+<div class="product-list-single">
+    <a href="/shop/product/{{ pv.id }}-{{ pv.slug }}/">
+        <div class="image" {% if pv.default_image %}style="background-image: url('/media/salebox/{{ pv.default_image }}')"{% endif %}></div>
+        <div class="name">{{ pv.product.name }}</div>
+        <div class="price">
+            <span class="currency">{{ pv.sale_price|sb_currency }}</span>
+            {% if pv.sale_price != pv.price %}
+                <span class="currency currency-prev">{{ pv.price|sb_currency }}</span>
+            {% endif %}
+            {% include "salebox/utils/rating.html" with readonly=True rating=pv.rating_display.10 %}
+        </div>
+    </a>
+    {% include 'salebox/basket/button_basket.html' %}
+</div>
