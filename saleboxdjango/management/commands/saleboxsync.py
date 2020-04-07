@@ -1252,8 +1252,8 @@ class Command(BaseCommand):
     def transaction_invoice(self, store):
         data = store.data['invoice_address']
 
-        # invoice not requested
-        if not data['required']:
+        # invoice not requested or address not supplied
+        if not data['required'] or not data['address']:
             return None
 
         # invoice requested, populate data
