@@ -6,7 +6,7 @@ setup(
     name='salebox-django',
     version='0.0.213',
     author=u'Jon Combe',
-    author_email='jon@getsalebox.com',
+    author_email='jon@salebox.io',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -19,10 +19,10 @@ setup(
         'ua-parser',
         'user-agents'
     ],
-    url='https://getsalebox.com',
+    url='https://salebox.io',
     license='BSD licence, see LICENCE file',
     description='Django ecommerce powered by Salebox',
-    long_description='Connect a standalone Django ecommerce website to a GetSalebox.com backoffice',
+    long_description='Connect a standalone Django ecommerce website to a salebox.io backoffice',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
