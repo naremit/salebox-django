@@ -24,7 +24,7 @@ from saleboxdjango.models import *
 
 
 class Command(BaseCommand):
-    SOFTWARE_VERSION = '0.0.213'
+    SOFTWARE_VERSION = '0.0.214'
 
     def handle(self, *args, **options):
         now = time.time()

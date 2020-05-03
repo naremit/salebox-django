@@ -104,6 +104,11 @@ class BasketWishlist(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # ensure an item must have a session or a user
+        if session != None or user != None:
+            super().save(*args, **kwargs)
+
 class CallbackStore(models.Model):
     ip_address = models.GenericIPAddressField()
     method = models.CharField(max_length=7)
@@ -783,7 +788,7 @@ class ProductVariant(models.Model):
         # set stock_total
         self.stock_total = max((self.stock_count - self.stock_checked_out), 0)
 
-        # remove basket/wishlist item if varaint now unavailable
+        # remove basket/wishlist item if variant now unavailable
         if not self.available_on_ecom or not self.active_flag:
             BasketWishlist.objects.filter(variant=self).delete()
 
