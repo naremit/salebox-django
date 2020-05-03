@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='salebox-django',
-    version='0.0.214',
+    version='0.0.215',
     author=u'Jon Combe',
     author_email='jon@salebox.io',
     packages=find_packages(),

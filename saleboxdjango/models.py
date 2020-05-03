@@ -105,9 +105,9 @@ class BasketWishlist(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # ensure an item must have a session or a user
-        if session != None or user != None:
-            super().save(*args, **kwargs)
+        if self.session is None and self.user is None:
+            self.session = '.'
+        super().save(*args, **kwargs)
 
 class CallbackStore(models.Model):
     ip_address = models.GenericIPAddressField()
