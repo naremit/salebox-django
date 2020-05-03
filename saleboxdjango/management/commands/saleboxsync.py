@@ -1,7 +1,9 @@
 import datetime
+import hashlib
 import importlib
 import inspect
 import json
+import math
 import os
 import requests
 import sys
@@ -22,7 +24,7 @@ from saleboxdjango.models import *
 
 
 class Command(BaseCommand):
-    SOFTWARE_VERSION = '0.1.6'
+    SOFTWARE_VERSION = '0.0.213'
 
     def handle(self, *args, **options):
         now = time.time()
@@ -121,11 +123,19 @@ class Command(BaseCommand):
         print('Finished in %.3fs' % (time.time() - now))
 
     def init_post(self):
+        epoch = int(math.floor(time.time()))
+        hash_str = '%s.%s.%s' % (
+            settings.SALEBOX['API']['KEY'],
+            settings.SALEBOX['API']['LICENSE'],
+            epoch
+        )
+
         return {
             'pos': settings.SALEBOX['API']['KEY'],
-            'license': settings.SALEBOX['API']['LICENSE'],
-            'platform_type': 'ECOMMERCE',
-            'platform_version': self.SOFTWARE_VERSION
+            'epoch': epoch,
+            'hash': hashlib.sha256(hash_str.encode('utf-8')).hexdigest(),
+            'software_type': 'salebox_django',
+            'software_version': self.SOFTWARE_VERSION
         }
 
     def pull(self):
