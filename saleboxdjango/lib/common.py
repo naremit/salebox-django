@@ -1,11 +1,30 @@
 import datetime
+import hashlib
+import math
 import pytz
 import re
+import time
 
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import localtime
 
+
+def api_auth():
+    epoch = int(math.floor(time.time()))
+    hash_str = '%s.%s.%s' % (
+        settings.SALEBOX['API']['KEY'],
+        settings.SALEBOX['API']['LICENSE'],
+        epoch
+    )
+
+    return {
+        'pos': settings.SALEBOX['API']['KEY'],
+        'epoch': epoch,
+        'hash': hashlib.sha256(hash_str.encode('utf-8')).hexdigest(),
+        'software_type': 'salebox_django',
+        'software_version': '0.0.216'
+    }
 
 def dictfetchall(sql):
     with connection.cursor() as cursor:

@@ -10,6 +10,7 @@ try:
 except:
     pass
 
+from saleboxdjango.lib.common import api_auth
 from saleboxdjango.models import Event, Member
 
 
@@ -46,6 +47,7 @@ class SaleboxEventHandler:
     def event_transaction_created(self, event):
         try:
             t = self._fetch_transaction(event)
+
             if t['status'] != 'OK':
                 return
 
@@ -143,19 +145,15 @@ class SaleboxEventHandler:
         }
 
     def _fetch_transaction(self, event):
-        post = {
-            'pos': settings.SALEBOX['API']['KEY'],
-            'license': settings.SALEBOX['API']['LICENSE'],
-            'platform_type': 'ECOMMERCE',
-            'platform_version': '0.1.6',
-            'pos_guid': event.transaction_guid
-        }
+        post = api_auth()
+        post['pos_guid'] = event.transaction_guid
 
         # do request
         url = '%s/api/pos/v2/transaction/fetch' % settings.SALEBOX['API']['URL']
         try:
             r = requests.post(url, data=post)
             o = r.json()
+            print(o)
             o['transaction']['dt'] = datetime.datetime(*o['transaction']['dt'])
             return o
         except:

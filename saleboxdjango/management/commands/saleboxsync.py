@@ -1,9 +1,7 @@
 import datetime
-import hashlib
 import importlib
 import inspect
 import json
-import math
 import os
 import requests
 import sys
@@ -18,14 +16,12 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
 from django.utils import timezone
 
-from saleboxdjango.lib.common import dictfetchall, update_natural_sort
+from saleboxdjango.lib.common import api_auth, dictfetchall, update_natural_sort
 from saleboxdjango.lib.translation import get_translations
 from saleboxdjango.models import *
 
 
 class Command(BaseCommand):
-    SOFTWARE_VERSION = '0.0.215'
-
     def handle(self, *args, **options):
         now = time.time()
 
@@ -122,24 +118,8 @@ class Command(BaseCommand):
         self.timer_set('saleboxsync_sync_start', 0.0)
         print('Finished in %.3fs' % (time.time() - now))
 
-    def init_post(self):
-        epoch = int(math.floor(time.time()))
-        hash_str = '%s.%s.%s' % (
-            settings.SALEBOX['API']['KEY'],
-            settings.SALEBOX['API']['LICENSE'],
-            epoch
-        )
-
-        return {
-            'pos': settings.SALEBOX['API']['KEY'],
-            'epoch': epoch,
-            'hash': hashlib.sha256(hash_str.encode('utf-8')).hexdigest(),
-            'software_type': 'salebox_django',
-            'software_version': self.SOFTWARE_VERSION
-        }
-
     def pull(self):
-        post = self.init_post()
+        post = api_auth()
 
         # populate last updates
         sync_from_dict = self.pull_get_sync_from_dict()
@@ -402,7 +382,7 @@ class Command(BaseCommand):
 
     def pull_inventory(self):
         url = '%s/api/pos/v2/inventory' % settings.SALEBOX['API']['URL']
-        post = self.init_post()
+        post = api_auth()
         inventory = []
 
         # attempt sync 'all'
@@ -1061,7 +1041,7 @@ class Command(BaseCommand):
             url = '%s/api/pos/v2/member-transaction-history' % (
                 settings.SALEBOX['API']['URL'],
             )
-            post = self.init_post()
+            post = api_auth()
             post['salebox_member_id'] = str(m.salebox_member_id)
 
             # fetch from server
@@ -1094,7 +1074,7 @@ class Command(BaseCommand):
                     v[key] = int(v[key])
 
             # send
-            data = self.init_post()
+            data = api_auth()
             data['visitors'] = json.dumps({ 'visitors': visitors })
             url = '%s/api/pos/v2/ecommerce-visitors' % settings.SALEBOX['API']['URL']
             try:
@@ -1110,7 +1090,7 @@ class Command(BaseCommand):
             user.create_salebox_member_id()
 
         # build post
-        post = self.init_post()
+        post = api_auth()
         post['salebox_member_id'] = user.salebox_member_id
         post['salebox_member_sync'] = json.dumps(user.salebox_member_sync, ensure_ascii=False)
 
@@ -1137,7 +1117,7 @@ class Command(BaseCommand):
 
     def push_transaction(self, store):
         # build POST
-        data = self.init_post()
+        data = api_auth()
         data['transaction'] = json.dumps({
             'basket': self.transaction_basket(store),
             'customer': self.transaction_customer(store),
