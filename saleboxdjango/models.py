@@ -117,20 +117,69 @@ class CallbackStore(models.Model):
 
 class CheckoutStoreManager(models.Manager):
     def apply_timeout(self):
+        """
+        here we timeout checkout stores that have overrun a
+        time limit and no message has been received from the
+        payment gateway
+
+        example config:
+
+        SALEBOX = {
+            ...
+            'GATEWAY': {
+                'TIMEOUT': {
+                    'DEFAULT': 60 * 60 * 24 * 2,
+                    'PAYMENT_METHODS': {
+                        1: 60 * 30, # 30 minutes
+                        12: 60 * 60 * 6, # 6 hours
+                    }
+                }
+            }
+            ...
+        }
+        """
+
+        # get values from the config
         sb = getattr(settings, 'SALEBOX', {})
-        seconds = sb.get('GATEWAY_TIMEOUT', 60 * 60 * 24 * 3)
-        cutoff = now() - datetime.timedelta(seconds=seconds)
+        gw = getattr(sb, 'GATEWAY', {})
+        to = getattr(gw, 'TIMEOUT', {})
+        default_timeout = getattr(to, 'DEFAULT', 60 * 60 * 24 * 3)
+        payment_methods = getattr(to, 'PAYMENT_METHODS', {})
 
-        # timeout old checkout stores
-        updated = CheckoutStore \
-                    .objects \
-                    .filter(status__lt=30) \
-                    .filter(created__lt=cutoff) \
-                    .update(status=50)
+        # perform default timeout
+        cutoff = now() - datetime.timedelta(seconds=default_timeout)
+        checkouts_closed = CheckoutStore \
+                            .objects \
+                            .filter(status__lt=30) \
+                            .filter(created__lt=cutoff) \
+                            .update(status=50)
 
-        # if any checkout stores were updated, recalculate the
-        # checkout stock levels
-        if updated > 0:
+        # find all open checkouts older than the minimum cutoff
+        try:
+            min_seconds = min([payment_methods[k] for k in payment_methods])
+            cutoff = now() - datetime.timedelta(seconds=min_seconds)
+            open_checkouts = CheckoutStore \
+                                .objects \
+                                .filter(status__lt=30) \
+                                .filter(created__lt=cutoff)
+
+            # loop through those checkouts, timing out those that need it
+            for oc in open_checkouts:
+                try:
+                    method_id = oc.data['payment_method']['id']
+                    ttl = payment_methods[method_id]
+                    if oc.created + datetime.timedelta(seconds=ttl) < now():
+                        oc.status = 50
+                        oc.save()
+                        checkouts_closed += 1
+                except:
+                    pass
+        except:
+            pass
+
+        # if any checkout stores were timed out, recalculate
+        # the checkout stock levels
+        if checkouts_closed > 0:
             CheckoutStore.objects.update_checked_out_stock()
 
     def update_checked_out_stock(self):

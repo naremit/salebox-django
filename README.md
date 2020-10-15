@@ -30,6 +30,7 @@ Make sure we are using postgres:
             'USER': '<DATABASE_USER>',
             'PASSWORD': '<DATABASE_PASSWORD>',
             'HOST': 'localhost',
+            'CONN_MAX_AGE': 60,
         }
     }
 

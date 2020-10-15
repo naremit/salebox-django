@@ -23,7 +23,7 @@ def api_auth():
         'epoch': epoch,
         'hash': hashlib.sha256(hash_str.encode('utf-8')).hexdigest(),
         'software_type': 'salebox_django',
-        'software_version': '0.0.216'
+        'software_version': '0.0.217'
     }
 
 def dictfetchall(sql):
