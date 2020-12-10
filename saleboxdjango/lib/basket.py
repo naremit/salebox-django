@@ -347,7 +347,7 @@ class SaleboxBasket:
 
             # do not allow basket qty to exceed available qty
             for b in basket:
-                if not b.variant.preorder_flag and b.variant.product.inventory_flag:
+                if not b.variant.preorder_flag and b.variant.product.inventory_type == 'T':
                     if b.quantity > 0 and b.quantity > b.variant.stock_total:
                         if b.variant.stock_total < 1:
                             b.quantity = 1

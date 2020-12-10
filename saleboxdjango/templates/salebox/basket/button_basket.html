@@ -2,8 +2,8 @@
 
 {% load i18n %}
 
-<div class="product-basketbtn{% if pv.product.inventory_flag and pv.stock_total < 1 %} product-basketbtn-soldout{% endif %}">
-    {% if pv.product.inventory_flag and pv.stock_total < 1 %}
+<div class="product-basketbtn{% if pv.product.inventory_type == 'T' and pv.stock_total < 1 %} product-basketbtn-soldout{% endif %}">
+    {% if pv.product.inventory_type == 'T' and pv.stock_total < 1 %}
         <div>{% trans "Sold Out" %}</div>
     {% else %}
         {% if pv.basket_qty > 0 %}

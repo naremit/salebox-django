@@ -630,7 +630,7 @@ class Product(models.Model):
     vat_applicable = models.BooleanField(default=True)
     image = models.CharField(max_length=70, blank=True, null=True)
     local_image = models.CharField(max_length=25, blank=True, null=True)
-    inventory_flag = models.BooleanField(default=True)
+    inventory_type = models.CharField(max_length=1, default='T')
     # season = models.ForeignKey(OrganizationSeason, null=True, blank=True)
     slug = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     bestseller_rank = models.IntegerField(default=0)

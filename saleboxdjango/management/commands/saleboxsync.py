@@ -764,7 +764,7 @@ class Command(BaseCommand):
                     'boolean_4',
                     'i18n',
                     'image',
-                    'inventory_flag',
+                    'inventory_type',
                     'name',
                     'season',
                     'sold_by',

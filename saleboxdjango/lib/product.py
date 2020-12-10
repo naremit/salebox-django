@@ -172,12 +172,12 @@ class SaleboxProduct:
             self.query = self.query.filter(
                 Q(stock_total__gte=minimum_stock) |
                 Q(preorder_flag=True) |
-                Q(product__inventory_flag=False)
+                Q(product__inventory_type__in=['I', 'C'])
             )
         else:
             self.query = self.query.filter(
                 Q(stock_total__gte=minimum_stock) |
-                Q(product__inventory_flag=False)
+                Q(product__inventory_type__in=['I', 'C'])
             )
 
     def set_prefetch_product_attributes(self, numbers):
@@ -481,7 +481,7 @@ class SaleboxProduct:
                     FROM            saleboxdjango_product AS p
                     INNER JOIN      saleboxdjango_productvariant AS pv ON pv.product_id = p.id
                     WHERE           p.active_flag = true
-                    AND             p.inventory_flag = True
+                    AND             p.inventory_type = 'T'
                     AND             pv.active_flag = true
                     AND             pv.available_on_ecom = true
                     GROUP BY        p.id
@@ -489,7 +489,7 @@ class SaleboxProduct:
                     AND             SUM(pv.stock_total) > 0
                 )
                 AND             stock_total <= 0
-                AND             p.inventory_flag = True
+                AND             p.inventory_type = 'T'
                 ORDER BY        id
             """
             with connection.cursor() as cursor:

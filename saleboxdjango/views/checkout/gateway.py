@@ -92,7 +92,7 @@ class SaleboxCheckoutGatewayView(SaleboxCheckoutBaseView):
         non_inventory_ids = ProductVariant \
                                 .objects \
                                 .filter(id__in=list(basket.keys())) \
-                                .filter(product__inventory_flag=False) \
+                                .filter(product__inventory_type__in=['I', 'C']) \
                                 .values_list('id', flat=True)
         for id in non_inventory_ids:
             del basket[id]
